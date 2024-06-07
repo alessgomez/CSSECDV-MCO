@@ -1,5 +1,4 @@
 const db = require("../db.js");
-const Product = require("../models/ProductModel.js");
 
 const controller = {
 
