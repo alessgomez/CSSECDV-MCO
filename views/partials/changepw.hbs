@@ -1,0 +1,26 @@
+<div class="details-content">
+    <p class="det-header">Change Password</p>
+    <hr class="line-break">
+    <div class="break2"></div>
+    <p id="reminder" font-size="8">Required format: Minimum length of 8 characters with at least one uppercase letter, one number, and one special character.</p>
+    <form action="/updateDetails" method="post">
+        <div class="field">
+            <input type="password" class="field-value" id="oldpsw" placeholder="Enter Current Password" name="oldpsw">
+        </div>
+        <div class="break2"></div>
+        <div class="field">
+            <input type="password" class="field-value" id="newpsw" placeholder="Enter New Password" name="newpsw">
+        </div>
+        <div class="break2"></div>
+        <div class="field">
+            <input type="password" class="field-value" id="confnewpsw" placeholder="Confirm New Password" name="confnewpsw">
+        </div>
+        <div class="break2"></div>
+        <p id="error">{{error_msg}}</p>
+        <div class="break2"></div>
+        <div class="buttons">
+            <button type="submit" class="btn" id="update" disabled><strong>Save Password</strong></button>
+            <button type="button" class="btn" id="cancel"><strong>Cancel</strong></button>
+        </div>
+    </form>
+</div>

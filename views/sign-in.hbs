@@ -1,0 +1,42 @@
+<html>
+    <head>
+		<title>The Hungry Sibs</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="all" href="css/forms.css"/>
+    <script type="text/javascript" src="js/sign-in.js"></script>
+    </head>
+
+    <body>
+        <div class="split left">
+            <div class="centered">
+              <img src="images/logo.png">
+              <h1 id="welcome">Welcome Back!</h1>
+              <p id="description">Enter your sign in details to start ordering.</p>
+            </div>
+          </div>
+          
+          <div class="split right">
+              <div class="container">
+                <h1 id="header">Sign In</h1>
+                <form action="/checkaccount" method="post">
+                    <label for="email"><b>Email</b></label><br>
+                    <input type="email" placeholder="Enter Email" id="email" name="email" required>
+
+                    <div class="break"></div>
+
+                    <label for="psw"><b>Password</b></label><br>
+                    <input type="password" id="psw" placeholder="Enter Password" name="psw" required>
+
+                    <div class="break"></div>
+
+                    <p id="error">{{error_msg}}</p>
+
+                    <button type="submit" id="signin-submit" disabled><strong>Sign In</strong></button>
+                    
+                    <p>Don't have an account? <a href="/register">Sign Up</a></p>
+                </form>
+            </div>
+          </div>
+    </body>
+</html>

@@ -1,0 +1,32 @@
+.btn:active, .btn:focus  {
+    outline: none;
+    box-shadow: none;
+  }
+
+.form-check-label  {
+  font-size: larger;
+}
+
+.card-title {
+  font-size: x-large;
+}
+
+#orders {
+    border-bottom: 3px solid black;
+    font-family: intermedium;
+}
+
+.break {
+    height: 5.5rem;
+}
+
+.inclusion{
+  font-size: 0.85rem;
+  color: rgb(112, 108, 108);
+}
+
+
+#searchbar-input{
+  font-family: arial;
+  font-size: 0.82rem;
+}

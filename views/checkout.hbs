@@ -1,0 +1,235 @@
+<div class="break"></div>
+
+    <div class="container overflow-hidden"> 
+        <form class="row justify-content-center mb-5" id="checkoutForm" method="post"> 
+
+            <div class="col-sm-auto col-md-auto col-lg-7" >
+                <div class="card mt-5 ms-4 border-dark" style="border: 1px #888888; border-radius: 25px; box-shadow: 2px 2px 2px 2px #888888; background-color: white">
+                    <div class="card-body mx-4 my-4">
+                        
+                        <h5 class="card-title fw-bold mb-3">Contact Details</h5>
+                        <div class="row g-2">
+                            <div class="col-md me-4">
+                                
+                              <div class="form-floating">
+                                   <input type="text" class="form-control" id="floatingInputGrid1" placeholder="firstNameEx" name="firstName" value="{{this.accountDetails.firstName}}" required>
+                                   <label style="color: #676e75;" for="floatingInputGrid1">First Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="floatingInputGrid2" placeholder="lastNameEx" name="lastName" value="{{this.accountDetails.lastName}}" required>
+                                    <label style="color: #6c757d;" for="floatingInputGrid2">Last Name</label>
+                                </div>
+                            </div>
+                        </div>    
+
+                        <div class="row g-2">
+                            <div class="col-md mt-5">
+                                <div class="form-floating">
+                                    <select class="form-select"  id="contactNumber" name="contactNumber" required>
+                                        {{#each this.accountDetails.contactNumber as |contactOption|}}
+                                            <option value="{{contactOption}}">{{contactOption}}</option>
+                                        {{/each}}
+                                    </select>
+                                    <label for="contactNumber">Contact Number</label>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        
+                    </div>
+                </div>
+
+                <div class="card mt-5 ms-4 border-dark" style="border: 1px #888888; border-radius: 25px; box-shadow: 2px 2px 2px 2px #888888; background-color: white">
+                    <div class="card-body mx-4 my-4">
+                        
+                        <h5 class="card-title fw-bold mb-3">Delivery Details</h5>
+                        <div class="row g-2">
+                            <div class="col-md">
+                                <div class="form-floating">
+                                    <select class="form-select"  id="completeAddress" name="completeAddress" required>
+                                        {{#each this.accountDetails.completeAddress as |addressOption|}}
+                                            <option value="{{addressOption}}">{{addressOption}}</option>
+                                        {{/each}}
+                                    </select>
+                                    <label for="completeAddress">Complete Address</label>
+                                </div>
+                            </div>
+                        </div> 
+
+                        <div class="row g-2 mt-4">
+                            <div class="col-md">
+                                <div class="form-floating">
+                                    <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" name="notes" style="height: 9rem"></textarea>
+                                    <label style="color: #6c757d;" for="floatingTextarea2">Special Requests / Notes to Rider</label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <div class="card mt-5 ms-4 border-dark" style="border: 1px #888888; border-radius: 25px; box-shadow: 2px 2px 2px 2px #888888; background-color: white">
+                    <div class="card-body mx-4 my-4">
+                        
+                        <h5 class="card-title fw-bold mb-3">Discounts</h5>
+                        <div class="row g-2 mt-3">
+                            <div class="col-md me-4">
+                                <div class="form-check">
+                                    <input class="form-check-input discount" type="radio" name="discount" id="seniorDiscount">
+                                    <label class="form-check-label" for="seniorDiscount">
+                                        Apply Senior Discount
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md">
+                                <div class="form-check">
+                                    <input class="form-check-input discount" type="radio" name="discount" id="pwdDiscount">
+                                    <label class="form-check-label" for="pwdDiscount">
+                                        Apply PWD Discount
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <div class="card mt-5 ms-4 border-dark" style="border: 1px #888888; border-radius: 25px; box-shadow: 2px 2px 2px 2px #888888; background-color: white">
+                    <div class="card-body mx-4 my-4 mb-4">
+                        
+                        <h5 class="card-title fw-bold mb-3">Payment Method</h5>
+                        
+                        <div class="row g-2">
+                            <div class="col-md">
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input paymentOption" type="radio" name="flexRadioDefault" id="codRadio">
+                                    <label class="form-check-label" for="codRadio">
+                                    Cash on Delivery
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="codInput" placeholder="AmountEx" value="" name="changeFor">
+                                    <label style="color: #6c757d;" for="codInput">Change for</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mt-4">
+                            <div class="col-md">
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input paymentOption" type="radio" name="flexRadioDefault" id="cardRadio">
+                                    <label class="form-check-label" for="cardRadio">
+                                    Debit/Credit Card
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-5 me-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control cardInput" id="cardInpu1t" placeholder="AmountEx" name="cardNo" value="">
+                                    <label style="color: #6c757d;" for="cardInput1">Card No</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2 ">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control cardInput" id="cardInput2" placeholder="AmountEx" name="CVV" value="">
+                                    <label style="color: #6c757d;" for="cardInput2">CVV</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-sm-auto col-md-auto col-lg-5" >
+                <div class="card mt-5 ms-3" id="ordersummary">
+                    
+                    <div class="card-body mx-3">
+                        <div class="row mb-4 mt-3">
+                            <div class="col ">
+                                <h5 class="card-title fw-bold text-center" style="font-size: 1.8rem;">Order Summary</h5>
+                            </div>
+                        </div>
+
+                        <div id="orders">
+                            {{#each this.bag.orderItems}}
+                                <div class="row mx-1 my-3" id="{{orderItemId}}">
+
+                                    <div class="col-2 my-1 text-start">
+                                        <p style="font-weight:bold;">x{{quantity}} </p>
+                                    </div>
+
+                                    <div class="col-6 my-1 text-start">
+                                        <div>{{product.name}}</div>
+                                        {{#each product.inclusion}}
+                                            <div class="inclusion">{{quantity}} {{productName}}</div>
+                                        {{/each}}
+                                        {{#each addOns}}
+                                            <div class="inclusion">{{name}}</div>
+                                        {{/each}}
+                                    </div>
+                                
+
+                                    <div class="col-4 my-1 text-end">
+                                        <p style="font-weight: bold;" class="price">{{totalPrice}}</p>
+                                        
+                                    </div>
+
+                                </div>
+                            {{/each}}
+                        
+                        </div>
+                    
+                        
+                        <div class="row mx-1 mt-3" style=" height: 2rem;" id="subtotalDiv">
+                            <div class="col text-start">
+                                <p>Subtotal</p>
+                            </div>
+                            <div class="col text-end">
+                                <p style="font-weight: bold" class="price">{{this.bag.subtotal}}</p>
+                                
+                            </div>
+                        </div>
+
+                        <div class="row mx-1" style=" height: 2rem;">
+                            <div class="col text-start">
+                                <p>Delivery Fee</p>
+                            </div>
+                            <div class="col text-end">
+                                <p style="font-weight:bold" class="price" >{{this.bag.deliveryFee}}</p>
+                                
+                            </div>
+                        </div>
+
+                        <div class="row mx-1" style=" height: 2rem;" id="discount">
+                            
+                        </div>
+
+                        <div class="row mx-1 mt-3">
+                            <div class="col">
+                                <h4 class="text-start fw-bold" style="font-size: 1.6rem">Total</h4>
+                            </div>
+                            <div class="col">
+                                <h4 class="text-end fw-bold price" style="font-size: 1.6rem" name="orderTotalCost" id="finalTotal">{{this.bag.total}}</h4>
+                                
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row mt-4" style="width: 33.3rem;">
+                    <div class="col text-center">
+                        <input type="submit" value="Place Order" class="btn btn-danger mt-1 mb-2 fw-bold rounded-pill" id="placeorder"></input>
+                    </div>
+                </div>
+                
+            </div>
+        </form>
+    </div>
