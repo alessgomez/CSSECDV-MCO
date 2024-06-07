@@ -1,4 +1,4 @@
-const db = require("../models/db.js");
+const db = require("../db.js");
 const Product = require("../models/ProductModel.js");
 const Feedback = require("../models/FeedbackModel.js");
 const BestSeller = require("../models/BestSellerModel.js");
