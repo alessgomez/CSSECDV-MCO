@@ -24,12 +24,12 @@ This repository contains the necessary files for a food ordering web application
 ### NPM
 - bcrypt
 - connect-flash
-- connect-mongo
 - express
 - express-handlebars
 - express-session
 - hbs
-- mongoose
+- mysql
+- express-mysql-session
 ### Third-Party
 - Bootstrap
 

@@ -10,6 +10,6 @@ app.get('/login', login_controller.getLogin);
 //app.get('/', login_controller.getIndex);
 
 // POSTs
-app.post('/checkAccount', login_controller.postCheckAccount);
+app.post('/checkAccount', login_controller.postVerifyAccount);
 
 module.exports = app;

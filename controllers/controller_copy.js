@@ -1090,7 +1090,7 @@ const controller = {
         if (req.session)
         {
             req.session.destroy(() => {
-                res.clearCookie('connect.sid');
+                res.clearCookie('connect.sid'); // remember to check cookie name
                 console.log("Session successfully destroyed.");
                 res.redirect('/signin');
             });
