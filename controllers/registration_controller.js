@@ -1,15 +1,7 @@
 const db = require("../db.js");
 
-const controller = {
-
-    getFavicon: function (req, res) {
-        res.status(204);
-    },
-
-    getSignIn: function (req, res) {
-        res.render("sign-in");
-    },
-
+const registration_controller = {
+    
     getRegister: function (req, res) {
         res.render("register");
     },
@@ -66,4 +58,4 @@ const controller = {
 
 }
 
-module.exports = controller;
+module.exports = registration_controller;
