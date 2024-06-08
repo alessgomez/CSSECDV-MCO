@@ -15,7 +15,6 @@ const options = {
 	database:'the_hungry_sibs'
 };
 const sessionStore = new MySQLStore(options);
-
 app.set("view engine", "hbs");
 app.engine("hbs", exphbs.engine({extname: "hbs"}));
 app.use(express.urlencoded({extended: true}));

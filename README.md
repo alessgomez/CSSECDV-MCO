@@ -30,6 +30,7 @@ This repository contains the necessary files for a food ordering web application
 - hbs
 - mysql
 - express-mysql-session
+- axios
 ### Third-Party
 - Bootstrap
 

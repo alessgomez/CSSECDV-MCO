@@ -1,4 +1,4 @@
-const db = require("../db.js");
+const getConnectionFromPool = require('../db');
 const home_controller = {
 
     getHome: function (req, res) {

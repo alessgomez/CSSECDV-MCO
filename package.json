@@ -18,10 +18,12 @@
   },
   "homepage": "https://github.com/hannahrfong/ccapdev-mp#readme",
   "dependencies": {
+    "axios": "^1.7.2",
     "bcrypt": "^5.0.1",
+    "body-parser": "^1.20.2",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^4.6.0",
-    "express": "^4.18.1",
+    "express": "^4.19.2",
     "express-flash": "^0.0.2",
     "express-handlebars": "^6.0.6",
     "express-mysql-session": "^2.1.8",
