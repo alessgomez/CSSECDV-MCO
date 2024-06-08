@@ -1,4 +1,4 @@
-const getConnectionFromPool = require('../db');
+const { getConnectionFromPool, logPoolStats } = require('../db');
 
 function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
@@ -34,8 +34,11 @@ const general_controller = {
         } catch (error) {
             console.error(error);
         }
-
-        connection.release();
+        finally {
+            if (connection) {
+              connection.release();
+            }
+        }
     },
 
     isPublic: async function(req, res, next) {
@@ -50,8 +53,11 @@ const general_controller = {
         } catch (error) {
             console.error(error);
         }
-
-        connection.release();
+        finally {
+            if (connection) {
+              connection.release();
+            }
+        }
     },
 
     getLogout: function(req, res) {

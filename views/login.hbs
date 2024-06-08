@@ -4,8 +4,8 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="all" href="css/forms.css"/>
-    <script type="text/javascript" src="js/login.js"></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script type="text/javascript" src="js/login.js"></script>
     </head>
 
     <body>
@@ -29,15 +29,14 @@
                     <label for="psw"><b>Password</b></label><br>
                     <input type="password" id="psw" placeholder="Enter Password" name="psw" required><br>
                     <div class="break"></div>
-                    <div class="g-recaptcha" data-sitekey="{{siteKey}}"></div><br>
+
+                    <div class="g-recaptcha" data-callback="toggleSubmitButton" data-expired-callback="recaptchaExpiredCallback" data-sitekey="{{siteKey}}"></div><br>
                     
                     <div class="break"></div>
 
                     <p id="error">{{error_msg}}</p>
 
                     <button type="submit" id="signin-submit" disabled><strong>Log In</strong></button>
-
-          
                     
                     <p>Don't have an account? <a href="/register">Register</a></p>
                 </form>

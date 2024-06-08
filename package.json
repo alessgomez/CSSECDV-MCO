@@ -30,6 +30,7 @@
     "express-session": "^1.18.0",
     "hbs": "^4.2.0",
     "mongoose": "^6.4.0",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "rate-limiter-flexible": "^5.0.3"
   }
 }

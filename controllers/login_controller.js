@@ -1,8 +1,15 @@
-const getConnectionFromPool = require('../db');
+const { getConnectionFromPool, logPoolStats } = require('../db');
 const bcrypt = require("bcrypt");
 const axios = require('axios');
+const { RateLimiterMemory } = require('rate-limiter-flexible');
 const RECAPTCHA_SITE_KEY = '6Lf3IPQpAAAAAAQWUdZe0jE85hxo656W11DtnYmS';
 const RECAPTCHA_SECRET_KEY = '6Lf3IPQpAAAAAF49syZBYdjIZw08cj2oiwTNU3e_';
+
+const rateLimiter = new RateLimiterMemory({
+    points: 5, // Maximum number of attempts within the duration
+    duration: 180, // Timeframe in seconds for the rate limiting
+    blockDuration: 300, // Block duration in seconds after exceeding attempts
+  });
 
 async function verifyLogin(connection, email, password) {
     return new Promise((resolve, reject) => {
@@ -35,43 +42,71 @@ const login_controller = {
     },
 
     postVerifyAccount: async (req, res) => {
-        try{
+      let connection;
+      try{
+          const { 'g-recaptcha-response': recaptchaResponse } = req.body;
 
-            const { 'g-recaptcha-response': recaptchaResponse } = req.body;
+          if (!recaptchaResponse) {
+              req.flash('error_msg', 'Invalid login attempt. Please try again.');
+              return res.redirect('/login');
+          }
 
-            if (!recaptchaResponse) {
-                req.flash('error_msg', 'Invalid login attempt. Please try again.');
-                return res.redirect('/login');
-            }
+          const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
+          const response = await axios.post(verificationUrl);
+          const { success } = response.data;
 
-            const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
-            const response = await axios.post(verificationUrl);
-            const { success } = response.data;
+          if (!success) {
+              req.flash('error_msg', 'Invalid login attempt. Please try again.');
+              return res.redirect('/login');
+          }
 
-            if (!success) {
-                req.flash('error_msg', 'Invalid login attempt. Please try again.');
-                return res.redirect('/login');
-            }
+          // Rate limiting check
+          const ip = req.ip; // Extract IP address from request
+          const rateLimitKey = `login_attempt_${ip}`;
+          let rateLimitResponse;
+          try {
+              rateLimitResponse = await rateLimiter.consume(rateLimitKey);
+          } catch (rateLimitError) {
+              console.log('Rate limit exceeded:', rateLimitError);
+              req.flash('error_msg', 'Too many login attempts. Please try again later.');
+              return res.redirect('/login');
+          }
 
-            // proceed with login verification if reCAPTCHA is successful
-            const connection = await getConnectionFromPool();
-            const account = await verifyLogin(connection, req.body.email, req.body.psw);
-            connection.release();
+          console.log('rate limit points: ' + rateLimitResponse.remainingPoints)
+          
+          // Proceed with login verification if reCAPTCHA and rate limiting ARE successful
+          console.log("awaiting conneciton")
+          connection = await getConnectionFromPool();
+          logPoolStats()
 
-            if (account) {
-                req.session.accountId = account.accountId;
-                res.redirect('/');
-            }
-            else {
-                req.flash('error_msg', 'Invalid login attempt. Please try again.');
-                res.redirect('/login');
-            }
+          const account = await verifyLogin(connection, req.body.email, req.body.psw);
+         
 
-        } catch (error) {
-            console.error('Error during login verification:', error);
-            req.flash('error_msg', 'An error occurred during login. Please try again.');
-            return res.redirect('/login');
+          // checking if account is null
+          if (account) {
+           
+              req.session.accountId = account.accountId;
+              res.redirect('/');
+          }
+          else {
+            
+              req.flash('error_msg', 'Invalid login attempt. Please try again.');
+              res.redirect('/login');
+          }
+
+      } catch (error) {
+          console.error('Error during login verification:', error);
+          req.flash('error_msg', 'An error occurred during login. Please try again.');
+          return res.redirect('/login');
+      }
+      finally {
+        console.log('finally')
+        if (connection) {
+          console.log("Releasing connection");
+          connection.release();
+          logPoolStats(); 
         }
+      }
     }
 }
 
