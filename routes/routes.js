@@ -6,10 +6,10 @@ const app = express();
 
 // GETs
 app.get('/register', registration_controller.getRegister);
-app.get('/signin', login_controller.getSignIn);
+app.get('/login', login_controller.getLogin);
+//app.get('/', login_controller.getIndex);
 
 // POSTs
-
-
+app.post('/checkAccount', login_controller.postCheckAccount);
 
 module.exports = app;
