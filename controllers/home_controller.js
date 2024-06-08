@@ -9,6 +9,7 @@ const home_controller = {
             bag: {}
         }
 
+        res.render("index", data);
 
         // let p = new Promise((resolve, reject) =>{
         //     return getBagContents(req.session.user, resolve, reject);

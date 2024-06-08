@@ -31,17 +31,4 @@ const pool = mysql.createPool({
 	  });
 	});
   }
-  
-  function performQuery(connection, sql) {
-	return new Promise((resolve, reject) => {
-	  connection.query(sql, (error, results) => {
-		if (error) {
-		  reject(error);
-		} else {
-		  resolve(results);
-		}
-	  });
-	});
-  }
-  
-  module.exports = { getConnectionFromPool, performQuery };
+  module.exports = getConnectionFromPool;

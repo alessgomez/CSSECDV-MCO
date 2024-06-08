@@ -1,4 +1,4 @@
-const { getConnectionFromPool, performQuery } = require('../db');
+const getConnectionFromPool = require('../db');
 const bcrypt = require("bcrypt");
 
 async function verifyLogin(connection, email, password) {
@@ -12,6 +12,7 @@ async function verifyLogin(connection, email, password) {
             resolve(null); // account not found
           } else {
             const account = results[0];
+            //const passwordMatch = password === account.password; --> FOR TESTING ONLY
             const passwordMatch = await bcrypt.compare(password, account.password);
             if (passwordMatch) {
               resolve(account); // Passwords match, return account data
@@ -37,8 +38,7 @@ const login_controller = {
             connection.release();
 
             if (account) {
-                req.session.account = account.accountID;
-                console.log(req.session);
+                req.session.accountId = account.accountId;
                 res.redirect('/');
             }
             else {
@@ -50,7 +50,6 @@ const login_controller = {
             
         }
     }
-
 }
 
 module.exports = login_controller;
