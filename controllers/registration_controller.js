@@ -1,4 +1,4 @@
-const db = require("../db.js");
+const { getConnectionFromPool, performQuery } = require('../db');
 
 const registration_controller = {
     
