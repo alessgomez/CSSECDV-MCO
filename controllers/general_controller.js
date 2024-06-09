@@ -23,6 +23,10 @@ function checkAccountIdExists(connection, accountId) {
 const general_controller = {
 
     isPrivate: async function(req, res, next) {
+        if (!req.session || !req.session.accountId) {
+            return res.redirect('/login');
+        }
+
         const connection = await getConnectionFromPool();
 
         try {
@@ -42,22 +46,30 @@ const general_controller = {
     },
 
     isPublic: async function(req, res, next) {
-        const connection = await getConnectionFromPool();
+        if (req.session && req.session.accountId) {
+            const connection = await getConnectionFromPool();
 
-        try {
-            const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
-            if (accountIdExists)
-                res.redirect('/');
-            else   
-            return next();
-        } catch (error) {
-            console.error(error);
-        }
-        finally {
-            if (connection) {
-              connection.release();
+            try {
+                const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
+                if (accountIdExists){
+                    res.redirect('/');
+                }
+                else    {
+                    return next();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            finally {
+                if (connection) {
+                connection.release();
+                }
             }
         }
+        else {
+            return next();
+        }
+        
     },
 
     getLogout: function(req, res) {
