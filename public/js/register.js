@@ -14,6 +14,8 @@ $(document).ready(function(){
     var contactno = document.getElementById("contactno");
     var address = document.getElementById("address");
     var submit = document.getElementById("reg-submit");
+    var profilePic = document.getElementById("profile-pic");
+    var inputFile = document.getElementById("input-file");
 
     input.onkeyup = function() {
         // Check length
@@ -80,5 +82,9 @@ $(document).ready(function(){
             submit.disabled = false;
         else
             submit.disabled = true;
+    }
+
+    inputFile.onchange = function(){
+        profilePic.src = URL.createObjectURL(inputFile.files[0]);
     }
 });

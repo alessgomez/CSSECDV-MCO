@@ -21,6 +21,13 @@
               <div class="container">
                 <h1 id="header">Register</h1>
                 <form action="/addaccount" method="post">
+
+                    <img src="images/default-profile.png" id="profile-pic">
+                    <label for="input-file" id="file-button">Upload Profile Picture *</label>
+                    <input type="file" accept="image/jpeg, image/png, image/jpg" id="input-file">
+
+                    <div class="break"></div>
+
                     <div class="two-fields">
                         <div class="field-one">
                             <label for="firstname"><b>First Name *</b></label><br>
@@ -67,21 +74,6 @@
 
                     <label for="address"><b>Complete Address *</b></label><br>
                     <input type="text" id="address" placeholder="Address" name="address" required>
-
-                    <div class="break"></div>
-
-                    <div class="two-fields">
-                        <div class="field-one">
-                            <label for="scid"><b>Senior Citizen ID Number</b></label><br>
-                            <input type="text" placeholder="Enter ID Number" id="scid" name="scid">
-                        </div>
-                        <div class="field-two">
-                            <label for="pwdid"><b>PWD ID Number</b></label><br>
-                            <input type="text" placeholder="Enter ID Number" id="pwdid" name="pwdid">
-                        </div>
-                    </div>
-
-                    <div class="break"></div>
 
                     <p id="error">{{error_msg}}</p>
 
