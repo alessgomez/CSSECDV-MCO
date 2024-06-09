@@ -2,6 +2,7 @@ const express = require("express");
 const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
 const db = require("./db.js");
+
 const app = express();
 const port = 3000;
 const session = require('express-session');
@@ -11,10 +12,11 @@ const options = {
     host: 'localhost',
     port: 3306,
     user:'root',
-	password:'2002Days!',
 	database:'the_hungry_sibs'
 };
 const sessionStore = new MySQLStore(options);
+
+
 app.set("view engine", "hbs");
 app.engine("hbs", exphbs.engine({extname: "hbs"}));
 app.use(express.urlencoded({extended: true}));
