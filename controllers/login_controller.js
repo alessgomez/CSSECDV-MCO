@@ -7,8 +7,8 @@ const RECAPTCHA_SECRET_KEY = '6Lf3IPQpAAAAAF49syZBYdjIZw08cj2oiwTNU3e_';
 
 const rateLimiter = new RateLimiterMemory({
     points: 5, // Maximum number of attempts within the duration
-    duration: 180, // Timeframe in seconds for the rate limiting
-    blockDuration: 300, // Block duration in seconds after exceeding attempts
+    duration: 900000, // Timeframe in seconds for the rate limiting
+    blockDuration: 900000, // Block duration in seconds after exceeding attempts
   });
 
 async function verifyLogin(connection, email, password) {
@@ -68,7 +68,7 @@ const login_controller = {
           if (rateLimitStatus && rateLimitStatus.consumedPoints >= rateLimiter.points) {
               console.log("NO MORE ATTEMPTS CAN BE MADE")
               console.log(rateLimitStatus)
-              req.flash('error_msg', 'Too many login attempts. Please try again later.');
+              req.flash('error_msg', 'Too many login attempts. Please try again after 15 minuts.');
               return res.redirect('/login');
           }
 
@@ -90,7 +90,7 @@ const login_controller = {
                   rateLimitResponse = await rateLimiter.consume(rateLimitKey);
               } catch (rateLimitError) {
                   console.log('Rate limit exceeded:', rateLimitError);
-                  req.flash('error_msg', 'Too many login attempts. Please try again later.');
+                  req.flash('error_msg', 'Too many login attempts. Please try again after 15 minutes.');
                   return res.redirect('/login');
               }
 
