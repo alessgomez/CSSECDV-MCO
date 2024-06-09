@@ -60,36 +60,42 @@ const login_controller = {
               return res.redirect('/login');
           }
 
-          // Rate limiting check
           const ip = req.ip; // Extract IP address from request
           const rateLimitKey = `login_attempt_${ip}`;
-          let rateLimitResponse;
-          try {
-              rateLimitResponse = await rateLimiter.consume(rateLimitKey);
-          } catch (rateLimitError) {
-              console.log('Rate limit exceeded:', rateLimitError);
+
+          // Check if the IP has exceeded the maximum number of failed login attempts
+          const rateLimitStatus = await rateLimiter.get(rateLimitKey);
+          if (rateLimitStatus && rateLimitStatus.consumedPoints >= rateLimiter.points) {
+              console.log("NO MORE ATTEMPTS CAN BE MADE")
+              console.log(rateLimitStatus)
               req.flash('error_msg', 'Too many login attempts. Please try again later.');
               return res.redirect('/login');
           }
 
-          console.log('rate limit points: ' + rateLimitResponse.remainingPoints)
-          
           // Proceed with login verification if reCAPTCHA and rate limiting ARE successful
-          console.log("awaiting conneciton")
+          console.log("awaiting connection")
           connection = await getConnectionFromPool();
           logPoolStats()
 
           const account = await verifyLogin(connection, req.body.email, req.body.psw);
-         
 
           // checking if account is null
           if (account) {
-           
               req.session.accountId = account.accountId;
               res.redirect('/');
           }
-          else {
-            
+          else {     
+              let rateLimitResponse;
+              try {
+                  rateLimitResponse = await rateLimiter.consume(rateLimitKey);
+              } catch (rateLimitError) {
+                  console.log('Rate limit exceeded:', rateLimitError);
+                  req.flash('error_msg', 'Too many login attempts. Please try again later.');
+                  return res.redirect('/login');
+              }
+
+              console.log('rate limit points: ' + rateLimitResponse.remainingPoints)
+              
               req.flash('error_msg', 'Invalid login attempt. Please try again.');
               res.redirect('/login');
           }
