@@ -89,6 +89,11 @@ const login_controller = {
               console.log("ms before next: " + emailRateLimitStatus.msBeforeNext)
               req.flash('error_msg', 'Username and/or password incorrect.<br><br>' +  
                         'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+
+              // Consume points from IP rate limiter even if email rate limit is reached
+              const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
+              console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
+              
               return res.redirect('/login');
           }
 
