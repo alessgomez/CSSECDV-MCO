@@ -1,6 +1,8 @@
 const { getConnectionFromPool, performQuery } = require('../db');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
+const axios = require('axios');
+const config = JSON.parse(fs.readFileSync('config.json'));
 
 async function registerAccount(connection, newAccount) {
     return new Promise((resolve, reject) => {
@@ -10,7 +12,6 @@ async function registerAccount(connection, newAccount) {
             } else {
                 if (results.length === 0) {            
                     if (validateDetails(newAccount)) {
-                        const config = JSON.parse(fs.readFileSync('config.json'));
                         error, newAccount.pw = await bcrypt.hash(newAccount.pw, config.saltRounds);
 
                         if (error) {
@@ -46,7 +47,7 @@ function validateDetails(newAccount) {
 
     const phoneNumberRegex = /^(09|\+639)\d{9}$/;
     const phoneNumberValid = phoneNumberRegex.test(newAccount.number);
-    
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
     const passwordValid = passwordRegex.test(newAccount.pw);
 
@@ -58,7 +59,7 @@ function validateDetails(newAccount) {
 const registration_controller = {
     
     getRegister: function (req, res) {
-        res.render("register");
+        res.render("register", { siteKey: config.RECAPTCHA_SITE_KEY });
     },
 
     postAddAccount: async (req, res) => {
@@ -73,6 +74,23 @@ const registration_controller = {
 
         try {
             let connection = await getConnectionFromPool();
+
+            const { 'g-recaptcha-response': recaptchaResponse } = req.body;
+
+            if (!recaptchaResponse) {
+                req.flash('error_msg', 'Invalid registration attempt. Please try again.');
+                return res.redirect('/register');
+            }
+
+            const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
+            const response = await axios.post(verificationUrl);
+            const { success } = response.data;
+
+            if (!success) {
+                req.flash('error_msg', 'Invalid registration attempt. Please try again.');
+                return res.redirect('/register');
+            }
+
             const account = await registerAccount(connection, newAccount);
 
             if (account === null) {
@@ -84,6 +102,7 @@ const registration_controller = {
             }
         } catch (error) {
             req.flash('error_msg', 'An error occurred during registration. Please try again.');
+            console.log(error);
             return res.redirect('/login');
         }
     }

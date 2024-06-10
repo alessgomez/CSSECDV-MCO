@@ -1,3 +1,5 @@
 {
-    "saltRounds": 12
+    "saltRounds": 12,
+    "RECAPTCHA_SITE_KEY": "6Lf3IPQpAAAAAAQWUdZe0jE85hxo656W11DtnYmS",
+    "RECAPTCHA_SECRET_KEY": "6Lf3IPQpAAAAAF49syZBYdjIZw08cj2oiwTNU3e_"
 }  
