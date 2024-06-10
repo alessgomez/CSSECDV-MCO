@@ -5,6 +5,7 @@ $(document).ready(function(){
     var passwordInput = document.getElementById("psw");
     var confirmPasswordInput = document.getElementById("confirmpsw");
     var submit = document.getElementById("reg-submit");
+    var error_msg = document.getElementById("error");
 
     /** @param {import('http').IncomingMessage} req */
     function parseMultipartNodeRequest(req) {
@@ -22,7 +23,7 @@ $(document).ready(function(){
         });
     }
 
-    email.onkeyup = function() {
+    emailInput.onkeyup = function() {
         var email = emailInput.value
         
         if (email != null) {
@@ -75,172 +76,58 @@ $(document).ready(function(){
 
     // name
 
-    // password 
-    var length = document.getElementById("length");
-    var uppercase = document.getElementById("uppercase");
-    var special = document.getElementById("special");
-    var number = document.getElementById("number");
-    var match = document.getElementById("match");
+    // password
+    var passwordValid = false;
+    var confirmPasswordValid = false;
 
     passwordInput.onkeyup = function() {
-        // Check length
-        if(passwordInput.value.length >= 8) {
-            length.classList.remove("invalid");
-            length.classList.add("valid");
-        }
-        else {
-            length.classList.remove("valid");
-            length.classList.add("invalid");
-        }
+        var password = passwordInput.value
+        
+        if (password != null) {
+            let regexPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/);
 
-        // Check uppercase
-        var uppercaseLetters = /[A-Z]/g;
-        if(passwordInput.value.match(uppercaseLetters)) {  
-            uppercase.classList.remove("invalid");
-            uppercase.classList.add("valid");
-        }
-        else {
-            uppercase.classList.remove("valid");
-            uppercase.classList.add("invalid");
-        }
+            passwordValid = regexPassword.test(password);
 
-        // Check special character
-        var specialChars = /\W|_/g;
-        if(passwordInput.value.match(specialChars)) {  
-            special.classList.remove("invalid");
-            special.classList.add("valid");
+            if (passwordValid && confirmPasswordValid) {
+                if (passwordInput.value === confirmPasswordInput.value) {
+                    submit.disabled = false;
+                    error_msg.innerHTML = "";
+                }
+                else {
+                    submit.disabled = true;
+                    error_msg.innerHTML = "Passwords do not match.";
+                }
+            } else {
+                submit.disabled = true;
+                error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+            }
         }
-        else {
-            special.classList.remove("valid");
-            special.classList.add("invalid");
-        }
-
-        // Check number
-        var numbers = /[0-9]/g;
-        if(passwordInput.value.match(numbers)) {  
-            number.classList.remove("invalid");
-            number.classList.add("valid");
-        } else {
-            number.classList.remove("valid");
-            number.classList.add("invalid");
-        }
-
-        if (length.classList.contains("valid") && uppercase.classList.contains("valid") && special.classList.contains("valid") && number.classList.contains("valid")
-            && match.classList.contains("valid"))
-            submit.disabled = false;
-        else
-            submit.disabled = true;
     }
 
     confirmPasswordInput.onkeyup = function() {
-        if (passwordInput.value == confirmPasswordInput.value) {
-            match.classList.remove("invalid");
-            match.classList.add("valid");
-        }
-        else {
-            match.classList.remove("valid");
-            match.classList.add("invalid");
-        }
+        var confPassword = confirmPasswordInput.value
+        
+        if (confPassword != null) {
+            let regexPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/);
 
-        if (length.classList.contains("valid") && uppercase.classList.contains("valid") && special.classList.contains("valid") && number.classList.contains("valid")
-            && match.classList.contains("valid"))
-            submit.disabled = false;
-        else
-            submit.disabled = true;
+            confirmPasswordValid = regexPassword.test(confPassword);
+
+            if (passwordValid && confirmPasswordValid) {
+                if (passwordInput.value === confirmPasswordInput.value) {
+                    submit.disabled = false;
+                    error_msg.innerHTML = "";
+                }
+                else {
+                    submit.disabled = true;
+                    error_msg.innerHTML = "Passwords do not match.";
+                }
+            } else {
+                submit.disabled = true;
+                error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+            }
+        }
     }
 });
-
-
-/*
-    var input = document.getElementById("psw");
-    var length = document.getElementById("length");
-    var uppercase = document.getElementById("uppercase");
-    var special = document.getElementById("special");
-    var number = document.getElementById("number");
-
-    var input2 = document.getElementById("confirmpsw");
-    var match = document.getElementById("match");
-
-    var first = document.getElementById("firstname");
-    var last = document.getElementById("lastname");
-    var email = document.getElementById("email");
-    var contactno = document.getElementById("contactno");
-    var address = document.getElementById("address");
-    var submit = document.getElementById("reg-submit");
-    var profilePic = document.getElementById("profile-pic");
-    var inputFile = document.getElementById("input-file");
-
-    input.onkeyup = function() {
-        // Check length
-        if(input.value.length >= 8) {
-            length.classList.remove("invalid");
-            length.classList.add("valid");
-        }
-        else {
-            length.classList.remove("valid");
-            length.classList.add("invalid");
-        }
-
-        // Check uppercase
-        var uppercaseLetters = /[A-Z]/g;
-        if(input.value.match(uppercaseLetters)) {  
-            uppercase.classList.remove("invalid");
-            uppercase.classList.add("valid");
-        }
-        else {
-            uppercase.classList.remove("valid");
-            uppercase.classList.add("invalid");
-        }
-
-        // Check special character
-        var specialChars = /\W|_/g;
-        if(input.value.match(specialChars)) {  
-            special.classList.remove("invalid");
-            special.classList.add("valid");
-        }
-        else {
-            special.classList.remove("valid");
-            special.classList.add("invalid");
-        }
-
-        // Check number
-        var numbers = /[0-9]/g;
-        if(input.value.match(numbers)) {  
-            number.classList.remove("invalid");
-            number.classList.add("valid");
-        } else {
-            number.classList.remove("valid");
-            number.classList.add("invalid");
-        }
-
-        if (length.classList.contains("valid") && uppercase.classList.contains("valid") && special.classList.contains("valid") && number.classList.contains("valid")
-            && match.classList.contains("valid"))
-            submit.disabled = false;
-        else
-            submit.disabled = true;
-    }
-
-    input2.onkeyup = function() {
-        if (input.value == input2.value) {
-            match.classList.remove("invalid");
-            match.classList.add("valid");
-        }
-        else {
-            match.classList.remove("valid");
-            match.classList.add("invalid");
-        }
-
-        if (length.classList.contains("valid") && uppercase.classList.contains("valid") && special.classList.contains("valid") && number.classList.contains("valid")
-            && match.classList.contains("valid"))
-            submit.disabled = false;
-        else
-            submit.disabled = true;
-    }
-
-    inputFile.onchange = function(){
-        profilePic.src = URL.createObjectURL(inputFile.files[0]);
-    }
-*/
 
 /**
  * 

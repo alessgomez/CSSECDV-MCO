@@ -55,7 +55,7 @@ const registration_controller = {
             const account = await registerAccount(connection, newAccount);
 
             if (account === null) {
-                req.flash('error_msg', 'This account already exists.');
+                req.flash('error_msg', 'Invalid email.');
                 return res.redirect('/register');
             } else {
                 req.flash('success_msg', 'Account successfully registered. You may log in.');
