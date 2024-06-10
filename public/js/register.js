@@ -6,21 +6,33 @@ $(document).ready(function(){
     var confirmPasswordInput = document.getElementById("confirmpsw");
     var submit = document.getElementById("reg-submit");
     var error_msg = document.getElementById("error");
+    const maxFileSize = 3 * 1024 * 1024; 
+    const acceptedTypes = ["image/jpeg", "image/png"]
 
-    /** @param {import('http').IncomingMessage} req */
-    function parseMultipartNodeRequest(req) {
+    function readFile(file) {
         return new Promise((resolve, reject) => {
-            const form = formidable({
-                multiples: true,
-            });
-            form.parse(req, (error, fields, files) => {
-                if (error) {
-                    reject(error);
-                    return;
+            const filereader = new FileReader();
+            filereader.onloadend = (event) => {
+                if (event.target.readyState === FileReader.DONE) {
+                    resolve(event.target.result);
                 }
-                resolve({...fields, ...files});
-            });
-        });
+            };
+            filereader.onerror = reject;
+            const blob = file.slice(0, 12);
+            filereader.readAsArrayBuffer(blob);
+        })
+    }
+
+    function getMimeType(signature) {
+        if (signature.startsWith("FFD8FFDB") || signature.startsWith("FFD8FFE0") || signature.startsWith("FFD8FFEE")) {
+            return "image/jpeg";
+        } 
+        else if (signature.startsWith("89504E47")) {
+            return "image/png";
+        }
+        else {
+            return "invalid";
+        }
     }
 
     emailInput.onkeyup = function() {
@@ -60,18 +72,50 @@ $(document).ready(function(){
         }
     }
 
-    fileUploadInput.onchange = async function (event) {
-        let body;
-        const headers = getRequestHeaders(event);
+    fileUploadInput.onchange = async function () {
+        var fileName = fileUploadInput.files[0].name;
+        
+        if (fileName != null) {
+            let regexFileName = new RegExp(/[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
+            
+            if (regexFileName.test(fileName) == true) {
+                console.log("VALID " + fileName)         
+                
+                var file = fileUploadInput.files[0];
+                let byteStream = await readFile(file); 
+                const uint = new Uint8Array(byteStream);
+                let bytes = [];
+                uint.forEach((byte) => {
+                    bytes.push(byte.toString(16));
+                });
+                const hex = bytes.join("").toUpperCase();
+                console.log(hex)
+                let mimeType = getMimeType(hex);
+                console.log(mimeType)
 
-        if(headers['content-type']?.includes('multipart/form-data')) {
-            body = await parseMultipartNodeRequest(event.node.req);
-        } else {
-            body = await readBody(event);
+                if (acceptedTypes.includes(mimeType)) {
+                    console.log("VALID MIME TYPE: " + mimeType)
+
+                    var fileSize = fileUploadInput.files[0].size;
+                    if (fileSize < maxFileSize) {
+                        console.log("VALID FILE SIZE: " + fileSize);
+
+                    }
+                    else {
+                        console.log("ERROR: File size exceeds 3 MB")
+                    }
+                } 
+                else {
+                    console.log("ERROR: Mime type/file signatuer invalid")
+                }
+            } 
+            else {
+                console.log("ERROR: file name string is invalid")
+            }
         }
-        console.log(body);
-
-        return { ok: true };
+        else {
+            console.log("ERROR: file name is null")
+        }  
     }
 
     // name
@@ -173,6 +217,59 @@ $(document).ready(function(){
                 console.log("ERROR: #1 REGEX TEST FAILED")
             }
         }
+    }
+
+
+
+
+
+
+
+        var fileName = fileUploadInput.files[0].name;
+            
+        if (fileName != null) {
+            // 1. Extension validation
+            let regexFileName = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|JPG|JPEG|PNG)$/); //TODO: What if no extension in file name? DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
+            
+
+
+            if (regexFileName.test(fileName) == true) {
+                console.log("VALID: " + fileName);
+
+                var fileSize = fileUploadInput.files[0].size;
+
+                // #2: Upload size limit 
+                if (fileSize < maxFileSize) { //10 megabyte
+                    console.log("VALID: " + fileSize);
+
+                    // #
+                }
+                else {
+                    console.log("ERROR: File upload size is larger than 3MB");
+                }
+            } 
+            else {
+                console.log("ERROR: File name string is invalid");
+            }
+        }
+        else {
+            console.log("ERROR: File name is NULL");
+        }
+
+        // TODO: ADD THIS CHECK
+        // 1. Filename sanitization - remove unaccepted characters, avoid long filenames - can use random string generator, UUID or some sort of hash 
+        //const random_uuid = uuidv4(); //TODO: double check if correct 
+        //fileUploadInput.files[0].name = random_uuid// TODO: Double check if correct 
+        // 2. File upload location
+
+
+            function uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+        .replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0, 
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
  * 
  * 
