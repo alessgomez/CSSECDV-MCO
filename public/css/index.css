@@ -307,3 +307,22 @@
 .parent-container a:hover{
     cursor: pointer;
 }
+
+.userTable {
+    background-color: #eee;
+    border-collapse:collapse;
+}
+.userTable th {
+    background-color: #FFC700;
+    color: black;
+}
+
+.userTable td, .userTable th {
+    padding: 5px;
+    border: 1px solid #000;
+}
+
+.userTable td {
+    text-align: center;
+    vertical-align: middle;
+}

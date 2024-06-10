@@ -71,10 +71,10 @@ const registration_controller = {
             number: req.body.contactno
             //var profilePhoto = req.body.profilePhoto;
         }
+        
+        let connection = await getConnectionFromPool();
 
         try {
-            let connection = await getConnectionFromPool();
-
             const { 'g-recaptcha-response': recaptchaResponse } = req.body;
 
             if (!recaptchaResponse) {
@@ -104,6 +104,9 @@ const registration_controller = {
             req.flash('error_msg', 'An error occurred during registration. Please try again.');
             console.log(error);
             return res.redirect('/login');
+        } finally {
+            if (connection)
+                connection.release();
         }
     }
 

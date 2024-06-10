@@ -1,15 +1,46 @@
-const getConnectionFromPool = require('../db');
+const {getConnectionFromPool} = require('../db');
 const home_controller = {
 
-    getHome: function (req, res) {
-        const data = {
+    getHome: async (req, res) => {
+        const userPageData = {
             style: ["navbar", "index"],
             script: ["index"], 
             bestSellers: [],
             bag: {}
         }
 
-        res.render("index", data);
+        const adminPageData = {
+            style: ["navbar", "index"],
+            isAdmin: true,
+        }
+
+        let connection = await getConnectionFromPool();
+
+        try {
+            if (req.session.accountId) {
+                connection.query("SELECT * FROM accounts WHERE accountId = ?", [req.session.accountId], function(err, results) {
+                    if (err) throw err;
+        
+                    if (results[0].role === "ADMIN") {
+                        connection.query("SELECT * FROM accounts WHERE role = ?", ["USER"], function(error, results) {
+                            if (error) {
+                                throw error;
+                            } else {
+                                adminPageData.users = results;
+                                res.render("admin", adminPageData);
+                            }
+                        });
+                    }
+                    else
+                        res.render("index", userPageData);
+                });
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            if (connection)
+                connection.release();
+        }
 
         // let p = new Promise((resolve, reject) =>{
         //     return getBagContents(req.session.user, resolve, reject);

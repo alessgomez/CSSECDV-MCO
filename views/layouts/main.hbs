@@ -21,7 +21,12 @@
     </head>
     <body>
         <div class="fixed-div">
-        {{> header this.q}}
+        {{#if this.isAdmin}}
+            {{> adminheader}}
+        {{else}}
+            {{> header this.q}}
+        {{/if}}
+        
         {{#if this.topbar}}
             {{> topbar }}
         {{/if}}
@@ -29,6 +34,8 @@
 
         {{> bag this.bag}}
         {{{ body }}}
-        {{> footer }}
+        {{#unless this.isAdmin}}
+            {{> footer }}
+        {{/unless}}
     </body>
 </html>
