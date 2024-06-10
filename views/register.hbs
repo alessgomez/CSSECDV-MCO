@@ -24,7 +24,7 @@
 
                     <img src="images/default-profile.png" id="profile-pic">
                     <label for="input-file" id="file-button">Upload Profile Picture *</label>
-                    <input type="file" accept="image/jpeg, image/png, image/jpg" id="input-file">
+                    <input type="file" id="input-file">  <! -- accept="image/jpeg, image/png, image/jpg" -->
 
                     <div class="break"></div>
 
@@ -57,24 +57,12 @@
                         </div>
                     </div>
 
-                    <div id="password-conditions">
-                        <p id="length" class="invalid">Password contains at least 8 characters</p>
-                        <p id="uppercase" class="invalid">Password contains at least one uppercase letter</p>
-                        <p id="special" class="invalid">Password contains at least one special character</p>
-                        <p id="number" class="invalid">Password contains at least one number</b></p>
-                        <p id="match" class="invalid">Passwords are matching</b></p>
-                    </div>
-
                     <div class="break"></div>
 
                     <label for="contactno"><b>Contact Number *</b></label><br>
-                    <input type="text" id="contactno" placeholder="09xxxxxxxxx" pattern="^\d+$" minlength="11" name="contactno" required>
+                    <input type="text" id="contactno" placeholder="Enter Contact Number" name="contactno" required>
 
-                    <div class="break"></div>
-
-                    <label for="address"><b>Complete Address *</b></label><br>
-                    <input type="text" id="address" placeholder="Address" name="address" required>
-
+                    
                     <p id="error">{{error_msg}}</p>
 
                     <button type="submit" id="reg-submit" disabled><strong>Register</strong></button>
