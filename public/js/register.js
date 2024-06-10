@@ -1,4 +1,6 @@
 $(document).ready(function(){
+    var firstNameInput = document.getElementById("firstname");
+    var lastNameInput = document.getElementById("lastname");
     var emailInput = document.getElementById("email");
     var phoneNumberInput = document.getElementById("contactno");
     var fileUploadInput = document.getElementById("input-file");
@@ -119,6 +121,33 @@ $(document).ready(function(){
     }
 
     // name
+    let regexName = new RegExp(/^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/);
+
+    firstNameInput.onkeyup = function() {
+        var firstName = firstNameInput.value
+
+        if (firstName != null) {
+            if (regexName.test(firstName)) {
+                console.log("VALID: " + firstName)
+            } 
+            else {
+                console.log("ERROR: Invalid first name")
+            }
+        }
+    }
+
+    lastNameInput.onkeyup = function() {
+        var lastName = lastNameInput.value
+
+        if (lastName != null) {
+            if (regexName.test(lastName)) {
+                console.log("VALID: " + lastName)
+            } 
+            else {
+                console.log("ERROR: Invalid last name")
+            }
+        }
+    }
 
     // password
     var passwordValid = false;

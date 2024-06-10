@@ -40,7 +40,8 @@ async function registerAccount(connection, newAccount) {
 }
 
 function validateDetails(newAccount) {
-    // TODO: Backend format validation for name (?)
+    const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/;
+    const nameValid = nameRegex.test(newAccount.first) && nameRegex.test(newAccount.last);
 
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailValid = emailRegex.test(newAccount.email) && newAccount.email.substr(0, newAccount.email.indexOf('@')).length <= 64 && newAccount.email.substr(newAccount.email.indexOf('@')).length <= 255
@@ -53,7 +54,7 @@ function validateDetails(newAccount) {
 
     // TODO: Backend format validation for profile pic (?)
 
-    return emailValid && phoneNumberValid && passwordValid; // TODO: Add validation for name and profile pic once done
+    return nameValid && emailValid && phoneNumberValid && passwordValid; // TODO: Add validation for name and profile pic once done
 }
 
 const registration_controller = {

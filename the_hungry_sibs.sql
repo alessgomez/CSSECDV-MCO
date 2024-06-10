@@ -36,7 +36,9 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Accounts` (
   `dateEdited` DATETIME,
   `dateDeleted` DATETIME,
   PRIMARY KEY (`accountId`),
-  UNIQUE INDEX `accountId_UNIQUE` (`accountId` ASC) VISIBLE)
+  UNIQUE INDEX `accountId_UNIQUE` (`accountId` ASC) VISIBLE,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
+  UNIQUE INDEX `phoneNumber_UNIQUE` (`phoneNumber` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -189,16 +191,16 @@ VALUES ('John', 'Doe', 'johndoe@thehungrysibs.com', '$2b$12$BEhAs9dJtfNoYJLwePb8
 -- PASSWORD FOR ALL: C4sh4y1!
 -- -----------------------------------------------------
 INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES ('Hannah', 'Fong', 'hannah_regine_fong@dlsu.edu.ph', '$2a$12$rq19f3gn/UobANhyxRZpmurOK8GDI.MMPs/uWXVBoip4BwMreN6My', '09123456789', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
+VALUES ('Hannah', 'Fong', 'hannah_regine_fong@dlsu.edu.ph', '$2a$12$rq19f3gn/UobANhyxRZpmurOK8GDI.MMPs/uWXVBoip4BwMreN6My', '09234567891', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
 
 INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES ('Alessandra', 'Gomez', 'alessandra_gomez@dlsu.edu.ph', '$2a$12$245HIwNTy7p1nt45fe8PnOZA5xr8g6StXQ7llwtlJq8eiCSD3p4xK', '09123456789', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
+VALUES ('Alessandra', 'Gomez', 'alessandra_gomez@dlsu.edu.ph', '$2a$12$245HIwNTy7p1nt45fe8PnOZA5xr8g6StXQ7llwtlJq8eiCSD3p4xK', '09345678912', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
 
 INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES ('Ibrahim', 'Kahil', 'ibrahim_kahil@dlsu.edu.ph', '$2a$12$lxHdnhHgyjNlFXyU7P7H7.aVvY4gL.wqe2yHT1pdzOgPWG26geNIO', '09123456789', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
+VALUES ('Ibrahim', 'Kahil', 'ibrahim_kahil@dlsu.edu.ph', '$2a$12$lxHdnhHgyjNlFXyU7P7H7.aVvY4gL.wqe2yHT1pdzOgPWG26geNIO', '09456789123', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
 
 INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES ('Shaun', 'Ong', 'shaun_ong@dlsu.edu.ph', '$2a$12$rk86H2l9/Algk4bTM1eYOOTlKrScFrZPDZBI4ntQ8yKpl8SDzRYd.', '09123456789', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
+VALUES ('Shaun', 'Ong', 'shaun_ong@dlsu.edu.ph', '$2a$12$rk86H2l9/Algk4bTM1eYOOTlKrScFrZPDZBI4ntQ8yKpl8SDzRYd.', '09567891234', 'default.jpg', 'USER', CURRENT_TIMESTAMP);
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
