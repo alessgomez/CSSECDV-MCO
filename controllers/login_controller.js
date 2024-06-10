@@ -81,11 +81,8 @@ const login_controller = {
     postVerifyAccount: async (req, res) => {
 
         function validatePW (pw) {
-            var uppercaseLetters = /[A-Z]/g;
-            var specialChars = /\W|_/g;
-            var numbers = /[0-9]/g;
-            
-            return pw.match(uppercaseLetters) && pw.match(specialChars) && pw.match(numbers) && pw.length >= 8;
+          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
+          return passwordRegex.test(pw);
         }
         
       let connection;
@@ -106,7 +103,7 @@ const login_controller = {
               return res.redirect('/login');
           }
 
-          if(!validatePW(req.body.password)) {
+          if(!validatePW(req.body.psw)) {
             req.flash('error_msg', 'Invalid login attempt. Please try again.');
             return res.redirect('/login');
           } 
