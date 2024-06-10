@@ -23,13 +23,14 @@
                 <form action="/verify2FA" method="post">
                     <label for="otc"><b>One-Time Code</b></label><br>
                     <input type="text" id="otc" placeholder="Enter OTC" name="otc" required><br>
+                    
                     <div class="break"></div>
 
-                    <!-- Flash message rendered as HTML -->
                     <p id="error">{{{error_msg}}}</p>
 
                     <button type="submit" id="signin-submit"><strong>Submit</strong></button>
-                    
+
+                    <p>Didn't receive the code? <a href="">Resend code</a></p>
                 </form>
             </div>
           </div>

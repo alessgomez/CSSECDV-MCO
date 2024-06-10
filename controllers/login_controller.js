@@ -49,18 +49,16 @@ async function verifyLogin(connection, email, password) {
 async function sendOneTimeCode(email, code) {
    // Create a transporter using SMTP transport
    const transporter = nodemailer.createTransport({
-    service: 'gmail', 
+    host: 'smtp.office365.com',
     secure: false,//true
-    port: 25,//465
+    port: 587,//465
     auth: {
-        user: 'thehungrysibs@gmail.com', 
-        pass: 'rith ojzo gpra kuwl' 
-    }, tls: {
-      rejectUnauthorized: false
+        user: config.user, 
+        pass: config.pass 
     }
 });
   const mailOptions = {
-      from: 'thehungrysibs@gmail.com',
+      from: config.user,
       to: email,
       subject: 'One-Time Code for Login',
       text: `Your one-time code for login is: ${code}`
@@ -151,21 +149,18 @@ const login_controller = {
           // checking if account is null
           if (account) {
 
-              req.session.accountId = account.accountId; // REMOVE AFTER IMPLEMENTING 2FA
-              return res.redirect('/'); // REMOVE AFTER IMPLEMENTING 2FA
+              //req.session.accountId = account.accountId; // REMOVE AFTER IMPLEMENTING 2FA
+              //return res.redirect('/'); // REMOVE AFTER IMPLEMENTING 2FA
 
               const oneTimeCode = generateOneTimeCode();
-              //await sendOneTimeCode(req.body.email, oneTimeCode);
+              await sendOneTimeCode(req.body.email, oneTimeCode);
               req.session.pendingOTC = oneTimeCode;
               req.session.pendingOTCTimestamp = Date.now();
               req.session.pendingAccount = account;
 
               console.log("OTP Sent")
+              console.log("OTP: " + req.session.pendingOTC)
               return res.redirect('/2FA');
-            
-
-              //req.session.accountId = account.accountId;
-              //res.redirect('/');
           }
           else {     
               let ipRateLimitResponse;
@@ -209,7 +204,7 @@ const login_controller = {
 
     postVerify2FA: async (req, res) => {
       try {
-          const { otp } = req.body;
+          const otc = req.body.otc;
           const { pendingOTC, pendingOTCTimestamp, pendingAccount } = req.session;
 
           if (!pendingOTC || !pendingAccount) {
@@ -219,15 +214,17 @@ const login_controller = {
 
           // Check if the OTC has expired
           const now = Date.now();
-          const otpExpiry = 2 * 60 * 1000; // 2 minutes
-          if (now - pendingOTCTimestamp > otpExpiry) {
+          const otcExpiry = 2 * 60 * 1000; // 2 minutes
+          if (now - pendingOTCTimestamp > otcExpiry) {
               req.flash('error_msg', 'The one-time code has expired. Please request a new code.');
-              return res.redirect('/verify-2fa');
+              return res.redirect('/2FA');
           }
 
-          if (otp !== pendingOTC) {
+          if (otc !== pendingOTC) {
+              console.log("entered OTC: "  + otc)
+              console.log('pending OTC: ' + pendingOTC)
               req.flash('error_msg', 'Invalid one-time code. Please try again.');
-              return res.redirect('/verify-2fa');
+              return res.redirect('/2FA');
           }
 
           req.session.accountId = pendingAccount.accountId;
@@ -238,7 +235,7 @@ const login_controller = {
       } catch (error) {
           console.error('Error during 2FA verification:', error);
           req.flash('error_msg', 'An error occurred during verification. Please try again.');
-          return res.redirect('/verify-2fa');
+          return res.redirect('/2FA');
       }
   },
 
