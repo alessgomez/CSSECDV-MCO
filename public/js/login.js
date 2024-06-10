@@ -21,7 +21,4 @@ $(document).ready(function(){
     window.recaptchaExpiredCallback = function() {
         submit.disabled = true;
     };
-
-    // Keyup event listeners for email inputs
-    email.onkeyup = toggleSubmitButton;
 });
