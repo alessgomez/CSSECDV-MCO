@@ -10,7 +10,7 @@ $(document).ready(function(){
     }
 
     function areEmailAndPasswordValid() {
-        return email.value.length !== 0 && validatePW(pw.value);
+        return email.value.length !== 0 && pw.value.length !== 0;
     }
 
     window.toggleSubmitButton = function() {
@@ -22,15 +22,6 @@ $(document).ready(function(){
         submit.disabled = true;
     };
 
-    // Keyup event listeners for email and password inputs
+    // Keyup event listeners for email inputs
     email.onkeyup = toggleSubmitButton;
-    pw.onkeyup = toggleSubmitButton;
-
-    function validatePW (pw) {
-        var uppercaseLetters = /[A-Z]/g;
-        var specialChars = /\W|_/g;
-        var numbers = /[0-9]/g;
-        
-        return pw.match(uppercaseLetters) && pw.match(specialChars) && pw.match(numbers) && pw.length >= 8;
-    }
 });

@@ -81,6 +81,15 @@ const login_controller = {
     },
 
     postVerifyAccount: async (req, res) => {
+
+        function validatePW (pw) {
+            var uppercaseLetters = /[A-Z]/g;
+            var specialChars = /\W|_/g;
+            var numbers = /[0-9]/g;
+            
+            return pw.match(uppercaseLetters) && pw.match(specialChars) && pw.match(numbers) && pw.length >= 8;
+        }
+        
       let connection;
       try{
           const { 'g-recaptcha-response': recaptchaResponse } = req.body;
@@ -99,6 +108,11 @@ const login_controller = {
               return res.redirect('/login');
           }
 
+          if(!validatePW(req.body.password)) {
+            req.flash('error_msg', 'Invalid login attempt. Please try again.');
+            return res.redirect('/login');
+          } 
+          
           const ip = req.ip;
           const email = req.body.email;
           const ipRateLimitKey = `login_attempt_ip_${ip}`;
