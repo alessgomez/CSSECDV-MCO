@@ -33,6 +33,7 @@ This repository contains the necessary files for a food ordering web application
 - axios
 - rate-limiter-flexible
 - nodemailer
+- uuid
 ### Third-Party
 - Bootstrap
 
