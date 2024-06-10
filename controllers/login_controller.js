@@ -80,6 +80,11 @@ const login_controller = {
 
     postVerifyAccount: async (req, res) => {
 
+        function validateEmail(email){
+            const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
+            return emailRegex.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255
+        }
+
         function validatePW (pw) {
           const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
           return passwordRegex.test(pw);
@@ -103,13 +108,20 @@ const login_controller = {
               return res.redirect('/login');
           }
 
-          if(!validatePW(req.body.psw)) {
-            req.flash('error_msg', 'Invalid login attempt. Please try again.');
+          const email = req.body.email;
+          const pw = req.body.psw;
+
+          if(!validateEmail(email)) {
+            req.flash('error_msg', 'Username and/or password incorrect.');
+            return res.redirect('/login');
+          } 
+
+          if(!validatePW(pw)) {
+            req.flash('error_msg', 'Username and/or password incorrect.');
             return res.redirect('/login');
           } 
           
           const ip = req.ip;
-          const email = req.body.email;
           const ipRateLimitKey = `login_attempt_ip_${ip}`;
           const emailRateLimitKey = `login_attempt_email_${email}`;
 
