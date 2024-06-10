@@ -78,6 +78,10 @@ p {
     color: #c93020;
 }
 
+#success {
+    color: #5cb85c;
+}
+
 label, input {
     font-family: poppins;
 }
