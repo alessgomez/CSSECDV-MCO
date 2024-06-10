@@ -176,6 +176,14 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`BagItems` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Inserts initial admin account (John Doe)
+-- EMAIL: johndoe@thehungrysibs.com
+-- PASSWORD: JohnD0e!
+-- -----------------------------------------------------
+INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
+VALUES ('John', 'Doe', 'johndoe@thehungrysibs.com', '$2b$12$BEhAs9dJtfNoYJLwePb8S.lOuJBCqCEBjIWRETY/OS6plDcTp9lQq', '09123456789', 'admin.jpg', 'ADMIN', CURRENT_TIMESTAMP);
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
