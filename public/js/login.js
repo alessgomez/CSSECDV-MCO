@@ -21,4 +21,7 @@ $(document).ready(function(){
     window.recaptchaExpiredCallback = function() {
         submit.disabled = true;
     };
+
+    email.onkeyup = toggleSubmitButton;
+    pw.onkeyup = toggleSubmitButton;
 });
