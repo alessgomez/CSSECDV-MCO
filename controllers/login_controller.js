@@ -30,8 +30,8 @@ async function verifyLogin(connection, email, password) {
             resolve(null); // account not found
           } else {
             const account = results[0];
-            const passwordMatch = password === account.password; // REMOVE -> FOR TESTING ONLY
-            //const passwordMatch = await bcrypt.compare(password, account.password);
+            //const passwordMatch = password === account.password; // REMOVE -> FOR TESTING ONLY
+            const passwordMatch = await bcrypt.compare(password, account.password);
             if (passwordMatch) {
               resolve(account); // Passwords match, return account data
             } else {
