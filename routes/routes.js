@@ -17,5 +17,6 @@ app.get('/2FA', general_controller.isPublic, login_controller.get2FA)
 app.post('/verifyAccount', login_controller.postVerifyAccount);
 app.post('/addAccount', registration_controller.postAddAccount);
 app.post('/verify2FA', login_controller.postVerify2FA)
+app.post('/resendOTC', login_controller.postResendOTC)
 
 module.exports = app;
