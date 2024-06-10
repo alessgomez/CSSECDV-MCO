@@ -8,6 +8,25 @@
     font-family: poppinsbold;
 }
 
+#resend-code {
+    background-color: #c93020;
+    font-size: 12px;
+    color: white;
+    width: 100%;
+    min-height: 20.5px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.resend-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    margin-top: 20px; /* Adjust margin as needed */
+}
+
 .break {
     clear: both;
     height: 20px;

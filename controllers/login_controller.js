@@ -85,42 +85,16 @@ const login_controller = {
             return emailRegex.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255
         }
 
-        function validatePW (pw) {
-          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
-          return passwordRegex.test(pw);
-        }
-        
+      function validatePW (pw) {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
+        return passwordRegex.test(pw);
+      }
+      
       let connection;
       try{
           const { 'g-recaptcha-response': recaptchaResponse } = req.body;
-
-          if (!recaptchaResponse) {
-              req.flash('error_msg', 'Invalid login attempt. Please try again.');
-              return res.redirect('/login');
-          }
-
-          const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
-          const response = await axios.post(verificationUrl);
-          const { success } = response.data;
-
-          if (!success) {
-              req.flash('error_msg', 'Invalid login attempt. Please try again.');
-              return res.redirect('/login');
-          }
-
           const email = req.body.email;
           const pw = req.body.psw;
-
-          if(!validateEmail(email)) {
-            req.flash('error_msg', 'Username and/or password incorrect.');
-            return res.redirect('/login');
-          } 
-
-          if(!validatePW(pw)) {
-            req.flash('error_msg', 'Username and/or password incorrect.');
-            return res.redirect('/login');
-          } 
-          
           const ip = req.ip;
           const ipRateLimitKey = `login_attempt_ip_${ip}`;
           const emailRateLimitKey = `login_attempt_email_${email}`;
@@ -139,7 +113,7 @@ const login_controller = {
           if (emailRateLimitStatus && emailRateLimitStatus.consumedPoints >= emailRateLimiter.points) {
               console.log("EMAIL RATE LIMIT REACHED")
               console.log("ms before next: " + emailRateLimitStatus.msBeforeNext)
-              req.flash('error_msg', 'Username and/or password incorrect.<br><br>' +  
+              req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
                         'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
 
               // Consume points from IP rate limiter even if email rate limit is reached
@@ -149,7 +123,51 @@ const login_controller = {
               return res.redirect('/login');
           }
 
-          // Proceed with login verification if reCAPTCHA and rate limiting ARE successful
+          if (!recaptchaResponse) {
+              const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
+              const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
+              console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
+              console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
+              req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
+                'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+              return res.redirect('/login');
+          }
+
+          const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
+          const response = await axios.post(verificationUrl);
+          const { success } = response.data;
+
+          if (!success) {
+              const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
+              const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
+              console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
+              console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
+              req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
+                'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+              return res.redirect('/login');
+          }
+
+          if(!validateEmail(email)) {
+            const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
+            const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
+            console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
+            console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
+            req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
+              'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+            return res.redirect('/login');
+          } 
+
+          if(!validatePW(pw)) {
+            const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
+            const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
+            console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
+            console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
+            req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
+              'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+            return res.redirect('/login');
+          } 
+
+          // Proceed with login verification if input validation, reCAPTCHA, and rate limiting ARE successful
           connection = await getConnectionFromPool();
           //logPoolStats()
 
@@ -189,7 +207,7 @@ const login_controller = {
               console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints)
               console.log('Email rate limit points: ' + emailRateLimitResponse.remainingPoints)
               
-              req.flash('error_msg', 'Username and/or password incorrect.<br><br>' +  
+              req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
                 'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
               res.redirect('/login');
           }
@@ -252,7 +270,7 @@ const login_controller = {
       try {
           const { pendingAccount, pendingOTCTimestamp } = req.session;
 
-          if (!pendingAccount) {
+          if (!pendingAccount) {     
               req.flash('error_msg', 'Session expired. Please log in again.');
               return res.redirect('/login');
           }
@@ -262,7 +280,7 @@ const login_controller = {
 
           if (pendingOTCTimestamp && now - pendingOTCTimestamp < resendCooldown) {
               req.flash('error_msg', 'You can request a new code after 2 minutes.');
-              return res.redirect('/verify-2fa');
+              return res.redirect('/2FA');
           }
 
           const oneTimeCode = generateOneTimeCode();
@@ -270,11 +288,12 @@ const login_controller = {
           req.session.pendingOTC = oneTimeCode;
           req.session.pendingOTCTimestamp = now;
 
-          res.redirect('/verify-2fa');
+          req.flash('success_msg', 'A new verification code has been sent to your email.');
+          res.redirect('/2FA');
       } catch (error) {
           console.error('Error during resend OTC:', error);
           req.flash('error_msg', 'An error occurred while sending the one-time code. Please try again.');
-          return res.redirect('/verify-2fa');
+          return res.redirect('/2FA');
       }
   }
 }
