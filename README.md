@@ -34,7 +34,7 @@
 
 ## Dummy Credentials
 ### Admin Account
-- *EMAIL:* johndoe@thehungrysibs.com
-- *PASSWORD:* JohnD0e!
+- **EMAIL:** johndoe@thehungrysibs.com
+- **PASSWORD:** JohnD0e!
 ### User Accounts
-- *PASSWORD FOR ALL:* C4sh4y1!
+- **PASSWORD FOR ALL:** C4sh4y1!
