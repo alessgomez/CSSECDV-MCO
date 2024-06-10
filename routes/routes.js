@@ -14,5 +14,6 @@ app.get('/logout', general_controller.isPrivate, general_controller.getLogout);
 
 // POSTs
 app.post('/checkAccount', login_controller.postVerifyAccount);
+app.post('/addAccount', registration_controller.postAddAccount);
 
 module.exports = app;
