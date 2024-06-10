@@ -1,9 +1,9 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const bcrypt = require("bcrypt");
+const fs = require('fs');
 const axios = require('axios');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const RECAPTCHA_SITE_KEY = '6Lf3IPQpAAAAAAQWUdZe0jE85hxo656W11DtnYmS';
-const RECAPTCHA_SECRET_KEY = '6Lf3IPQpAAAAAF49syZBYdjIZw08cj2oiwTNU3e_';
+const config = JSON.parse(fs.readFileSync('config.json'));
 const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 
@@ -77,7 +77,7 @@ function generateOneTimeCode() {
 const login_controller = {
 
     getLogin: function (req, res) {
-        res.render("login", { siteKey: RECAPTCHA_SITE_KEY });
+        res.render("login", { siteKey: config.RECAPTCHA_SITE_KEY });
     },
 
     postVerifyAccount: async (req, res) => {
@@ -90,7 +90,7 @@ const login_controller = {
               return res.redirect('/login');
           }
 
-          const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
+          const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
           const response = await axios.post(verificationUrl);
           const { success } = response.data;
 
