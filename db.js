@@ -17,8 +17,7 @@ const pool = mysql.createPool({
 	connectionLimit: 100,
 	host:'localhost',
 	user:'root',
-	database:'the_hungry_sibs',
-	password:'120301'
+	database:'the_hungry_sibs'
   });
 
   async function getConnectionFromPool() {
