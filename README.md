@@ -6,7 +6,7 @@
 - [Views](https://github.com/alessgomez/CSSECDV-MCO/tree/main/views): contains all handlebars files rendered by the server
 - [index.js](https://github.com/alessgomez/CSSECDV-MCO/blob/main/index.js): the main file used to execute the web application
 
-## Follow the steps below to set-up the repository locally:
+## Follow the steps below to run the application locally:
 1. Clone the repository or download the zipped folder.
 2. Open a command prompt/terminal and navigate to the project folder.
 4. Install the necessary NPM libraries by running `npm install`.
