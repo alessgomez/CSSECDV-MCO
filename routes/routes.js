@@ -11,9 +11,11 @@ app.get('/register', general_controller.isPublic, registration_controller.getReg
 app.get('/login', general_controller.isPublic, login_controller.getLogin);
 app.get('/', general_controller.isPrivate, home_controller.getHome);
 app.get('/logout', general_controller.isPrivate, general_controller.getLogout);
+app.get('/2FA', general_controller.isPublic, login_controller.get2FA)
 
 // POSTs
-app.post('/checkAccount', login_controller.postVerifyAccount);
+app.post('/verifyAccount', login_controller.postVerifyAccount);
 app.post('/addAccount', registration_controller.postAddAccount);
+app.post('/verify2FA', login_controller.postVerify2FA)
 
 module.exports = app;

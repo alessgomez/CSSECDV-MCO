@@ -19,27 +19,17 @@
           
           <div class="split right">
               <div class="container">
-                <h1 id="header">Login</h1>
-                <form action="/verifyAccount" method="post">
-                    <label for="email"><b>Email</b></label><br>
-                    <input type="email" placeholder="Enter Email" id="email" name="email" required>
-
-                    <div class="break"></div>
-
-                    <label for="psw"><b>Password</b></label><br>
-                    <input type="password" id="psw" placeholder="Enter Password" name="psw" required><br>
-                    <div class="break"></div>
-
-                    <div class="g-recaptcha" data-callback="toggleSubmitButton" data-expired-callback="recaptchaExpiredCallback" data-sitekey="{{siteKey}}"></div><br>
-                    
+                <h1 id="header">2-Factor Authentication</h1>
+                <form action="/verify2FA" method="post">
+                    <label for="otc"><b>One-Time Code</b></label><br>
+                    <input type="text" id="otc" placeholder="Enter OTC" name="otc" required><br>
                     <div class="break"></div>
 
                     <!-- Flash message rendered as HTML -->
                     <p id="error">{{{error_msg}}}</p>
 
-                    <button type="submit" id="signin-submit" disabled><strong>Log In</strong></button>
+                    <button type="submit" id="signin-submit"><strong>Submit</strong></button>
                     
-                    <p>Don't have an account? <a href="/register">Register</a></p>
                 </form>
             </div>
           </div>

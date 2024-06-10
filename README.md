@@ -32,6 +32,7 @@ This repository contains the necessary files for a food ordering web application
 - express-mysql-session
 - axios
 - rate-limiter-flexible
+- nodemailer
 ### Third-Party
 - Bootstrap
 

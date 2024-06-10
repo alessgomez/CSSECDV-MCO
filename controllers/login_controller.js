@@ -4,6 +4,8 @@ const axios = require('axios');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
 const RECAPTCHA_SITE_KEY = '6Lf3IPQpAAAAAAQWUdZe0jE85hxo656W11DtnYmS';
 const RECAPTCHA_SECRET_KEY = '6Lf3IPQpAAAAAF49syZBYdjIZw08cj2oiwTNU3e_';
+const nodemailer = require('nodemailer');
+const { v4: uuidv4 } = require('uuid');
 
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
@@ -41,6 +43,35 @@ async function verifyLogin(connection, email, password) {
         }
       });
     });
+}
+
+// Function to send email with one-time code
+async function sendOneTimeCode(email, code) {
+   // Create a transporter using SMTP transport
+   const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    secure: false,//true
+    port: 25,//465
+    auth: {
+        user: 'thehungrysibs@gmail.com', 
+        pass: 'rith ojzo gpra kuwl' 
+    }, tls: {
+      rejectUnauthorized: false
+    }
+});
+  const mailOptions = {
+      from: 'thehungrysibs@gmail.com',
+      to: email,
+      subject: 'One-Time Code for Login',
+      text: `Your one-time code for login is: ${code}`
+  };
+
+  return transporter.sendMail(mailOptions);
+}
+
+// Function to generate a random one-time code
+function generateOneTimeCode() {
+  return uuidv4().substring(0, 6).toUpperCase(); // Generate a 6-character alphanumeric code
 }
 
 const login_controller = {
@@ -105,8 +136,22 @@ const login_controller = {
 
           // checking if account is null
           if (account) {
-              req.session.accountId = account.accountId;
-              res.redirect('/');
+
+              req.session.accountId = account.accountId; // REMOVE AFTER IMPLEMENTING 2FA
+              return res.redirect('/'); // REMOVE AFTER IMPLEMENTING 2FA
+
+              const oneTimeCode = generateOneTimeCode();
+              //await sendOneTimeCode(req.body.email, oneTimeCode);
+              req.session.pendingOTC = oneTimeCode;
+              req.session.pendingOTCTimestamp = Date.now();
+              req.session.pendingAccount = account;
+
+              console.log("OTP Sent")
+              return res.redirect('/2FA');
+            
+
+              //req.session.accountId = account.accountId;
+              //res.redirect('/');
           }
           else {     
               let ipRateLimitResponse;
@@ -142,7 +187,76 @@ const login_controller = {
           //logPoolStats(); 
         }
       }
-    }
+    },
+
+    get2FA: function (req, res) {
+      res.render("2FA");
+    },
+
+    postVerify2FA: async (req, res) => {
+      try {
+          const { otp } = req.body;
+          const { pendingOTC, pendingOTCTimestamp, pendingAccount } = req.session;
+
+          if (!pendingOTC || !pendingAccount) {
+              req.flash('error_msg', 'Session expired. Please log in again.');
+              return res.redirect('/login');
+          }
+
+          // Check if the OTC has expired
+          const now = Date.now();
+          const otpExpiry = 2 * 60 * 1000; // 2 minutes
+          if (now - pendingOTCTimestamp > otpExpiry) {
+              req.flash('error_msg', 'The one-time code has expired. Please request a new code.');
+              return res.redirect('/verify-2fa');
+          }
+
+          if (otp !== pendingOTC) {
+              req.flash('error_msg', 'Invalid one-time code. Please try again.');
+              return res.redirect('/verify-2fa');
+          }
+
+          req.session.accountId = pendingAccount.accountId;
+          delete req.session.pendingOTC;
+          delete req.session.pendingOTCTimestamp;
+          delete req.session.pendingAccount;
+          res.redirect('/');
+      } catch (error) {
+          console.error('Error during 2FA verification:', error);
+          req.flash('error_msg', 'An error occurred during verification. Please try again.');
+          return res.redirect('/verify-2fa');
+      }
+  },
+
+  postResendOTC: async (req, res) => {
+      try {
+          const { pendingAccount, pendingOTCTimestamp } = req.session;
+
+          if (!pendingAccount) {
+              req.flash('error_msg', 'Session expired. Please log in again.');
+              return res.redirect('/login');
+          }
+
+          const now = Date.now();
+          const resendCooldown = 2 * 60 * 1000; // 2 minutes
+
+          if (pendingOTCTimestamp && now - pendingOTCTimestamp < resendCooldown) {
+              req.flash('error_msg', 'You can request a new code after 2 minutes.');
+              return res.redirect('/verify-2fa');
+          }
+
+          const oneTimeCode = generateOneTimeCode();
+          await sendOneTimeCode(pendingAccount.email, oneTimeCode);
+          req.session.pendingOTC = oneTimeCode;
+          req.session.pendingOTCTimestamp = now;
+
+          res.redirect('/verify-2fa');
+      } catch (error) {
+          console.error('Error during resend OTC:', error);
+          req.flash('error_msg', 'An error occurred while sending the one-time code. Please try again.');
+          return res.redirect('/verify-2fa');
+      }
+  }
 }
 
 module.exports = login_controller;
