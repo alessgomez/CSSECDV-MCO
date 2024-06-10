@@ -17,8 +17,8 @@ async function registerAccount(connection, newAccount) {
                         if (error) {
                             reject(error);
                         } else {
-                            const sql = 'INSERT INTO accounts (firstName, lastName, email, password, phoneNumber, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?)';
-                            const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, 'USER', new Date()];
+                            const sql = 'INSERT INTO accounts (firstName, lastName, email, password, phoneNumber, profilePicFilename, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+                            const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, 'NAMENAME', 'USER', new Date()];
 
                             connection.query(sql, values, async (error, results) => {
                                 if (error) {
