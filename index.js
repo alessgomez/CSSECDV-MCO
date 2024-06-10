@@ -10,12 +10,12 @@ const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const options = {
     host: 'localhost',
+    password: 'H0wareyou?',
     port: 3306,
     user:'root',
 	database:'the_hungry_sibs'
 };
 const sessionStore = new MySQLStore(options);
-
 
 app.set("view engine", "hbs");
 app.engine("hbs", exphbs.engine({extname: "hbs"}));

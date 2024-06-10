@@ -16,6 +16,7 @@ var mysql = require('mysql');
 const pool = mysql.createPool({
 	connectionLimit: 100,
 	host:'localhost',
+	password: 'H0wareyou?',
 	user:'root',
 	database:'the_hungry_sibs'
   });

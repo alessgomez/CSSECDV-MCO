@@ -3,7 +3,8 @@ $(document).ready(function(){
     var lastNameInput = document.getElementById("lastname");
     var emailInput = document.getElementById("email");
     var phoneNumberInput = document.getElementById("contactno");
-    var fileUploadInput = document.getElementById("input-file");
+    var fileUploadInput = document.getElementById("inputFile");
+    var profilePic = document.getElementById("profile-pic");
     var passwordInput = document.getElementById("psw");
     var confirmPasswordInput = document.getElementById("confirmpsw");
     var submit = document.getElementById("reg-submit");
@@ -80,7 +81,7 @@ $(document).ready(function(){
         if (fileName != null) {
             let regexFileName = new RegExp(/[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
             
-            if (regexFileName.test(fileName) == true) {
+            if (regexFileName.test(fileName) == true && fileName.length <= 255) {
                 console.log("VALID " + fileName)         
                 
                 var file = fileUploadInput.files[0];
@@ -102,6 +103,20 @@ $(document).ready(function(){
                     if (fileSize < maxFileSize) {
                         console.log("VALID FILE SIZE: " + fileSize);
 
+                        var image = new Image();
+
+                        image.onload = function() {
+                            console.log("SEEMS LIKE A LEGIT IMAGE BASED ON FRONT-END!")
+                            profilePic.src = URL.createObjectURL(fileUploadInput.files[0]);  
+                        }
+                        image.onerror = function() {
+                            console.log("ERROR: Cannot load image")
+                        }
+
+                        image.src = URL.createObjectURL(fileUploadInput.files[0]);  
+
+                        
+                        
                     }
                     else {
                         console.log("ERROR: File size exceeds 3 MB")

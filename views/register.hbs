@@ -21,11 +21,11 @@
           <div class="split right">
               <div class="container">
                 <h1 id="header">Register</h1>
-                <form action="/addaccount" method="post">
+                <form action="/addaccount" method="post" enctype="multipart/form-data">
 
                     <img src="images/default-profile.png" id="profile-pic">
-                    <label for="input-file" id="file-button">Upload Profile Picture *</label>
-                    <input type="file" id="input-file">  <! -- accept="image/jpeg, image/png, image/jpg" -->
+                    <label for="inputFile" id="file-button">Upload Profile Picture *</label>
+                    <input type="file" id="inputFile" name="inputFile" accept="image/jpeg, image/png, image/jpg">
 
                     <div class="break"></div>
 
