@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Accounts` (
   `email` VARCHAR(45) NOT NULL,
   `password` VARCHAR(45) NOT NULL,
   `phoneNumber` VARCHAR(45) NOT NULL,
-  `address` VARCHAR(45) NOT NULL,
   `role` VARCHAR(45) NOT NULL,
   `dateCreated` DATETIME NOT NULL,
   `dateEdited` DATETIME,

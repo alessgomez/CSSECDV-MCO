@@ -7,11 +7,11 @@ async function registerAccount(connection, newAccount) {
             if (error) {
                 reject(error);
             } else {
-                if (results.length === 0) { // No account with the given email, thus can register
+                if (results.length === 0) {
                     // TODO: Salt & hash the password
 
-                    const sql = 'INSERT INTO accounts (firstName, lastName, email, password, phoneNumber, address, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-                    const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, newAccount.address, 'USER', new Date()];
+                    const sql = 'INSERT INTO accounts (firstName, lastName, email, password, phoneNumber, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?)';
+                    const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, 'USER', new Date()];
 
                     connection.query(sql, values, async (error, results) => {
                         if (error) {
@@ -40,8 +40,7 @@ const registration_controller = {
         last: req.body.lastname,
         email: req.body.email,
         pw: req.body.psw,
-        number: req.body.contactno,
-        address: req.body.address
+        number: req.body.contactno
         //var profilePhoto = req.body.profilePhoto;
     }
     //const saltRounds = 10;
