@@ -7,7 +7,7 @@
 - [index.js](https://github.com/alessgomez/CSSECDV-MCO/blob/main/index.js): the main file used to execute the web application
 
 ## Follow the steps below to run the application locally:
-1. Clone the repository or download the zipped folder.
+1. Clone the repository or download and extract the zipped folder.
 2. Open a command prompt/terminal and navigate to the project folder.
 4. Install the necessary NPM libraries by running `npm install`.
 4. Make sure that MySQL Server is installed and running.
@@ -34,7 +34,7 @@
 
 ## Dummy Credentials
 ### Admin Account
-- **EMAIL:** johndoe@thehungrysibs.com
-- **PASSWORD:** JohnD0e!
+- **Email:** johndoe@thehungrysibs.com
+- **Password:** JohnD0e!
 ### User Accounts
-- **PASSWORD FOR ALL:** C4sh4y1!
+- **Password for all:** C4sh4y1!
