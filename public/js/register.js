@@ -94,6 +94,7 @@ $(document).ready(function(){
                         image.onload = function() { // Image upload successful
                             profilePic.src = URL.createObjectURL(fileUploadInput.files[0]);
                             fileUploadValid = true;
+                            validateFields();
                         }
                         image.onerror = function() {
                             console.log("ERROR: Cannot load image")
@@ -104,7 +105,7 @@ $(document).ready(function(){
                 }
             }
         }
-
+        
         validateFields();
     }
 
