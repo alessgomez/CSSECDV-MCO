@@ -45,6 +45,29 @@ const general_controller = {
         }
     },
 
+    isPrivate2FA: async function(req, res, next) {
+        if (!req.session || !req.session.accountId) {
+            return res.redirect('/login');
+        }
+
+        const connection = await getConnectionFromPool();
+
+        try {
+            const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
+            if (accountIdExists)
+                return next();
+            else   
+                res.redirect('/login');
+        } catch (error) {
+            console.error(error);
+        }
+        finally {
+            if (connection) {
+              connection.release();
+            }
+        }
+    },
+
     isPublic: async function(req, res, next) {
         if (req.session && req.session.accountId && req.session.verified) {
             const connection = await getConnectionFromPool();
