@@ -34,7 +34,7 @@
 
 ## Dummy Credentials
 ### Admin Account
-- **Email:** johndoe@thehungrysibs.com
+- **Email:** hannah.regine.fong@gmail.com
 - **Password:** JohnD0e!
 ### User Accounts
 - **Password for all:** C4sh4y1!

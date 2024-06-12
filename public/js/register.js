@@ -17,8 +17,7 @@ $(document).ready(function(){
     var emailValid = false;
     var phoneNumberValid = false;
     var fileUploadValid = false;
-    var passwordValid = false;
-    var confirmPasswordValid = false;
+    var passwordsValid = false;
 
     function readFile(file) {
         return new Promise((resolve, reject) => {
@@ -47,43 +46,23 @@ $(document).ready(function(){
     }
 
     function validateFields() {
-        submit.disabled = !(firstNameValid && lastNameValid && emailValid && phoneNumberValid && fileUploadValid && passwordValid && confirmPasswordValid);
+        submit.disabled = !(firstNameValid && lastNameValid && emailValid && phoneNumberValid && fileUploadValid && passwordsValid);
     }
 
     emailInput.onkeyup = function() {
         var email = emailInput.value
+        let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/) // TODO: Double check regex
         
-        if (email != null) {
-            let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/) // TODO: Double check regex
-
-            if (regexEmail.test(email) == true && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255) {
-                console.log("VALID: " + email)
-
-                emailValid = true;
-            } else {
-                console.log("ERROR: Invalid email string")
-                emailValid = false;
-            }
-        }
+        emailValid = email != null && regexEmail.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255;
 
         validateFields();
     }
 
     phoneNumberInput.onkeyup = function() {
         var phoneNumber = phoneNumberInput.value
+        let regexPhoneNumber = new RegExp(/^(09|\+639)\d{9}$/)
 
-        if (phoneNumber != null) {
-            let regexPhoneNumber = new RegExp(/^(09|\+639)\d{9}$/)
-            if (regexPhoneNumber.test(phoneNumber) == true) {
-                console.log("VALID: " + phoneNumber)
-                phoneNumberValid = true;
-
-            } 
-            else {
-                console.log("ERROR: Invalid phone number string")
-                phoneNumberValid = false;
-            }
-        }
+        phoneNumberValid = phoneNumber != null && regexPhoneNumber.test(phoneNumber);
 
         validateFields();
     }
@@ -96,9 +75,7 @@ $(document).ready(function(){
         if (fileName != null) {
             let regexFileName = new RegExp(/[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
             
-            if (regexFileName.test(fileName) == true && fileName.length <= 255) {
-                console.log("VALID " + fileName)         
-                
+            if (regexFileName.test(fileName) == true && fileName.length <= 255) {                
                 var file = fileUploadInput.files[0];
                 let byteStream = await readFile(file); 
                 const uint = new Uint8Array(byteStream);
@@ -107,21 +84,14 @@ $(document).ready(function(){
                     bytes.push(byte.toString(16));
                 });
                 const hex = bytes.join("").toUpperCase();
-                console.log(hex)
                 let mimeType = getMimeType(hex);
-                console.log(mimeType)
 
                 if (acceptedTypes.includes(mimeType)) {
-                    console.log("VALID MIME TYPE: " + mimeType)
-
                     var fileSize = fileUploadInput.files[0].size;
                     if (fileSize <= maxFileSize) {
-                        console.log("VALID FILE SIZE: " + fileSize);
-
                         var image = new Image();
 
-                        image.onload = function() {
-                            console.log("SEEMS LIKE A LEGIT IMAGE BASED ON FRONT-END!")
+                        image.onload = function() { // Image upload successful
                             profilePic.src = URL.createObjectURL(fileUploadInput.files[0]);
                             fileUploadValid = true;
                         }
@@ -131,22 +101,10 @@ $(document).ready(function(){
 
                         image.src = URL.createObjectURL(fileUploadInput.files[0]);                          
                     }
-                    else {
-                        console.log("ERROR: File size exceeds 3 MB")
-                    }
-                } 
-                else {
-                    console.log("ERROR: Mime type/file signatuer invalid")
                 }
-            } 
-            else {
-                console.log("ERROR: file name string is invalid")
             }
         }
-        else {
-            console.log("ERROR: file name is null")
-        }
-        
+
         validateFields();
     }
 
@@ -156,16 +114,7 @@ $(document).ready(function(){
     firstNameInput.onkeyup = function() {
         var firstName = firstNameInput.value
 
-        if (firstName != null) {
-            if (regexName.test(firstName)) {
-                console.log("VALID: " + firstName)
-                firstNameValid = true;
-            } 
-            else {
-                console.log("ERROR: Invalid first name")
-                firstNameValid = false;
-            }
-        }
+        firstNameValid = firstName != null && regexName.test(firstName);
 
         validateFields();
     }
@@ -173,39 +122,31 @@ $(document).ready(function(){
     lastNameInput.onkeyup = function() {
         var lastName = lastNameInput.value
 
-        if (lastName != null) {
-            if (regexName.test(lastName)) {
-                console.log("VALID: " + lastName)
-                lastNameValid = true;
-            } 
-            else {
-                console.log("ERROR: Invalid last name")
-                lastNameValid = false;
-            }
-        }
+        lastNameValid = lastName != null && regexName.test(lastName);
 
         validateFields();
     }
 
     // password
+    var passwordValid = false;
+    var confirmPasswordValid = false;
+    let regexPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/);
+    
     passwordInput.onkeyup = function() {
         var password = passwordInput.value
         
-        if (password != null) {
-            let regexPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/);
-
-            passwordValid = regexPassword.test(password);
-
-            if (passwordValid && confirmPasswordValid) {
-                if (passwordInput.value === confirmPasswordInput.value) {
-                    error_msg.innerHTML = "";
-                }
-                else {
-                    error_msg.innerHTML = "Passwords do not match.";
-                }
-            } else {
-                error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+        passwordValid = password != null && regexPassword.test(password);
+        
+        if (passwordValid && confirmPasswordValid) {
+            if (passwordInput.value === confirmPasswordInput.value) {
+                error_msg.innerHTML = "";
+                passwordsValid = true;
             }
+            else {
+                error_msg.innerHTML = "Passwords do not match.";
+            }
+        } else {
+            error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
         }
 
         validateFields();
@@ -214,21 +155,18 @@ $(document).ready(function(){
     confirmPasswordInput.onkeyup = function() {
         var confPassword = confirmPasswordInput.value
         
-        if (confPassword != null) {
-            let regexPassword = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/);
+        confirmPasswordValid = confPassword != null && regexPassword.test(confPassword);
 
-            confirmPasswordValid = regexPassword.test(confPassword);
-
-            if (passwordValid && confirmPasswordValid) {
-                if (passwordInput.value === confirmPasswordInput.value) {
-                    error_msg.innerHTML = "";
-                }
-                else {
-                    error_msg.innerHTML = "Passwords do not match.";
-                }
-            } else {
-                error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
+        if (passwordValid && confirmPasswordValid) {
+            if (passwordInput.value === confirmPasswordInput.value) {
+                error_msg.innerHTML = "";
+                passwordsValid = true;
             }
+            else {
+                error_msg.innerHTML = "Passwords do not match.";
+            }
+        } else {
+            error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
         }
 
         validateFields();

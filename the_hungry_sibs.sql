@@ -59,23 +59,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `the_hungry_sibs`.`Bestsellers`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `the_hungry_sibs`.`Bestsellers` ;
-
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Bestsellers` (
-  `productId` INT NOT NULL,
-  PRIMARY KEY (`productId`),
-  UNIQUE INDEX `productId_UNIQUE` (`productId` ASC) VISIBLE,
-  CONSTRAINT `bestsellers_productId`
-    FOREIGN KEY (`productId`)
-    REFERENCES `the_hungry_sibs`.`Products` (`productId`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Orders`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Orders` ;
@@ -180,7 +163,7 @@ ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Inserts initial admin account (John Doe)
--- EMAIL: johndoe@thehungrysibs.com
+-- EMAIL: hannah.regine.fong@gmail.com
 -- PASSWORD: JohnD0e!
 -- -----------------------------------------------------
 INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
