@@ -1,7 +1,6 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
-const db = require("./db.js");
 
 const app = express();
 const port = 3000;
@@ -10,9 +9,9 @@ const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const options = {
     host: 'localhost',
-    password: 'H0wareyou?',
     port: 3306,
     user:'root',
+    password: '',
 	database:'the_hungry_sibs'
 };
 const sessionStore = new MySQLStore(options);
