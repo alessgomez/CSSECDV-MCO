@@ -10,15 +10,15 @@ const { v4: uuidv4 } = require('uuid');
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
   points: 5, // Maximum number of attempts within the duration
-  duration: 180000, // Timeframe in milliseconds for the rate limiting
-  blockDuration: 180000, // Block duration in milliseconds after exceeding attempts
+  duration: 180, // Timeframe in seconds for the rate limiting
+  blockDuration: 180, // Block duration in seconds after exceeding attempts
 });
 
 // Rate limiter for emails
 const emailRateLimiter = new RateLimiterMemory({
   points: 3, // Maximum number of attempts within the duration
-  duration: 180000, // Timeframe in milliseconds for the rate limiting
-  blockDuration: 180000, // Block duration in milliseconds after exceeding attempts
+  duration: 180, // Timeframe in seconds for the rate limiting
+  blockDuration: 180, // Block duration in seconds after exceeding attempts
 });
 
 async function verifyLogin(connection, email, password) {
@@ -244,14 +244,14 @@ const login_controller = {
           const now = Date.now();
           const otcExpiry = 2 * 60 * 1000; // 2 minutes
           if (now - pendingOTCTimestamp > otcExpiry) {
-              req.flash('error_msg', 'The one-time code has expired. Please request a new code.');
+              req.flash('error_msg', 'Invalid one-time code. Please try again or request a new code.');
               return res.redirect('/2FA');
           }
 
           if (otc !== pendingOTC) {
               console.log("entered OTC: "  + otc)
               console.log('pending OTC: ' + pendingOTC)
-              req.flash('error_msg', 'Invalid one-time code. Please try again.');
+              req.flash('error_msg', 'Invalid one-time code. Please try again or request a new code.');
               return res.redirect('/2FA');
           }
 
