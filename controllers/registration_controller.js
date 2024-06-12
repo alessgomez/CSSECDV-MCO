@@ -18,7 +18,7 @@ function fileFilter(req, file, cb) {
     const fileNameValid = fileNameRegex.test(file.originalname)
 
     // 2. Content-type validation
-    const fileTypeValid = (file.mimetype == "image/png" || file.mimetype == "image/jpeg")
+    const fileTypeValid = (file.mimetype === "image/png" || file.mimetype === "image/jpeg")
 
     // 3. Filename length limit
     const fileNameLengthValid = file.originalname.length <= 255
@@ -46,7 +46,7 @@ const checkUuidExists = (connection, newId, field) => {
 // Initialize upload middleware and add file size limit
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 3 * 1024 * 1024 }, // 3 MB file size limit
+    limits: { fileSize: 3 * 1024 * 1024}, // 3 MB file size limit
     fileFilter: fileFilter
 }).single('inputFile'); // 'myFile' is the name attribute of the file input field
 
@@ -187,18 +187,16 @@ const registration_controller = {
                         sanitizeImage(req.file.buffer)
                             .then(async sanitizedBuffer => {
                                 // 3. save to folder - filename!
-                                filePath = './uploads/';
-                                fileExtension = req.file.mimetype.split("/")[1];
-
                                 let connection = await getConnectionFromPool();
                                 let newFileName;
                                 let uuidExists = true;
+                                filePath = './uploads/';
+                                fileExtension = fileMimeType.split("/")[1];
 
                                 while (uuidExists) {
                                     newFileName = uuidv4() + "." + fileExtension;
                                     uuidExists = await checkUuidExists(connection, newFileName, "profilePicFilename");
                                 }
-
                                 fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
                                 newAccount['profilePicFilename'] = newFileName;
     

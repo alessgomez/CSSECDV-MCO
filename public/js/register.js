@@ -4,7 +4,6 @@ $(document).ready(function(){
     var emailInput = document.getElementById("email");
     var phoneNumberInput = document.getElementById("contactno");
     var fileUploadInput = document.getElementById("inputFile");
-    var profilePic = document.getElementById("profile-pic");
     var passwordInput = document.getElementById("psw");
     var confirmPasswordInput = document.getElementById("confirmpsw");
     var submit = document.getElementById("reg-submit");
@@ -75,7 +74,7 @@ $(document).ready(function(){
         if (fileName != null) {
             let regexFileName = new RegExp(/[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
             
-            if (regexFileName.test(fileName) == true && fileName.length <= 255) {                
+            if (regexFileName.test(fileName) && fileName.length <= 255) {                
                 var file = fileUploadInput.files[0];
                 let byteStream = await readFile(file); 
                 const uint = new Uint8Array(byteStream);
@@ -88,11 +87,10 @@ $(document).ready(function(){
 
                 if (acceptedTypes.includes(mimeType)) {
                     var fileSize = fileUploadInput.files[0].size;
-                    if (fileSize <= maxFileSize) {
+                    if (fileSize < maxFileSize) {
                         var image = new Image();
 
                         image.onload = function() { // Image upload successful
-                            profilePic.src = URL.createObjectURL(fileUploadInput.files[0]);
                             fileUploadValid = true;
                             validateFields();
                         }
@@ -177,105 +175,3 @@ $(document).ready(function(){
         submit.disabled = true;
     }
 });
-
-/**
- * 
- *     inputFile.onchange = function(){
-        var fileName = inputFile.files[0].name;
-
-        if (fileName != null) {
-            // #0: Type conversion?
-            // #1: Use input validation to ensure the uploaded filename uses an expected extension type
-            let regex = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|JPG|JPEG|PNG)$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
-            
-            if (regex.test(fileName) == true) {
-                console.log(fileName)
-
-                var fileSize = inputFile.files[0].size;
-
-                // #2: Ensure the uploaded file is NOT larger than a defined maximum file size
-                if (fileSize < 10 * 1024) { //10kB
-                    console.log(fileSize)
-
-                    // #3: Use image rewriting libraries to verify the image is valid and to strip away extraneous content 
-                    if () {
-
-                    }
-
-                    // #4: Set the extension of the stored image to be a valid image extension based on the detected content type of the image from image processing 
-
-                    // #5 Ensure the detected content type of the image is within a list of defined image types 
-
-                    // #6: Use a new filename to store the file on the OS - DO NOT USE USER CONTROLLED TEXT FOR FILENAME/TEMPORARY FILENAME
-
-                    // #7: Uploaded files should be analyzed for malicious content (anti-malware, static analysis, etc.)
-
-                    // #8: Display image 
-                    profilePic.src = URL.createObjectURL(inputFile.files[0]);   
-                }
-
-                else {
-                    console.log("ERROR: #2 FILE SIZE EXCEEDED")
-                }
-            } 
-            else {
-                console.log("ERROR: #1 REGEX TEST FAILED")
-            }
-        }
-    }
-
-
-
-
-
-
-
-        var fileName = fileUploadInput.files[0].name;
-            
-        if (fileName != null) {
-            // 1. Extension validation
-            let regexFileName = new RegExp(/[^\s]+(.*?).(jpg|jpeg|png|JPG|JPEG|PNG)$/); //TODO: What if no extension in file name? DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
-            
-
-
-            if (regexFileName.test(fileName) == true) {
-                console.log("VALID: " + fileName);
-
-                var fileSize = fileUploadInput.files[0].size;
-
-                // #2: Upload size limit 
-                if (fileSize < maxFileSize) { //10 megabyte
-                    console.log("VALID: " + fileSize);
-
-                    // #
-                }
-                else {
-                    console.log("ERROR: File upload size is larger than 3MB");
-                }
-            } 
-            else {
-                console.log("ERROR: File name string is invalid");
-            }
-        }
-        else {
-            console.log("ERROR: File name is NULL");
-        }
-
-        // TODO: ADD THIS CHECK
-        // 1. Filename sanitization - remove unaccepted characters, avoid long filenames - can use random string generator, UUID or some sort of hash 
-        //const random_uuid = uuidv4(); //TODO: double check if correct 
-        //fileUploadInput.files[0].name = random_uuid// TODO: Double check if correct 
-        // 2. File upload location
-
-
-            function uuidv4() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-        .replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0, 
-                v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
- * 
- * 
- */

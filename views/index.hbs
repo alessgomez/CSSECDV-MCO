@@ -81,21 +81,5 @@
             </div>
         </div>
     </div>
-    
-    <div class="child best-container">
-        <div class="title-container">
-            <div class="header">Best Sellers</div>
-            <div class="subheader">Try our signature dishes!</div>
-        </div>
-
-        <div class="content-container">
-            {{#each bestSellers}}
-                <a class="best" href="/addtobag/{{this.id}}">
-                    <img src={{this.image}} alt="nacho-small" width="230" height="200">
-                    <div class="name">{{this.name}}</div>
-                    <div class="price">₱ {{this.price}}</div>
-                </a>
-            {{/each}}
-        </div>
-    </div>  
+    <br><br><br>
 </div>

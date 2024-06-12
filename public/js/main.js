@@ -13,7 +13,7 @@ $(document).ready(function(){
         bag.classList.toggle("hide");
     })
 
-    $("#searchbar-input").keyup(function(){
+    /*$("#searchbar-input").keyup(function(){
         var keyupTimer;
         clearTimeout(keyupTimer);
         keyupTimer = setTimeout(function(){
@@ -25,5 +25,5 @@ $(document).ready(function(){
             else
                 window.location.href = "http://localhost:3000/search?q=" + q;
         }, 1500);
-    })
+    })*/
 });

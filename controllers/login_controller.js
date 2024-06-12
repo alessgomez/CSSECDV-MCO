@@ -10,20 +10,20 @@ const { v4: uuidv4 } = require('uuid');
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
   points: 5, // Maximum number of attempts within the duration
-  duration: 300, // Timeframe in seconds for the rate limiting
-  blockDuration: 300, // Block duration in seconds after exceeding attempts
+  duration: 60, // Timeframe in seconds for the rate limiting
+  blockDuration: 60, // Block duration in seconds after exceeding attempts
 });
 
 // Rate limiter for emails
 const emailRateLimiter = new RateLimiterMemory({
   points: 3, // Maximum number of attempts within the duration
-  duration: 300, // Timeframe in seconds for the rate limiting
-  blockDuration: 300, // Block duration in seconds after exceeding attempts
+  duration: 60, // Timeframe in seconds for the rate limiting
+  blockDuration: 60, // Block duration in seconds after exceeding attempts
 });
 
 async function verifyLogin(connection, email, password) {
     return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM accounts WHERE email = ?';
+      const sql = 'SELECT * FROM accounts WHERE email = ?'; 
       connection.query(sql, [email], async (error, results) => {
         if (error) {
           reject(error);
