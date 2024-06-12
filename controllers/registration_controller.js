@@ -51,7 +51,7 @@ async function registerAccount(connection, newAccount) {
                         reject(error);
                     } else {
                         const sql = 'INSERT INTO accounts (firstName, lastName, email, password, phoneNumber, profilePicFilename, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-                        const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, 'NAMENAME', 'USER', new Date()];
+                        const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, newAccount.profilePicFilename, 'USER', new Date()];
 
                         connection.query(sql, values, async (error, results) => {
                             if (error) {
@@ -174,10 +174,11 @@ const registration_controller = {
                                 console.log('Image sanitized successfully.');
                                 console.log(sanitizedBuffer);
                                 // 3. save to folder - filename!
-                                filePath = './uploads/'
-                                fileExtension = req.file.mimetype.split("/")[1]
-                                newFileName = uuidv4() + "." + fileExtension
-                                fs.writeFileSync(filePath + newFileName, sanitizedBuffer)
+                                filePath = './uploads/';
+                                fileExtension = req.file.mimetype.split("/")[1];
+                                newFileName = uuidv4() + "." + fileExtension;
+                                fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
+                                newAccount['profilePicFilename'] = newFileName;
     
                                 // 4. save to DB. - fix db connection; 
                                 const account = await registerAccount(connection, newAccount);

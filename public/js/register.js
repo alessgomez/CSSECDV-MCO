@@ -100,7 +100,7 @@ $(document).ready(function(){
                     console.log("VALID MIME TYPE: " + mimeType)
 
                     var fileSize = fileUploadInput.files[0].size;
-                    if (fileSize < maxFileSize) {
+                    if (fileSize <= maxFileSize) {
                         console.log("VALID FILE SIZE: " + fileSize);
 
                         var image = new Image();
