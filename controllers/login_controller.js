@@ -10,15 +10,15 @@ const { v4: uuidv4 } = require('uuid');
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
   points: 5, // Maximum number of attempts within the duration
-  duration: 180, // Timeframe in seconds for the rate limiting
-  blockDuration: 180, // Block duration in seconds after exceeding attempts
+  duration: 300, // Timeframe in seconds for the rate limiting
+  blockDuration: 300, // Block duration in seconds after exceeding attempts
 });
 
 // Rate limiter for emails
 const emailRateLimiter = new RateLimiterMemory({
   points: 3, // Maximum number of attempts within the duration
-  duration: 180, // Timeframe in seconds for the rate limiting
-  blockDuration: 180, // Block duration in seconds after exceeding attempts
+  duration: 300, // Timeframe in seconds for the rate limiting
+  blockDuration: 300, // Block duration in seconds after exceeding attempts
 });
 
 async function verifyLogin(connection, email, password) {
@@ -104,7 +104,8 @@ const login_controller = {
           if (ipRateLimitStatus && ipRateLimitStatus.consumedPoints >= ipRateLimiter.points) {
               console.log("IP RATE LIMIT REACHED")
               console.log("ms before next: " + ipRateLimitStatus.msBeforeNext)
-              req.flash('error_msg', 'Too many login attempts.<br>Please try again after <strong>15 minutes</strong>.');
+              req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
+                'Alternatively, the account/IP may have been blocked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
               return res.redirect('/login');
           }
 
@@ -114,7 +115,7 @@ const login_controller = {
               console.log("EMAIL RATE LIMIT REACHED")
               console.log("ms before next: " + emailRateLimitStatus.msBeforeNext)
               req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
-                        'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+                        'Alternatively, the account/IP may have been blocked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
 
               // Consume points from IP rate limiter even if email rate limit is reached
               const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
@@ -129,7 +130,7 @@ const login_controller = {
               console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
               console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
               req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
-                'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+                'Alternatively, the account/IP may have been blocked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
               return res.redirect('/login');
           }
 
@@ -137,35 +138,15 @@ const login_controller = {
           const response = await axios.post(verificationUrl);
           const { success } = response.data;
 
-          if (!success) {
+          if (!success || !validateEmail(email) | !validatePW(pw)) {
               const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
               const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
               console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
               console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
               req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
-                'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
+                'Alternatively, the account/IP may have been blocked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
               return res.redirect('/login');
           }
-
-          if(!validateEmail(email)) {
-            const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
-            const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
-            console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
-            console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
-            req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
-              'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
-            return res.redirect('/login');
-          } 
-
-          if(!validatePW(pw)) {
-            const ipRateLimitResponse = await ipRateLimiter.consume(ipRateLimitKey);
-            const emailRateLimitResponse = await emailRateLimiter.consume(emailRateLimitKey);
-            console.log('IP rate limit points: ' + ipRateLimitResponse.remainingPoints);
-            console.log('email rate limit points: ' + emailRateLimitResponse.remainingPoints);
-            req.flash('error_msg', 'Invalid login attempt.<br><br>' +  
-              'Alternatively, the account may have been locked because of too many failed logins. If this is the case, please try again after <strong>15 minutes</strong>.');
-            return res.redirect('/login');
-          } 
 
           // Proceed with login verification if input validation, reCAPTCHA, and rate limiting ARE successful
           connection = await getConnectionFromPool();
