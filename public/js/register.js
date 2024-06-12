@@ -12,6 +12,14 @@ $(document).ready(function(){
     const maxFileSize = 3 * 1024 * 1024; 
     const acceptedTypes = ["image/jpeg", "image/png"]
 
+    var firstNameValid = false;
+    var lastNameValid = false;
+    var emailValid = false;
+    var phoneNumberValid = false;
+    var fileUploadValid = false;
+    var passwordValid = false;
+    var confirmPasswordValid = false;
+
     function readFile(file) {
         return new Promise((resolve, reject) => {
             const filereader = new FileReader();
@@ -38,6 +46,10 @@ $(document).ready(function(){
         }
     }
 
+    function validateFields() {
+        submit.disabled = !(firstNameValid && lastNameValid && emailValid && phoneNumberValid && fileUploadValid && passwordValid && confirmPasswordValid);
+    }
+
     emailInput.onkeyup = function() {
         var email = emailInput.value
         
@@ -47,12 +59,14 @@ $(document).ready(function(){
             if (regexEmail.test(email) == true && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255) {
                 console.log("VALID: " + email)
 
-                // TODO: Ensure that the address is deliverable 
-            }
-            else {
+                emailValid = true;
+            } else {
                 console.log("ERROR: Invalid email string")
+                emailValid = false;
             }
-        } 
+        }
+
+        validateFields();
     }
 
     phoneNumberInput.onkeyup = function() {
@@ -62,19 +76,23 @@ $(document).ready(function(){
             let regexPhoneNumber = new RegExp(/^(09|\+639)\d{9}$/)
             if (regexPhoneNumber.test(phoneNumber) == true) {
                 console.log("VALID: " + phoneNumber)
+                phoneNumberValid = true;
+
             } 
             else {
                 console.log("ERROR: Invalid phone number string")
+                phoneNumberValid = false;
             }
         }
-        else {
-            console.log("ERROR: Phone Number is NULL")
-        }
+
+        validateFields();
     }
 
     fileUploadInput.onchange = async function () {
         var fileName = fileUploadInput.files[0].name;
         
+        fileUploadValid = false;
+
         if (fileName != null) {
             let regexFileName = new RegExp(/[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
             
@@ -104,7 +122,8 @@ $(document).ready(function(){
 
                         image.onload = function() {
                             console.log("SEEMS LIKE A LEGIT IMAGE BASED ON FRONT-END!")
-                            profilePic.src = URL.createObjectURL(fileUploadInput.files[0]);  
+                            profilePic.src = URL.createObjectURL(fileUploadInput.files[0]);
+                            fileUploadValid = true;
                         }
                         image.onerror = function() {
                             console.log("ERROR: Cannot load image")
@@ -126,7 +145,9 @@ $(document).ready(function(){
         }
         else {
             console.log("ERROR: file name is null")
-        }  
+        }
+        
+        validateFields();
     }
 
     // name
@@ -138,11 +159,15 @@ $(document).ready(function(){
         if (firstName != null) {
             if (regexName.test(firstName)) {
                 console.log("VALID: " + firstName)
+                firstNameValid = true;
             } 
             else {
                 console.log("ERROR: Invalid first name")
+                firstNameValid = false;
             }
         }
+
+        validateFields();
     }
 
     lastNameInput.onkeyup = function() {
@@ -151,17 +176,18 @@ $(document).ready(function(){
         if (lastName != null) {
             if (regexName.test(lastName)) {
                 console.log("VALID: " + lastName)
+                lastNameValid = true;
             } 
             else {
                 console.log("ERROR: Invalid last name")
+                lastNameValid = false;
             }
         }
+
+        validateFields();
     }
 
     // password
-    var passwordValid = false;
-    var confirmPasswordValid = false;
-
     passwordInput.onkeyup = function() {
         var password = passwordInput.value
         
@@ -172,18 +198,17 @@ $(document).ready(function(){
 
             if (passwordValid && confirmPasswordValid) {
                 if (passwordInput.value === confirmPasswordInput.value) {
-                    submit.disabled = false;
                     error_msg.innerHTML = "";
                 }
                 else {
-                    submit.disabled = true;
                     error_msg.innerHTML = "Passwords do not match.";
                 }
             } else {
-                submit.disabled = true;
                 error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
             }
         }
+
+        validateFields();
     }
 
     confirmPasswordInput.onkeyup = function() {
@@ -196,18 +221,17 @@ $(document).ready(function(){
 
             if (passwordValid && confirmPasswordValid) {
                 if (passwordInput.value === confirmPasswordInput.value) {
-                    submit.disabled = false;
                     error_msg.innerHTML = "";
                 }
                 else {
-                    submit.disabled = true;
                     error_msg.innerHTML = "Passwords do not match.";
                 }
             } else {
-                submit.disabled = true;
                 error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
             }
         }
+
+        validateFields();
     }
 
     window.recaptchaExpiredCallback = function() {
