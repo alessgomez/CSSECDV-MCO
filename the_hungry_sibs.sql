@@ -184,7 +184,7 @@ ENGINE = InnoDB;
 -- PASSWORD: JohnD0e!
 -- -----------------------------------------------------
 INSERT INTO `the_hungry_sibs`.`accounts` (`firstName`, `lastName`, `email`, `password`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES ('John', 'Doe', 'johndoe@thehungrysibs.com', '$2b$12$BEhAs9dJtfNoYJLwePb8S.lOuJBCqCEBjIWRETY/OS6plDcTp9lQq', '09123456789', 'admin.jpg', 'ADMIN', CURRENT_TIMESTAMP);
+VALUES ('John', 'Doe', 'hannah.regine.fong@gmail.com', '$2b$12$BEhAs9dJtfNoYJLwePb8S.lOuJBCqCEBjIWRETY/OS6plDcTp9lQq', '09123456789', 'admin.jpg', 'ADMIN', CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Inserts initial user accounts
