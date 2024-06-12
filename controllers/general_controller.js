@@ -23,7 +23,7 @@ function checkAccountIdExists(connection, accountId) {
 const general_controller = {
 
     isPrivate: async function(req, res, next) {
-        if (!req.session || !req.session.accountId) {
+        if (!req.session || !req.session.accountId || !req.session.verified) {
             return res.redirect('/login');
         }
 
@@ -46,7 +46,7 @@ const general_controller = {
     },
 
     isPublic: async function(req, res, next) {
-        if (req.session && req.session.accountId) {
+        if (req.session && req.session.accountId && req.session.verified) {
             const connection = await getConnectionFromPool();
 
             try {

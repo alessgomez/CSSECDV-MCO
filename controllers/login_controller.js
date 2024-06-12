@@ -183,7 +183,8 @@ const login_controller = {
               sendOneTimeCode(req.body.email, oneTimeCode); 
               req.session.pendingOTC = oneTimeCode;
               req.session.pendingOTCTimestamp = Date.now();
-              req.session.pendingAccount = account;
+              req.session.accountId = account.accountId;
+              req.session.verified = false;
 
               console.log("OTP Sent")
               console.log("OTP: " + req.session.pendingOTC)
@@ -232,9 +233,9 @@ const login_controller = {
     postVerify2FA: async (req, res) => {
       try {
           const otc = req.body.otc;
-          const { pendingOTC, pendingOTCTimestamp, pendingAccount } = req.session;
+          const { pendingOTC, pendingOTCTimestamp, accountId } = req.session;
 
-          if (!pendingOTC || !pendingAccount) {
+          if (!pendingOTC || !accountId) {
               req.flash('error_msg', 'Session expired. Please log in again.');
               return res.redirect('/login');
           }
@@ -254,10 +255,9 @@ const login_controller = {
               return res.redirect('/2FA');
           }
 
-          req.session.accountId = pendingAccount.accountId;
+          req.session.verified = true;
           delete req.session.pendingOTC;
           delete req.session.pendingOTCTimestamp;
-          delete req.session.pendingAccount;
           res.redirect('/');
       } catch (error) {
           console.error('Error during 2FA verification:', error);
