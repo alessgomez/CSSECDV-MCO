@@ -53,9 +53,6 @@ $(document).ready(function(){
                 console.log("ERROR: Invalid email string")
             }
         } 
-        else {
-            console.log("ERROR: Email is NULL")
-        }
     }
 
     phoneNumberInput.onkeyup = function() {
@@ -113,10 +110,7 @@ $(document).ready(function(){
                             console.log("ERROR: Cannot load image")
                         }
 
-                        image.src = URL.createObjectURL(fileUploadInput.files[0]);  
-
-                        
-                        
+                        image.src = URL.createObjectURL(fileUploadInput.files[0]);                          
                     }
                     else {
                         console.log("ERROR: File size exceeds 3 MB")

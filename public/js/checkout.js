@@ -4,10 +4,6 @@ $(document).ready(function(){
     $("#bag-icon").off();
 
     $.get('/getCurrentAccount', {}, function (accountRes)    {
-        console.log("seniorID elngth: ");
-        console.log(accountRes.seniorID.length);
-        console.log("pwd id length ");
-        console.log(accountRes.pwdID.length);
         if (accountRes.seniorID.length == 0)
         {
             $("#seniorDiscount").prop('disabled', true);

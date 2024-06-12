@@ -131,7 +131,7 @@ const registration_controller = {
             if (!req.file) {
                 return res.status(400).json({ error: 'Please send file' });
             }
-            console.log(req.file)
+     
             var newAccount = {
                 first: req.body.firstname,
                 last: req.body.lastname,
@@ -166,8 +166,6 @@ const registration_controller = {
                         // 2. Image rewriting 
                         sanitizeImage(req.file.buffer)
                             .then(async sanitizedBuffer => {
-                                console.log('Image sanitized successfully.');
-                                console.log(sanitizedBuffer);
                                 // 3. save to folder - filename!
                                 filePath = './uploads/';
                                 fileExtension = req.file.mimetype.split("/")[1];
@@ -192,8 +190,11 @@ const registration_controller = {
                             })
                     }
                     else {
-                        console.log("ERROR: File signature invalid")
+                        throw new Error("ERROR: Invalid file.")
                     }
+                } 
+                else {
+                    throw new Error("ERROR: Invalid registration details.");
                 }
             }
             catch (error) {

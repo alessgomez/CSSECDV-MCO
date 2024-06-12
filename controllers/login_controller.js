@@ -10,15 +10,15 @@ const { v4: uuidv4 } = require('uuid');
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
   points: 5, // Maximum number of attempts within the duration
-  duration: 900000, // Timeframe in milliseconds for the rate limiting
-  blockDuration: 900000, // Block duration in milliseconds after exceeding attempts
+  duration: 180000, // Timeframe in milliseconds for the rate limiting
+  blockDuration: 180000, // Block duration in milliseconds after exceeding attempts
 });
 
 // Rate limiter for emails
 const emailRateLimiter = new RateLimiterMemory({
   points: 3, // Maximum number of attempts within the duration
-  duration: 900000, // Timeframe in milliseconds for the rate limiting
-  blockDuration: 900000, // Block duration in milliseconds after exceeding attempts
+  duration: 180000, // Timeframe in milliseconds for the rate limiting
+  blockDuration: 180000, // Block duration in milliseconds after exceeding attempts
 });
 
 async function verifyLogin(connection, email, password) {
