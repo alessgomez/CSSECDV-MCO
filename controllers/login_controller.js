@@ -80,10 +80,10 @@ const login_controller = {
 
     postVerifyAccount: async (req, res) => {
 
-        function validateEmail(email){
-            const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
-            return emailRegex.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255
-        }
+      function validateEmail(email){
+          const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
+          return emailRegex.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255
+      }
 
       function validatePW (pw) {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
@@ -180,7 +180,7 @@ const login_controller = {
               //return res.redirect('/'); // REMOVE AFTER IMPLEMENTING 2FA
 
               const oneTimeCode = generateOneTimeCode();
-              await sendOneTimeCode(req.body.email, oneTimeCode);
+              sendOneTimeCode(req.body.email, oneTimeCode); 
               req.session.pendingOTC = oneTimeCode;
               req.session.pendingOTCTimestamp = Date.now();
               req.session.pendingAccount = account;
@@ -284,7 +284,7 @@ const login_controller = {
           }
 
           const oneTimeCode = generateOneTimeCode();
-          await sendOneTimeCode(pendingAccount.email, oneTimeCode);
+          sendOneTimeCode(pendingAccount.email, oneTimeCode);
           req.session.pendingOTC = oneTimeCode;
           req.session.pendingOTCTimestamp = now;
 
