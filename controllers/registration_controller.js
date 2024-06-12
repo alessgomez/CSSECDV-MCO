@@ -82,7 +82,6 @@ function getMimeType(signature) {
 }
 
 function validateDetails(newAccount) {
-    // TODO: Backend format validation for name (?)
     const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/;
     const nameValid = nameRegex.test(newAccount.first) && nameRegex.test(newAccount.last);
 
@@ -94,10 +93,8 @@ function validateDetails(newAccount) {
   
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
     const passwordValid = passwordRegex.test(newAccount.pw);
-  
-    // TODO: Backend format validation for profile pic (?)
 
-    return nameValid && emailValid && phoneNumberValid && passwordValid; // TODO: Add validation for name and profile pic once done
+    return nameValid && emailValid && phoneNumberValid && passwordValid;
 }
 
 async function sanitizeImage(inputBuffer) {
@@ -144,8 +141,6 @@ const registration_controller = {
             };
 
             try {
-                let connection = await getConnectionFromPool();
-
                 const { 'g-recaptcha-response': recaptchaResponse } = req.body;
             
                 if (!recaptchaResponse) {
@@ -181,6 +176,7 @@ const registration_controller = {
                                 newAccount['profilePicFilename'] = newFileName;
     
                                 // 4. save to DB. - fix db connection; 
+                                let connection = await getConnectionFromPool();
                                 const account = await registerAccount(connection, newAccount);
             
                                 if (account === null) {

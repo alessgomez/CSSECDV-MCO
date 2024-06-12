@@ -12,7 +12,7 @@
 4. Install the necessary NPM libraries by running `npm install`.
 4. Make sure that MySQL Server is installed and running.
 5. Execute the SQL script [`the_hungry_sibs.sql`](https://github.com/alessgomez/CSSECDV-MCO/blob/main/the_hungry_sibs.sql) to create the schema and its corresponding tables, as well as preload the default admin account.
-6. To run the application, execute `node index.js`.
+6. To run the application, execute `node index.js` or `npm run start`.
 7. Navigate to `localhost:3000` on the browser to access the web application.
 
 ## NPM Packages and Third-Party Libraries

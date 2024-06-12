@@ -215,6 +215,10 @@ $(document).ready(function(){
             }
         }
     }
+
+    window.recaptchaExpiredCallback = function() {
+        submit.disabled = true;
+    }
 });
 
 /**
