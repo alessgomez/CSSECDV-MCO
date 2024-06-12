@@ -31,6 +31,18 @@ function fileFilter(req, file, cb) {
     }
 }
 
+const checkUuidExists = (connection, newId, field) => {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM accounts WHERE ? = ?', [field, newId], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results.length > 0);
+            }
+        });
+    });
+};
+
 // Initialize upload middleware and add file size limit
 const upload = multer({
     storage: storage,
@@ -44,14 +56,22 @@ async function registerAccount(connection, newAccount) {
             if (error) {
                 reject(error);
             } else {
-                if (results.length === 0) {            
+                if (results.length === 0) {
+                    let newId;
+                    let uuidExists = true;
+
+                    while (uuidExists) {
+                        newId = uuidv4();
+                        uuidExists = await checkUuidExists(connection, newId, "accountId");
+                    }
+
                     error, newAccount.pw = await bcrypt.hash(newAccount.pw, config.saltRounds);
 
                     if (error) {
                         reject(error);
                     } else {
-                        const sql = 'INSERT INTO accounts (firstName, lastName, email, password, phoneNumber, profilePicFilename, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-                        const values = [newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, newAccount.profilePicFilename, 'USER', new Date()];
+                        const sql = 'INSERT INTO accounts (accountId, firstName, lastName, email, password, phoneNumber, profilePicFilename, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                        const values = [newId, newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, newAccount.profilePicFilename, 'USER', new Date()];
 
                         connection.query(sql, values, async (error, results) => {
                             if (error) {
@@ -169,12 +189,21 @@ const registration_controller = {
                                 // 3. save to folder - filename!
                                 filePath = './uploads/';
                                 fileExtension = req.file.mimetype.split("/")[1];
-                                newFileName = uuidv4() + "." + fileExtension;
+
+                                let connection = await getConnectionFromPool();
+                                let newFileName;
+                                let uuidExists = true;
+
+                                while (uuidExists) {
+                                    newFileName = uuidv4() + "." + fileExtension;
+                                    uuidExists = await checkUuidExists(connection, newFileName, "profilePicFilename");
+                                }
+
                                 fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
                                 newAccount['profilePicFilename'] = newFileName;
     
-                                // 4. save to DB. - fix db connection; 
-                                let connection = await getConnectionFromPool();
+                                // 4. save to DB.
+                                
                                 const account = await registerAccount(connection, newAccount);
             
                                 if (account === null) {

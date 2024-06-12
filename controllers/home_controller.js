@@ -22,7 +22,7 @@ const home_controller = {
                     if (err) throw err;
         
                     if (results[0].role === "ADMIN") {
-                        connection.query("SELECT * FROM accounts WHERE role = ?", ["USER"], function(error, results) {
+                        connection.query("SELECT * FROM accounts WHERE role = 'USER' ORDER BY dateCreated ASC", function(error, results) {
                             if (error) {
                                 throw error;
                             } else {
