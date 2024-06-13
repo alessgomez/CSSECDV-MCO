@@ -32,7 +32,6 @@ async function verifyLogin(connection, email, password) {
             resolve(null); // account not found
           } else {
             const account = results[0];
-            //const passwordMatch = password === account.password; // REMOVE -> FOR TESTING ONLY
             const passwordMatch = await bcrypt.compare(password, account.password);
             if (passwordMatch) {
               resolve(account); // Passwords match, return account data
@@ -150,16 +149,10 @@ const login_controller = {
 
           // Proceed with login verification if input validation, reCAPTCHA, and rate limiting ARE successful
           connection = await getConnectionFromPool();
-          //logPoolStats()
 
           const account = await verifyLogin(connection, req.body.email, req.body.psw);
 
-          // checking if account is null
           if (account) {
-
-              //req.session.accountId = account.accountId; // REMOVE AFTER IMPLEMENTING 2FA
-              //return res.redirect('/'); // REMOVE AFTER IMPLEMENTING 2FA
-
               const oneTimeCode = generateOneTimeCode();
               sendOneTimeCode(req.body.email, oneTimeCode); 
               req.session.pendingOTC = oneTimeCode;
@@ -203,7 +196,6 @@ const login_controller = {
       finally {
         if (connection) {
           connection.release();
-          //logPoolStats(); 
         }
       }
     },

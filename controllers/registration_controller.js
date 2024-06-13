@@ -4,12 +4,10 @@ const fs = require('fs');
 const axios = require('axios');
 const config = JSON.parse(fs.readFileSync('config.json'));
 
-const sharp = require('sharp'); // has vulnerability BUT before the installed version 
+const sharp = require('sharp');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 
-//todo: fix filename 
-// Configure storage engine and filename
 const storage = multer.memoryStorage();
 
 function fileFilter(req, file, cb) {
@@ -47,7 +45,7 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 3 * 1024 * 1024}, // 3 MB file size limit
     fileFilter: fileFilter
-}).single('inputFile'); // 'myFile' is the name attribute of the file input field
+}).single('inputFile');
 
 async function registerAccount(connection, newAccount) {
     return new Promise((resolve, reject) => {
@@ -141,15 +139,15 @@ const registration_controller = {
         res.render("register", { siteKey: config.RECAPTCHA_SITE_KEY });
     },
 
-    postAddAccount:  function (req, res) { // TODO: 0. Validate file type? 
+    postAddAccount:  function (req, res) {
         upload(req, res, async (err) => {
             if (err) {
                 console.error(err);
-                req.flash('error_msg', 'Invalid registration attempt. Please try again.');
+                req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
                 return res.redirect('/register');
             }
             if (!req.file) {
-                req.flash('error_msg', 'Invalid registration attempt. Please try again.');
+                req.flash('error_msg', 'Please upload a file.');
                 return res.redirect('/register');
             }
      
@@ -202,7 +200,6 @@ const registration_controller = {
                                 newAccount['profilePicFilename'] = newFileName;
     
                                 // 4. save to DB.
-                                
                                 const account = await registerAccount(connection, newAccount);
             
                                 if (account === null) {
@@ -215,12 +212,13 @@ const registration_controller = {
                             })
                             .catch(error => {
                                 console.error('Image sanitization failed: ', error);
+                                throw new Error("ERROR: Image sanitization failed.");
                             })
                     }
                     else {
                         throw new Error("ERROR: Invalid file.")
                     }
-                } 
+                }
                 else {
                     throw new Error("ERROR: Invalid registration details.");
                 }

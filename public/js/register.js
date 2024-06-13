@@ -46,6 +46,28 @@ $(document).ready(function(){
 
     function validateFields() {
         submit.disabled = !(firstNameValid && lastNameValid && emailValid && phoneNumberValid && fileUploadValid && passwordsValid);
+
+        error_msg.innerHTML = "";
+
+        if ((firstNameInput.value.length > 0 && !firstNameValid) || (lastNameInput.value.length > 0 && !lastNameValid)) {
+            error_msg.innerHTML += "Invalid name.<br>";
+        }
+
+        if (emailInput.value.length > 0 && !emailValid) {
+            error_msg.innerHTML += "Invalid email.<br>";
+        }
+        
+        if (passwordInput.value.length > 0 && confirmPasswordInput.value.length > 0 && !passwordsValid) {
+            error_msg.innerHTML += "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.<br>";
+        }
+
+        if (phoneNumberInput.value.length > 0 && !phoneNumberValid) {
+            error_msg.innerHTML += "Invalid phone number.<br>";
+        }
+
+        if (fileUploadInput.files[0] != null && !fileUploadValid) {
+            error_msg.innerHTML += "Invalid file upload. File name can only contain alphanumeric characters, hypen, underscore, or period.<br>";
+        }
     }
 
     emailInput.onkeyup = function() {
@@ -136,17 +158,7 @@ $(document).ready(function(){
         
         passwordValid = password != null && regexPassword.test(password);
         
-        if (passwordValid && confirmPasswordValid) {
-            if (passwordInput.value === confirmPasswordInput.value) {
-                error_msg.innerHTML = "";
-                passwordsValid = true;
-            }
-            else {
-                error_msg.innerHTML = "Passwords do not match.";
-            }
-        } else {
-            error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
-        }
+        passwordsValid = passwordValid && confirmPasswordValid && passwordInput.value === confirmPasswordInput.value
 
         validateFields();
     }
@@ -156,17 +168,7 @@ $(document).ready(function(){
         
         confirmPasswordValid = confPassword != null && regexPassword.test(confPassword);
 
-        if (passwordValid && confirmPasswordValid) {
-            if (passwordInput.value === confirmPasswordInput.value) {
-                error_msg.innerHTML = "";
-                passwordsValid = true;
-            }
-            else {
-                error_msg.innerHTML = "Passwords do not match.";
-            }
-        } else {
-            error_msg.innerHTML = "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
-        }
+        passwordsValid = passwordValid && confirmPasswordValid && passwordInput.value === confirmPasswordInput.value
 
         validateFields();
     }
