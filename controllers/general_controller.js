@@ -54,8 +54,13 @@ const general_controller = {
 
         try {
             const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
-            if (accountIdExists)
-                return next();
+
+            if (accountIdExists) {
+                if (req.session.verified)
+                    res.redirect('/');
+                else
+                    return next();
+            }
             else   
                 res.redirect('/login');
         } catch (error) {
@@ -76,8 +81,7 @@ const general_controller = {
                 const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
                 if (accountIdExists){
                     res.redirect('/');
-                }
-                else    {
+                } else {
                     return next();
                 }
             } catch (error) {
