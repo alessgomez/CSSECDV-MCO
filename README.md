@@ -10,7 +10,7 @@
 1. Clone the repository or download and extract the zipped folder.
 2. Open a command prompt/terminal and navigate to the project folder.
 4. Install the necessary NPM libraries by running `npm install`.
-4. Ensure that MySQL Server is installed and and a connection instance is active.
+4. Ensure that MySQL Server is installed and a connection instance is active.
 5. Execute the SQL script [`the_hungry_sibs.sql`](https://github.com/alessgomez/CSSECDV-MCO/blob/main/the_hungry_sibs.sql) in your MySQL server instance to create the schema and its corresponding tables, as well as preload the default admin account.
 6. In the `index.js` and `db.js` files, modify the `options` and `pool` objects respectively to match your MySQL Server host, user, and/or password configurations.
 7. Execute `node index.js` or `npm run start` to run the application.
@@ -18,18 +18,20 @@
 
 ## NPM Packages and Third-Party Libraries
 ### NPM
-- bcrypt
-- connect-flash
 - express
-- express-handlebars
-- express-session
 - hbs
 - mysql
+- express-handlebars
+- express-session
 - express-mysql-session
+- connect-flash
 - axios
 - rate-limiter-flexible
 - nodemailer
 - uuid
+- bcrypt
+- sharp
+- multer
 
 ## Dummy Credentials
 ### Admin Account
