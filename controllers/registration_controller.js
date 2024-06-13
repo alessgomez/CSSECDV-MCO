@@ -25,8 +25,7 @@ function fileFilter(req, file, cb) {
     
     if (fileNameValid && fileTypeValid && fileNameLengthValid) {
         cb(null, true)
-    }
-    else {
+    } else {
         cb(null, false)
     }
 }
@@ -146,10 +145,12 @@ const registration_controller = {
         upload(req, res, async (err) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({error: err});
+                req.flash('error_msg', 'Invalid registration attempt. Please try again.');
+                return res.redirect('/register');
             }
             if (!req.file) {
-                return res.status(400).json({ error: 'Please send file' });
+                req.flash('error_msg', 'Invalid registration attempt. Please try again.');
+                return res.redirect('/register');
             }
      
             var newAccount = {
