@@ -50,8 +50,8 @@ $(document).ready(function(){
 
     emailInput.onkeyup = function() {
         var email = emailInput.value
-        let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/) // TODO: Double check regex
-        
+        let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/)
+
         emailValid = email != null && regexEmail.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255;
 
         validateFields();
@@ -72,7 +72,7 @@ $(document).ready(function(){
         fileUploadValid = false;
 
         if (fileName != null) {
-            let regexFileName = new RegExp(/[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/); //TODO: DOUBLE CHECK https://www.geeksforgeeks.org/how-to-validate-image-file-extension-using-regular-expression/
+            let regexFileName = new RegExp(/^[A-Za-z0-9]+([-._ ]*[A-Za-z0-9])*\.(jpg|jpeg|png|JPG|JPEG|PNG)$/);
             
             if (regexFileName.test(fileName) && fileName.length <= 255) {                
                 var file = fileUploadInput.files[0];

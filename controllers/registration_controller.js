@@ -14,7 +14,7 @@ const storage = multer.memoryStorage();
 
 function fileFilter(req, file, cb) {
     // 1. List allowed extensions
-    const fileNameRegex = /[^\s]+(.*?)(.(jpg|jpeg|png|JPG|JPEG|PNG))?$/
+    const fileNameRegex = /^[A-Za-z0-9]+([-._ ]*[A-Za-z0-9])*\.(jpg|jpeg|png|JPG|JPEG|PNG)$/
     const fileNameValid = fileNameRegex.test(file.originalname)
 
     // 2. Content-type validation
