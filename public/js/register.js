@@ -66,7 +66,7 @@ $(document).ready(function(){
         }
 
         if (fileUploadInput.files[0] != null && !fileUploadValid) {
-            error_msg.innerHTML += "Invalid file upload. File name can only contain alphanumeric characters, hypen, underscore, or period.<br>";
+            error_msg.innerHTML += "Invalid file upload. File size must be less than 3MB. File name can only contain alphanumeric characters, hypen, underscore, or period.<br>";
         }
     }
 
