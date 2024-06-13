@@ -10,15 +10,15 @@ const { v4: uuidv4 } = require('uuid');
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
   points: 5, // Maximum number of attempts within the duration
-  duration: 60, // Timeframe in seconds for the rate limiting
-  blockDuration: 60, // Block duration in seconds after exceeding attempts
+  duration: 300, // Timeframe in seconds for the rate limiting
+  blockDuration: 300, // Block duration in seconds after exceeding attempts
 });
 
 // Rate limiter for emails
 const emailRateLimiter = new RateLimiterMemory({
   points: 3, // Maximum number of attempts within the duration
-  duration: 60, // Timeframe in seconds for the rate limiting
-  blockDuration: 60, // Block duration in seconds after exceeding attempts
+  duration: 300, // Timeframe in seconds for the rate limiting
+  blockDuration: 300, // Block duration in seconds after exceeding attempts
 });
 
 async function verifyLogin(connection, email, password) {
@@ -237,11 +237,18 @@ const login_controller = {
               return res.redirect('/2FA');
           }
 
-          req.session.verified = true;
-          delete req.session.pendingOTC;
-          delete req.session.pendingOTCTimestamp;
-          delete req.session.email;
-          res.redirect('/');
+          req.session.regenerate((err) => {
+            if (err) {
+              console.error('Error during session regeneration:', err);
+              req.flash('error_msg', 'An error occurred during verification. Please try again.');
+              return res.redirect('/2FA');
+            }
+    
+            req.session.accountId = accountId;
+            req.session.verified = true;
+    
+            return res.redirect('/');
+          });
       } catch (error) {
           console.error('Error during 2FA verification:', error);
           req.flash('error_msg', 'An error occurred during verification. Please try again.');
