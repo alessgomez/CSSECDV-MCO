@@ -3,6 +3,21 @@
 		<title>The Hungry Sibs</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <script>
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+            window.onload = function() {
+                history.pushState(null, '', location.href);
+                history.back();
+                history.forward();
+                window.onpopstate = function() {
+                    history.go(1);
+                };
+            };
+        </script>
+        
     <link rel="stylesheet" type="text/css" media="all" href="css/forms.css"/>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script type="text/javascript" src="js/login.js"></script>
