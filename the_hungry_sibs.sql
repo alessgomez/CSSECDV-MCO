@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`sessiondata` (
   CONSTRAINT `sessionData_sessionId`
     FOREIGN KEY (`sessionId`)
     REFERENCES `the_hungry_sibs`.`Sessions` (`session_id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `sessionData_accountId`
     FOREIGN KEY (`accountId`)
