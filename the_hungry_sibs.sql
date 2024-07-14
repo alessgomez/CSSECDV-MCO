@@ -162,6 +162,62 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `the_hungry_sibs`.`Sessions`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Sessions` (
+  `session_id` VARCHAR(128) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
+  `expires` INT UNSIGNED NOT NULL,
+  `data` MEDIUMTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NULL DEFAULT NULL,
+  PRIMARY KEY (`session_id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `the_hungry_sibs`.`sessiondata`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`sessiondata` (
+  `sessionId` VARCHAR(128) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
+  `accountId` VARCHAR(36) NOT NULL,
+  `verified` TINYINT(1) NOT NULL,
+  `pendingOTC` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`sessionId`),
+  INDEX `sessionData_sessionId_idx` (`sessionId` ASC) VISIBLE,
+  INDEX `sessionData_accountId_idx` (`accountId` ASC) VISIBLE,
+  CONSTRAINT `sessionData_sessionId`
+    FOREIGN KEY (`sessionId`)
+    REFERENCES `the_hungry_sibs`.`Sessions` (`session_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `sessionData_accountId`
+    FOREIGN KEY (`accountId`)
+    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `the_hungry_sibs`.`Feedbacks`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Feedbacks` (
+  `feedbackId` INT NOT NULL AUTO_INCREMENT,
+  `accountId` VARCHAR(36) NOT NULL,
+  `subject` VARCHAR(45) NOT NULL,
+  `message` VARCHAR(200) NOT NULL,
+  PRIMARY KEY (`feedbackId`),
+  INDEX `feedbacks_accountId_idx` (`accountId` ASC) VISIBLE,
+  UNIQUE INDEX `feedbackId_UNIQUE` (`feedbackId` ASC) VISIBLE,
+  CONSTRAINT `feedbacks_accountId`
+    FOREIGN KEY (`accountId`)
+    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Inserts initial admin account (John Doe)
 -- EMAIL: hannah.regine.fong@gmail.com
 -- PASSWORD: JohnD0e!
