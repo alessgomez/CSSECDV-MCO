@@ -1,5 +1,6 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
+const home_controller = require('./home_controller');
 
 async function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
@@ -16,6 +17,20 @@ async function checkAccountIdExists(connection, accountId) {
                 const account = results[0]
                 resolve(true);
             }
+        }
+      });
+    });
+}
+
+async function checkAccountRole(connection, accountId) {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM accounts WHERE accountId = ?';
+      connection.query(sql, [accountId], (error, results) => {
+        if (error) {
+          reject(error);
+        } 
+        else {
+            resolve(results[0].role);
         }
       });
     });
@@ -38,6 +53,43 @@ async function deleteSessionDataEntry(connection, sessionId) {
       });
     });
 }
+
+const verifyRole = (requiredRole) => {return async function(req, res, next) {
+    if (!req.session) {
+        return res.redirect('/login');
+    }
+
+    const connection = await getConnectionFromPool();
+
+    try {
+        const sessionData = await getSessionDataEntry(connection, req.session.id)
+
+        if (sessionData) {
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+            if (accountIdExists && sessionData.verified) {
+                const role = await checkAccountRole(connection, sessionData.accountId);
+
+                if (role === requiredRole) {
+                    return next(); // Allow access to the requested page
+                } else {
+                    res.redirect('/'); // Redirects back to their designated home page
+                }
+            }
+            else {
+                res.redirect('/login');
+            }
+        } else {
+            res.redirect('/login');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+    finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+}}
 
 const general_controller = {
 
@@ -135,9 +187,47 @@ const general_controller = {
         }
         finally {
             if (connection) {
-            connection.release();
+                connection.release();
             }
         }
+    },
+
+    getHome: async function(req, res, next) {
+            if (!req.session) {
+                return res.redirect('/login');
+            }
+    
+            const connection = await getConnectionFromPool();
+    
+            try {
+                const sessionData = await getSessionDataEntry(connection, req.session.id)
+    
+                if (sessionData) {
+                    const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+                    if (accountIdExists && sessionData.verified) {
+                        const role = await checkAccountRole(connection, sessionData.accountId);
+
+                        if (role === "USER") {
+                            home_controller.getUserHome(req, res);
+                        } else if (role === "ADMIN") {
+                            home_controller.getAdminHome(req, res);
+                        } else {
+                            res.redirect('/login');
+                        }
+                    } else {
+                        res.redirect('/login');
+                    }
+                } else {
+                    res.redirect('/login');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+            finally {
+                if (connection) {
+                    connection.release();
+                }
+            }
     },
 
     getLogout: async function(req, res) {
@@ -166,4 +256,4 @@ const general_controller = {
 
 }
 
-module.exports = general_controller;
+module.exports = {general_controller, verifyRole};
