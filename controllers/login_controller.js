@@ -34,7 +34,7 @@ async function verifyLogin(connection, email, password) {
             const account = results[0];
             const passwordMatch = await bcrypt.compare(password, account.password);
             if (passwordMatch) {
-              resolve(account); // Passwords match, return account data
+              resolve(account.accountId); // Passwords match, return account data
             } else {
               resolve(null); // Passwords do not match
             }
@@ -61,6 +61,77 @@ async function getEmail(connection, accountId) {
     });
   });
 }
+
+async function createSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp) {
+  return new Promise((resolve, reject) => {
+    const verified = false
+    const sql = 'INSERT INTO sessiondata (sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp) VALUES (?, ?, ?, ?, ?)';
+      const values = [sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp];
+      connection.query(sql, values, async (error, results) => {
+          if (error) {
+              reject(error);
+          } else {
+              resolve(results); // session data entry successfully created
+          }
+      });
+  });
+}
+
+async function getSessionDataEntry(connection, sessionId) {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM sessiondata WHERE sessionId = ?'; 
+    connection.query(sql, [sessionId], async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.length === 0) {
+          resolve(null); // session data not found
+        } else {
+          const sessionData = results[0];
+          resolve(sessionData); 
+        }
+      }
+    });
+  });
+}
+
+async function updateSessionDataVerified(connection, sessionId) {
+  return new Promise((resolve, reject) => {
+    const verified = true; 
+    const sql = 'UPDATE sessiondata SET verified = ?, pendingOTC = ?, pendingOTCTimestamp = ?  WHERE sessionId = ?';
+    const values = [verified, null, null, sessionId];
+    connection.query(sql, values, async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.affectedRows > 0) {
+          resolve(true); // Update was successful
+        } else {
+          resolve(false); // No rows were updated (sessionId not found)
+        }
+      }
+    });
+  });
+}
+
+async function updateSessionDataOTC(connection, sessionId, newPendingOTC, newPendingOTCTimestamp) {
+  return new Promise((resolve, reject) => {
+    const sql = 'UPDATE sessiondata SET pendingOTC = ?, pendingOTCTimestamp = ? WHERE sessionId = ?';
+    const values = [newPendingOTC, newPendingOTCTimestamp, sessionId];
+    connection.query(sql, values, async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.affectedRows > 0) {
+          resolve(true); // Update was successful
+        } else {
+          resolve(false); // No rows were updated (sessionId not found)
+        }
+      }
+    });
+  });
+}
+
 
 // Function to send email with one-time code
 async function sendOneTimeCode(email, code) {
@@ -168,18 +239,20 @@ const login_controller = {
           // Proceed with login verification if input validation, reCAPTCHA, and rate limiting ARE successful
           connection = await getConnectionFromPool();
 
-          const account = await verifyLogin(connection, req.body.email, req.body.psw);
+          const accountId = await verifyLogin(connection, req.body.email, req.body.psw);
 
-          if (account) {
+          if (accountId) {
               const oneTimeCode = generateOneTimeCode();
               sendOneTimeCode(req.body.email, oneTimeCode); 
-              req.session.pendingOTC = oneTimeCode;
-              req.session.pendingOTCTimestamp = Date.now();
-              req.session.accountId = account.accountId;
-              req.session.verified = false;
+              await createSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date())
 
+              // req.session.pendingOTC = oneTimeCode;
+              // req.session.pendingOTCTimestamp = Date.now();
+              // req.session.accountId = accountId;
+              // req.session.verified = false;
+           
               console.log("OTP Sent")
-              console.log("OTP: " + req.session.pendingOTC)
+              console.log("OTP: " + oneTimeCode)
               return res.redirect('/2FA');
           }
           else {     
@@ -222,11 +295,17 @@ const login_controller = {
     },
 
     postVerify2FA: async (req, res) => {
+      let connection;
       try {
+          connection = await getConnectionFromPool();
           const otc = req.body.otc;
-          const { pendingOTC, pendingOTCTimestamp, accountId } = req.session;
+          const sessionData = await getSessionDataEntry(connection, req.session.id)
+          const pendingOTC = sessionData.pendingOTC
+          const pendingOTCTimestamp = sessionData.pendingOTCTimestamp
+          const accountId = sessionData.accountId
+          //const { pendingOTC, pendingOTCTimestamp, accountId } = req.session;
 
-          if (!pendingOTC || !accountId) {
+          if (!sessionData || !pendingOTC || !accountId) {
               req.flash('error_msg', 'Session expired. Please log in again.');
               return res.redirect('/login');
           }
@@ -246,35 +325,48 @@ const login_controller = {
               return res.redirect('/2FA');
           }
 
-          req.session.regenerate((err) => {
-            if (err) {
-              console.error('Error during session regeneration:', err);
-              req.flash('error_msg', 'An error occurred during verification. Please try again.');
-              return res.redirect('/2FA');
-            }
+          // req.session.regenerate((err) => {
+          //   if (err) {
+          //     console.error('Error during session regeneration:', err);
+          //     req.flash('error_msg', 'An error occurred during verification. Please try again.');
+          //     return res.redirect('/2FA');
+          //   }
     
-            req.session.accountId = accountId;
-            req.session.verified = true;
+          //   req.session.accountId = accountId;
+          //   req.session.verified = true;
     
-            return res.redirect('/');
-          });
+          //   return res.redirect('/');
+          // });
+
+          await updateSessionDataVerified(connection, req.session.id)
+          return res.redirect('/');
+
       } catch (error) {
           console.error('Error during 2FA verification:', error);
           req.flash('error_msg', 'An error occurred during verification. Please try again.');
           return res.redirect('/2FA');
+      } finally {
+        if (connection) {
+          connection.release();
+        }
       }
   },
 
   postResendOTC: async (req, res) => {
+      let connection;
       try {
-          const { accountId, pendingOTCTimestamp} = req.session;
+          //const { accountId, pendingOTCTimestamp} = req.session;
+          const connection = await getConnectionFromPool()
+          const sessionData = await getSessionDataEntry(connection, req.session.id)
+          const pendingOTCTimestamp = sessionData.pendingOTCTimestamp
+          const accountId = sessionData.accountId
 
-          if (!accountId) {     
+          if (!sessionData || !accountId) {     
               req.flash('error_msg', 'Session expired. Please log in again.');
               return res.redirect('/login');
           }
 
-          const email = getEmail(connection, accountId)
+          const email = await getEmail(connection, accountId)
 
           const now = Date.now();
           const resendCooldown = 2 * 60 * 1000; // 2 minutes
@@ -286,8 +378,11 @@ const login_controller = {
 
           const oneTimeCode = generateOneTimeCode();
           sendOneTimeCode(email, oneTimeCode);
-          req.session.pendingOTC = oneTimeCode;
-          req.session.pendingOTCTimestamp = now;
+
+          //req.session.pendingOTC = oneTimeCode;
+          //req.session.pendingOTCTimestamp = now;
+
+          await updateSessionDataOTC(connection, req.session.id, oneTimeCode, new Date())
 
           req.flash('success_msg', 'A new verification code has been sent to your email.');
           res.redirect('/2FA');
@@ -295,8 +390,15 @@ const login_controller = {
           console.error('Error during resend OTC:', error);
           req.flash('error_msg', 'An error occurred while sending the one-time code. Please try again.');
           return res.redirect('/2FA');
-      }
+      } finally {
+        if (connection) {
+          connection.release();
+        }
+      }  
   }
 }
 
-module.exports = login_controller;
+module.exports = {
+  login_controller,
+  getSessionDataEntry
+};

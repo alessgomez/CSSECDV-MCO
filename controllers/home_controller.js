@@ -1,4 +1,6 @@
 const {getConnectionFromPool} = require('../db');
+const { getSessionDataEntry } = require('./login_controller');
+
 const home_controller = {
 
     getHome: async (req, res) => {
@@ -17,8 +19,9 @@ const home_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            if (req.session.accountId) {
-                connection.query("SELECT * FROM accounts WHERE accountId = ?", [req.session.accountId], function(err, results) {
+            sessionData = await getSessionDataEntry(connection, req.session.id)
+            if (sessionData.accountId) {
+                connection.query("SELECT * FROM accounts WHERE accountId = ?", [sessionData.accountId], function(err, results) {
                     if (err) throw err;
         
                     if (results[0].role === "ADMIN") {

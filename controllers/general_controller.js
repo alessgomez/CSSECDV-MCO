@@ -1,6 +1,7 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
+const { getSessionDataEntry } = require('./login_controller');
 
-function checkAccountIdExists(connection, accountId) {
+async function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
       const sql = 'SELECT * FROM accounts WHERE accountId = ?';
       connection.query(sql, [accountId], (error, results) => {
@@ -20,21 +21,49 @@ function checkAccountIdExists(connection, accountId) {
     });
 }
 
+async function deleteSessionDataEntry(connection, sessionId) {
+    return new Promise((resolve, reject) => {
+      const sql = 'DELETE FROM sessiondata WHERE sessionId = ?';
+      connection.query(sql, [sessionId], (error, results) => {
+        if (error) {
+          reject(error);
+        } 
+        else {
+            if (results.affectedRows === 0) {
+                resolve(false); // No rows were deleted, sessionId not found
+              } else {
+                resolve(true); // Deletion was successful
+              }
+        }
+      });
+    });
+}
+
 const general_controller = {
 
     isPrivate: async function(req, res, next) {
-        if (!req.session || !req.session.accountId || !req.session.verified) {
+
+        if (!req.session) {
             return res.redirect('/login');
         }
 
         const connection = await getConnectionFromPool();
 
         try {
-            const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
-            if (accountIdExists)
-                return next();
-            else   
+            
+            const sessionData = await getSessionDataEntry(connection, req.session.id)
+
+            if (sessionData) {
+                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+
+                if (accountIdExists && sessionData.verified)    
+                    return next();
+                else    
+                    res.redirect('/login');
+            }
+            else    
                 res.redirect('/login');
+           
         } catch (error) {
             console.error(error);
         }
@@ -46,23 +75,29 @@ const general_controller = {
     },
 
     isPrivate2FA: async function(req, res, next) {
-        if (!req.session || !req.session.accountId) {
+        if (!req.session) {
             return res.redirect('/login');
         }
 
         const connection = await getConnectionFromPool();
 
         try {
-            const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
+            const sessionData = await getSessionDataEntry(connection, req.session.id)
 
-            if (accountIdExists) {
-                if (req.session.verified)
-                    res.redirect('/');
+            if (sessionData) {
+                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+                if (accountIdExists) {
+                    if (sessionData.verified)
+                        res.redirect('/');
+                    else
+                        return next();
+                }
                 else
-                    return next();
+                    res.redirect('/login');
             }
-            else   
+            else
                 res.redirect('/login');
+            
         } catch (error) {
             console.error(error);
         }
@@ -74,16 +109,44 @@ const general_controller = {
     },
 
     isPublic: async function(req, res, next) {
-        if (req.session && req.session.accountId && req.session.verified) {
-            const connection = await getConnectionFromPool();
+        if (!req.session) {
+            return next();
+        }
 
-            try {
-                const accountIdExists = await checkAccountIdExists(connection, req.session.accountId);
-                if (accountIdExists){
+        const connection = await getConnectionFromPool();
+
+        try {
+            const sessionData = await getSessionDataEntry(connection, req.session.id)
+
+            if (sessionData) {
+                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+                if (accountIdExists && sessionData.verified){
                     res.redirect('/');
                 } else {
                     return next();
                 }
+            }
+            else {
+                return next();
+            }
+           
+        } catch (error) {
+            console.error(error);
+        }
+        finally {
+            if (connection) {
+            connection.release();
+            }
+        }
+    },
+
+    getLogout: async function(req, res) {
+
+        if (req.session)
+        {
+            const connection = await getConnectionFromPool();
+            try {
+                await deleteSessionDataEntry(connection, req.session.id)
             } catch (error) {
                 console.error(error);
             }
@@ -92,16 +155,7 @@ const general_controller = {
                 connection.release();
                 }
             }
-        }
-        else {
-            return next();
-        }
-        
-    },
-
-    getLogout: function(req, res) {
-        if (req.session)
-        {
+            
             req.session.destroy(() => {
                 res.clearCookie('thehungrycookie'); 
                 console.log("Session successfully destroyed.");
