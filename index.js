@@ -12,7 +12,10 @@ const options = {
     port: 3306,
     user:'root',
     password: '',
-	database:'the_hungry_sibs'
+	database:'the_hungry_sibs',
+    clearExpired: true,
+    checkExpirationInterval: 1000 * 60 * 5, 
+    expiration: 1000 * 60 * 15
 };
 const sessionStore = new MySQLStore(options);
 
@@ -26,10 +29,10 @@ app.use(session({
     secret: 'thehungrysecret',
     store: sessionStore,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
         secure: false, // change to true wafter converting to https
-        maxAge: 1000 * 60 * 60, // 1 hour
+        maxAge: 1000 * 60 * 15, 
         httpOnly: true,
         sameSite: 'strict' // cookeis only included when navigating within same site to mitigate CSRF attacks
     }
