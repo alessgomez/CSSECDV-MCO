@@ -44,6 +44,24 @@ async function verifyLogin(connection, email, password) {
     });
 }
 
+async function getEmail(connection, accountId) {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM accounts WHERE accountId = ?'; 
+    connection.query(sql, [accountId], async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.length === 0) {
+          resolve(null); // account not found
+        } else {
+          const email = results[0].email;
+          resolve(email); 
+        }
+      }
+    });
+  });
+}
+
 // Function to send email with one-time code
 async function sendOneTimeCode(email, code) {
    // Create a transporter using SMTP transport
@@ -158,7 +176,6 @@ const login_controller = {
               req.session.pendingOTC = oneTimeCode;
               req.session.pendingOTCTimestamp = Date.now();
               req.session.accountId = account.accountId;
-              req.session.email = account.email;
               req.session.verified = false;
 
               console.log("OTP Sent")
@@ -250,12 +267,14 @@ const login_controller = {
 
   postResendOTC: async (req, res) => {
       try {
-          const { accountId, pendingOTCTimestamp, email } = req.session;
+          const { accountId, pendingOTCTimestamp} = req.session;
 
           if (!accountId) {     
               req.flash('error_msg', 'Session expired. Please log in again.');
               return res.redirect('/login');
           }
+
+          const email = getEmail(connection, accountId)
 
           const now = Date.now();
           const resendCooldown = 2 * 60 * 1000; // 2 minutes
