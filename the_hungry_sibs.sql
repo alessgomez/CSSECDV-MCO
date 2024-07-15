@@ -1,4 +1,4 @@
---- MySQL Workbench Forward Engineering
+-- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Accounts` (
   `role` VARCHAR(45) NOT NULL,
   `dateCreated` DATETIME NOT NULL,
   `dateEdited` DATETIME NULL DEFAULT NULL,
-  `dateDeleted` DATETIME NULL DEFAULT NULL,
+  `dateArchived` DATETIME NULL DEFAULT NULL,
+  `isArchived` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`accountId`),
   UNIQUE INDEX `accountId_UNIQUE` (`accountId` ASC) VISIBLE,
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE,
