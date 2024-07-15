@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Products` (
   `category` VARCHAR(45) NOT NULL,
   `price` DECIMAL(10,0) NOT NULL,
   `imageFilename` VARCHAR(45) NOT NULL,
+  `isArchived` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`productId`),
   UNIQUE INDEX `productId_UNIQUE` (`productId` ASC) VISIBLE)
 ENGINE = InnoDB
