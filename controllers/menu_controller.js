@@ -24,7 +24,7 @@ const menu_controller = {
             }
             
             const sql = "SELECT * FROM products ORDER BY price";
-            connection.query(sql, 'main', async (error, results) => {
+            connection.query(sql, async (error, results) => {
                 if (error) {
                     reject(error);
                 } else {

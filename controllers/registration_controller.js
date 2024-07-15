@@ -7,6 +7,7 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const sharp = require('sharp');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const { table } = require('console');
 
 const storage = multer.memoryStorage();
 
@@ -30,7 +31,13 @@ function fileFilter(req, file, cb) {
 
 const checkUuidExists = (connection, tableName, newId, field) => {
     return new Promise((resolve, reject) => {
-        connection.query('SELECT * FROM ? WHERE ? = ?', [tableName, field, newId], (error, results) => {
+        let sql = '';
+        if(tableName == 'accounts') 
+            sql = 'SELECT * FROM accounts WHERE ? = ?';
+        else if (tableName == 'bag') 
+            sql = 'SELECT * FROM bag WHERE ? = ?'
+
+        connection.query(sql, [field, newId], (error, results) => {
             if (error) {
                 reject(error);
             } else {
@@ -74,7 +81,7 @@ async function registerAccount(connection, newAccount) {
                             if (error) {
                                 reject(error);
                             } else {
-                                resolve(results); // Account successfully registered
+                                resolve([results, newId]); // Account successfully registered
                             }
                         });
                     }
@@ -98,8 +105,19 @@ async function createBag(connection, accountId) {
 
                     while(uuidExists) {
                         newId = uuidv4();
-                        uuidExists = await checkUuidExists(connection,  "bag", newId, "accountId")
+                        uuidExists = await checkUuidExists(connection, "bag", newId, "bagId");
                     }
+
+                    const sql = 'INSERT INTO bag (bagId, accountId, subtotal, deliveryFee, total) VALUES (?, ?, ?, ?, ?)';
+                    const values = [newId, accountId, 0, 0, 0];
+
+                    connection.query(sql, values, async(error, results) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(results);
+                        }
+                    })
 
                 } else {
                     resolve(null); // Bag with the given accountId already exists
@@ -230,7 +248,7 @@ const registration_controller = {
                                     req.flash('error_msg', 'Invalid details.');
                                     return res.redirect('/register');
                                 } else {
-                                    const bag = await createBag(connection, account.accountId);
+                                    const bag = await createBag(connection, account[1]);
                                     if (bag === null) {
                                         req.flash('error_msg', 'Invalid details.'); //TODO: DOUBLE CHECK IF CORRECT
                                         return res.redirect('/register');
@@ -255,7 +273,6 @@ const registration_controller = {
             }
             catch (error) {
                 req.flash('error_msg', 'An error occurred during registration. Please try again.');
-                console.log(error);
                 return res.redirect('/login');
             }
         })
