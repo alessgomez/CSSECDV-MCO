@@ -3,6 +3,10 @@ const { general_controller, verifyRole } = require('../controllers/general_contr
 const registration_controller = require('../controllers/registration_controller.js')
 const { login_controller } = require('../controllers/login_controller.js');
 const profile_controller = require('../controllers/profile_controller.js');
+const menu_controller = require('../controllers/menu_controller.js');
+const contact_controller = require('../controllers/contact_controller.js');
+const about_controller = require('../controllers/about_controller.js');
+const bag_controller = require('../controllers/bag_controller.js');
 
 const app = express();
 
@@ -22,6 +26,10 @@ app.get('/', general_controller.isPrivate, general_controller.getHome);
 app.get('/logout', general_controller.isPrivate, general_controller.getLogout);
 app.get('/2FA', general_controller.isPrivate2FA, login_controller.get2FA);
 app.get('/profile', general_controller.isPrivate, verifyRole('USER'), profile_controller.getProfile);
+app.get('/menu', menu_controller.getMenu);
+app.get('/contact', contact_controller.getContact);
+app.get('/about', about_controller.getAbout);
+app.get('/addtobag/:id', bag_controller.getAddToBag);
 
 // POSTs
 app.post('/verifyAccount', login_controller.postVerifyAccount);

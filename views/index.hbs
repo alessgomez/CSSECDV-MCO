@@ -1,7 +1,7 @@
 <div class="parent-container">
     <div class="child picture-container">
         <img src="images/welcome.png" style="width:100%">
-        <div class="button-container"><a>View Menu</a></div> <!-- href=/menu -->
+        <div class="button-container"><a href=/menu>View Menu</a></div>
     </div>    
 
     <div class="child slide-container">
@@ -81,5 +81,21 @@
             </div>
         </div>
     </div>
-    <br><br><br>
+
+    <div class="child best-container">
+        <div class="title-container">
+            <div class="header">Best Sellers</div>
+            <div class="subheader">Try our signature dishes!</div>
+        </div>
+
+        <div class="content-container">
+            {{#each bestSellers}}
+                <a class="best" href="/addtobag/{{this.id}}">
+                    <img src={{this.image}} width="230" height="200">
+                    <div class="name">{{this.name}}</div>
+                    <div class="price">₱ {{this.price}}</div>
+                </a>
+            {{/each}}
+        </div>
+    </div>  
 </div>

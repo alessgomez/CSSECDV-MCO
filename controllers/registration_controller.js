@@ -28,9 +28,9 @@ function fileFilter(req, file, cb) {
     }
 }
 
-const checkUuidExists = (connection, newId, field) => {
+const checkUuidExists = (connection, tableName, newId, field) => {
     return new Promise((resolve, reject) => {
-        connection.query('SELECT * FROM accounts WHERE ? = ?', [field, newId], (error, results) => {
+        connection.query('SELECT * FROM ? WHERE ? = ?', [tableName, field, newId], (error, results) => {
             if (error) {
                 reject(error);
             } else {
@@ -59,7 +59,7 @@ async function registerAccount(connection, newAccount) {
 
                     while (uuidExists) {
                         newId = uuidv4();
-                        uuidExists = await checkUuidExists(connection, newId, "accountId");
+                        uuidExists = await checkUuidExists(connection, "accounts", newId, "accountId");
                     }
 
                     error, newAccount.pw = await bcrypt.hash(newAccount.pw, config.saltRounds);
@@ -84,6 +84,30 @@ async function registerAccount(connection, newAccount) {
             }
         })
     });
+}
+
+async function createBag(connection, accountId) {
+    return new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM bag WHERE accountId = ?', [accountId], async (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                if (results.length === 0) {
+                    let newId;
+                    let uuidExists = true;
+
+                    while(uuidExists) {
+                        newId = uuidv4();
+                        uuidExists = await checkUuidExists(connection,  "bag", newId, "accountId")
+                    }
+
+                } else {
+                    resolve(null); // Bag with the given accountId already exists
+                }
+            }
+
+        })
+    })
 }
 
 function getMimeType(signature) {
@@ -194,7 +218,7 @@ const registration_controller = {
 
                                 while (uuidExists) {
                                     newFileName = uuidv4() + "." + fileExtension;
-                                    uuidExists = await checkUuidExists(connection, newFileName, "profilePicFilename");
+                                    uuidExists = await checkUuidExists(connection, "accounts", newFileName, "profilePicFilename");
                                 }
                                 fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
                                 newAccount['profilePicFilename'] = newFileName;
@@ -206,8 +230,14 @@ const registration_controller = {
                                     req.flash('error_msg', 'Invalid details.');
                                     return res.redirect('/register');
                                 } else {
-                                    req.flash('success_msg', 'Account successfully registered. You may log in.');
-                                    return res.redirect('/login');
+                                    const bag = await createBag(connection, account.accountId);
+                                    if (bag === null) {
+                                        req.flash('error_msg', 'Invalid details.'); //TODO: DOUBLE CHECK IF CORRECT
+                                        return res.redirect('/register');
+                                    } else {
+                                        req.flash('success_msg', 'Account successfully registered. You may log in.');
+                                        return res.redirect('/login');
+                                    }
                                 }
                             })
                             .catch(error => {
