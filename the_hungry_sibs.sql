@@ -179,6 +179,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`SessionData` (
   `accountId` VARCHAR(36) NOT NULL,
   `verified` TINYINT(1) NOT NULL,
   `pendingOTC` VARCHAR(45) NULL DEFAULT NULL,
+	`pendingOTCTimestamp` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`sessionId`),
   INDEX `sessionData_sessionId_idx` (`sessionId` ASC) VISIBLE,
   INDEX `sessionData_accountId_idx` (`accountId` ASC) VISIBLE,
