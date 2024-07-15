@@ -1,0 +1,57 @@
+<div class="parent-container">
+    <div class="child category-container">
+        <div class="title-container">
+            <div class="header">WELCOME, ADMIN!</div>
+            <button class="viewProductsBtn" onclick="window.location.href='/viewproductspage'">View Products</button>
+            <button class="addProductBtn" onclick="window.location.href='/addproductpage'">Add Product</button>
+        </div>
+        
+        <div class="add-product-container">
+            <div class="container">
+                <h1 id="header">Add a Product</h1>
+                <form action="/addproduct" method="post" enctype="multipart/form-data">
+
+                    <label for="name"><b>Name *</b></label><br>
+                    <input type="text" placeholder="Enter Product Name" id="name" name="name" required>
+
+                    <div class="break"></div>
+
+                    <label for="category"><b>Category *</b></label><br>
+                    <select id="category" name="category" required>
+                        <option value="" selected disabled>Select a category...</option>
+                        <option value="main">Main</option>
+                        <option value="snack">Snack</option>
+                        <option value="drink">Drink</option>
+                        <option value="dessert">Dessert</option>
+                        <!-- Add more options as needed -->
+                    </select>
+
+                    <div class="break"></div>
+
+                    <label for="price"><b>Price *</b></label><br>
+                    <input type="number" id="price" placeholder="Enter Price" name="price" required>
+
+                    <div class="break"></div>
+
+                    <div class="two-fields">
+                        <div class="field-one">
+                            <label for="inputFile" id="file-button">Upload Product Picture *</label>
+                        </div>
+                        <div class="field-two">
+                            <input type="file" id="inputFile" name="inputFile" accept="image/jpeg, image/png, image/jpg" required>
+                        </div>
+                    </div>
+                    
+                    <div class="break"></div>
+                    
+                    <p id="error">{{error_msg}}</p>
+
+                    <button type="submit" id="add-product-submit" disabled><strong>Add Product</strong></button>
+                
+                </form>
+            </div>
+          </div>
+        
+
+    </div>
+</div>

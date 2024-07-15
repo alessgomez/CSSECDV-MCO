@@ -1,0 +1,36 @@
+<div class="parent-container">
+    <div class="child category-container">
+        <div class="title-container">
+            <div class="header">WELCOME, ADMIN!</div>
+            <button class="viewProductsBtn" onclick="window.location.href='/viewproductspage'">View Products</button>
+            <button class="addProductBtn" onclick="window.location.href='/addproductpage'">Add Product</button>
+            <div class="subheader">Here is the list of The Hungry Sibs products:</div>
+        </div>
+        <table class= "userTable">
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Image</th>
+                <th>Archive</th>
+                <th>Edit</th>
+            </tr>
+            {{#each products}}
+                <tr class="{{#if this.isArchived}}archived{{/if}}">
+                    <td>{{this.name}}</td>
+                    <td>{{this.category}}</td>
+                    <td>{{this.price}}</td>
+                    <td><img src="{{this.imageFilename}}" alt="{{this.name}}" style="width: 100px; height: auto;"></td>
+                    {{#if this.isArchived}}
+                        <td class="productBtnCell" ><button class="unarchiveBtn" onclick="unarchiveProduct('{{this.id}}')">Unarchive</button></td>
+                    {{else}}
+                        <td class="productBtnCell" ><button class="archiveBtn" onclick="archiveProduct('{{this.id}}')">Archive</button></td>
+                    {{/if}}
+                    <td class="productBtnCell" ><button class="editBtn" onclick="editProduct('{{this.id}}')">Edit</button></td>
+                </tr>
+            {{/each}}
+        </table>
+        
+
+    </div>
+</div>

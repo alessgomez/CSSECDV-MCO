@@ -309,8 +309,9 @@
 }
 
 .userTable {
-    background-color: #eee;
+    background-color: #ffffff;
     border-collapse:collapse;
+    margin-bottom: 50px; 
 }
 .userTable th {
     background-color: #FFC700;

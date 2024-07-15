@@ -1,0 +1,27 @@
+.archived {
+    background-color: lightgray; 
+}
+
+.archiveBtn, .unarchiveBtn, .editBtn, .viewProductsBtn, .addProductBtn {
+    padding: 10px 20px; /* Adjust padding as needed */
+    background-color: #c93020; /* Button background color */
+    color: #fff; /* Button text color */
+    border: none; /* Remove button border */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    border-radius: 4px; 
+}
+
+.archiveBtn:hover, .unarchiveBtn:hover, .editBtn:hover, .viewProductsBtn:hover, .addProductBtn:hover {
+    background-color:#aa291b;
+    cursor: pointer;
+}
+
+.userTable .productBtnCell {
+    padding: 0px;
+}
+
+.viewProductsBtn {
+    margin-top: 5px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+}
