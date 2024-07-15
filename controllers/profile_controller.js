@@ -1,33 +1,39 @@
-const { getConnectionFromPool, logPoolStats } = require('../db');
+const { getConnectionFromPool } = require('../db');
+const { getSessionDataEntry } = require('./login_controller');
 
 const profile_controller = {
     getProfile: async (req, res) => {
         const profilePageData = {
-            style: ["navbar", "profile"],
-            script: ["profileDetails"],
-            partialName: ["profileDetails"],
+            style: ["navbar", "accountdetails", "profile"],
+            script: ["profile"],
+            partialName: ["profile"],
             accountDetails: {}
         }
 
-        res.render("profile", profilePageData);
+        let connection = await getConnectionFromPool();
 
-        // let connection = await getConnectionFromPool();
+        try {
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
-        // try {
-        //     connection.query("SELECT * FROM accounts WHERE accountId = ?", [req.session.accountId], function(error, results) {
-        //         if (error) {
-        //             throw error;
-        //         } else {
-        //             profilePageData.accountDetails = results[0];
-        //             res.render("profile", profilePageData);
-        //         }
-        //     });
-        // } catch (error) {
-        //     console.log(error);
-        // } finally {
-        //     if (connection)
-        //         connection.release();
-        // }
+            if (sessionData) {
+                connection.query("SELECT firstName, lastName, email, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?", [sessionData.accountId], function(error, results) {
+                    if (error) {
+                        throw error;
+                    } else {
+                        profilePageData.accountDetails = results[0];
+                        res.render("account", profilePageData);
+                    }
+                });
+            } else {
+                res.redirect("/login");
+            }
+        } catch (error) {
+            console.log("Error loading profile page");
+            console.log(error);
+        } finally {
+            if (connection)
+                connection.release();
+        }
     }
 }
 

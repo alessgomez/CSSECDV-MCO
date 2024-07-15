@@ -231,7 +231,7 @@ const registration_controller = {
                                 let connection = await getConnectionFromPool();
                                 let newFileName;
                                 let uuidExists = true;
-                                filePath = './uploads/';
+                                filePath = './public/uploads/';
                                 fileExtension = fileMimeType.split("/")[1];
 
                                 while (uuidExists) {
