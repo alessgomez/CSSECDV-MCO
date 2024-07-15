@@ -40,6 +40,14 @@ app.use(session({
 
 app.use(flash());
 
+app.use(function(req, res, next) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store')
+    next();
+});
+
 app.use((req, res, next) => {
     res.locals.error_msg= req.flash('error_msg');
     res.locals.success_msg= req.flash('success_msg');
