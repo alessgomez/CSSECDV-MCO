@@ -1,4 +1,4 @@
-const { getConnectionFromPool, performQuery } = require('../db');
+const { getConnectionFromPool } = require('../db');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
 const axios = require('axios');
