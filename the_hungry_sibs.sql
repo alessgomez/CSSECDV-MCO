@@ -1,4 +1,4 @@
--- MySQL Workbench Forward Engineering
+--- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
@@ -56,7 +56,9 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Bag` (
   INDEX `bag_accountId` (`accountId` ASC) VISIBLE,
   CONSTRAINT `bag_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`))
+    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    ON DELETE CASCADE
+    ON UPDATE RESTRICT)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -96,10 +98,12 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`BagItems` (
   INDEX `bagId_idx` (`bagId` ASC) VISIBLE,
   CONSTRAINT `bagItems_bagId`
     FOREIGN KEY (`bagId`)
-    REFERENCES `the_hungry_sibs`.`Bag` (`bagId`),
+    REFERENCES `the_hungry_sibs`.`Bag` (`bagId`)
+    ON DELETE CASCADE,
   CONSTRAINT `bagItems_productId`
     FOREIGN KEY (`productId`)
-    REFERENCES `the_hungry_sibs`.`Products` (`productId`))
+    REFERENCES `the_hungry_sibs`.`Products` (`productId`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -124,7 +128,8 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Orders` (
   INDEX `accountId_idx` (`accountId` ASC) VISIBLE,
   CONSTRAINT `orders_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`))
+    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -146,7 +151,8 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`OrderItems` (
   INDEX `orderId_idx` (`orderId` ASC) VISIBLE,
   CONSTRAINT `orderItems_orderId`
     FOREIGN KEY (`orderId`)
-    REFERENCES `the_hungry_sibs`.`Orders` (`orderId`),
+    REFERENCES `the_hungry_sibs`.`Orders` (`orderId`)
+    ON DELETE CASCADE,
   CONSTRAINT `orderItems_productId`
     FOREIGN KEY (`productId`)
     REFERENCES `the_hungry_sibs`.`Products` (`productId`)
@@ -186,10 +192,12 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`SessionData` (
   UNIQUE INDEX `sessionId_UNIQUE` (`sessionId` ASC) VISIBLE,
   CONSTRAINT `sessionData_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`),
+    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    ON DELETE CASCADE,
   CONSTRAINT `sessionData_sessionId`
     FOREIGN KEY (`sessionId`)
-    REFERENCES `the_hungry_sibs`.`Sessions` (`session_id`))
+    REFERENCES `the_hungry_sibs`.`Sessions` (`session_id`)
+    ON DELETE CASCADE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -210,7 +218,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Feedbacks` (
   CONSTRAINT `feedbacks_accountId`
     FOREIGN KEY (`accountId`)
     REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
