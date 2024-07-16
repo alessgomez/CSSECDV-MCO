@@ -1,0 +1,25 @@
+<div class="parent-container">
+    <div class="child category-container">
+        <div class="title-container">
+            <div class="header">WELCOME, ADMIN!</div>
+            <div class="subheader">Here is the list of The Hungry Sibs feedbacks:</div>
+        </div>
+            <table class= "userTable">
+            <tr>
+                <th>Feedback No.</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th></th>
+            </tr>
+            {{#each feedbacks}}
+                <tr>
+                    <td>{{this.feedbackId}}</td>
+                    <td>{{this.subject}}</td>
+                    <td>{{this.message}}</td>
+
+                    <td class="deleteBtnCell" ><button class="deleteBtn" id = "delete" onclick="deleteFeedback('{{this.feedbackId}}')">Delete</button></td>
+                </tr>
+            {{/each}}
+            </table>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+.userTable .deleteBtnCell{
+    padding: 0px;
+}
+
+.deleteBtn {
+    padding: 10px 20px; /* Adjust padding as needed */
+    background-color: #c93020; /* Button background color */
+    color: #fff; /* Button text color */
+    border: none; /* Remove button border */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    border-radius: 4px; 
+}
+
+.deleteBtn:hover{
+    background-color:#aa291b;
+    cursor: pointer;
+}
