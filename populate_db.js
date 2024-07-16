@@ -14,7 +14,7 @@ function generateUUIDs() {
 }
 
 function getPcs(qty){
-    return " (" + qty + " pcs.)";
+    return " (" + qty + " pcs)";
 }
 
 async function populateDb() {
@@ -49,52 +49,51 @@ async function populateDb() {
     var dessert = "dessert";
     var drink = "drink";
     var bundle = "bundle";
-    var imagePath = '/images/products/'
 
     // *** MAIN DISHES
     // Lasagna
-    products.push([generateUUIDs(), lasagna+s, main, 395, imagePath+'lasagna-small.png']);
-    products.push([generateUUIDs(), lasagna+m, main, 795, imagePath+'lasagna-medium.png']);
-    products.push([generateUUIDs(), lasagna+l, main, 1450, imagePath+'lasagna-large.png']);
+    products.push([generateUUIDs(), lasagna+s, main, 395, 'lasagna-small.png']);
+    products.push([generateUUIDs(), lasagna+m, main, 795, 'lasagna-medium.png']);
+    products.push([generateUUIDs(), lasagna+l, main, 1450, 'lasagna-large.png']);
     // Ribs
-    products.push([generateUUIDs(), ribs+' (Half Rack)', main, 645, imagePath+'ribs-half.png']);
-    products.push([generateUUIDs(), ribs+' (Single Rack)', main, 1195, imagePath+'ribs-single.png']);
-    products.push([generateUUIDs(), ribs+' (Double Rack)', main, 2295, imagePath+'ribs-double.png']);
+    products.push([generateUUIDs(), ribs+' (Half Rack)', main, 645, 'ribs-half.png']);
+    products.push([generateUUIDs(), ribs+' (Single Rack)', main, 1195, 'ribs-single.png']);
+    products.push([generateUUIDs(), ribs+' (Double Rack)', main, 2295, 'ribs-double.png']);
     // Salmon
-    products.push([generateUUIDs(), salmon+m, main, 1295, imagePath+'salmon-medium.png']);
-    products.push([generateUUIDs(), salmon+l, main, 2495, imagePath+'salmon-large.png']);
+    products.push([generateUUIDs(), salmon+m, main, 1295, 'salmon-medium.png']);
+    products.push([generateUUIDs(), salmon+l, main, 2495, 'salmon-large.png']);
     // Chicken
-    products.push([generateUUIDs(), chicken+getPcs(12), main, 450, imagePath+'chicken-12.png']);
-    products.push([generateUUIDs(), chicken+getPcs(24), main, 880, imagePath+'chicken-24.png']);
+    products.push([generateUUIDs(), chicken+getPcs(12), main, 450, 'chicken-12.png']);
+    products.push([generateUUIDs(), chicken+getPcs(24), main, 880, 'chicken-24.png']);
     
     // *** SNACKS
     // Nacho Bake
-    products.push([generateUUIDs(), nachoBake+s, snack, 395, imagePath+'nacho-small.png']);
-    products.push([generateUUIDs(), nachoBake+m, snack, 790, imagePath+'nacho-medium.png']);
-    products.push([generateUUIDs(), nachoBake+l, snack, 1150, imagePath+'nacho-large.png']);
-    products.push([generateUUIDs(), nachoBake+' (Party)', snack, 2295, imagePath+'nacho-party.png']);
+    products.push([generateUUIDs(), nachoBake+s, snack, 395, 'nacho-small.png']);
+    products.push([generateUUIDs(), nachoBake+m, snack, 790, 'nacho-medium.png']);
+    products.push([generateUUIDs(), nachoBake+l, snack, 1150, 'nacho-large.png']);
+    products.push([generateUUIDs(), nachoBake+' (Party)', snack, 2295, 'nacho-party.png']);
     // Baked Potato
-    products.push([generateUUIDs(), bakedPotato+s, snack, 340, imagePath+'potato-small.png']);
-    products.push([generateUUIDs(), bakedPotato+m, snack, 680, imagePath+'potato-medium.png']);
-    products.push([generateUUIDs(), bakedPotato+l, snack, 1295, imagePath+'potato-large.png']);
+    products.push([generateUUIDs(), bakedPotato+s, snack, 340, 'potato-small.png']);
+    products.push([generateUUIDs(), bakedPotato+m, snack, 680, 'potato-medium.png']);
+    products.push([generateUUIDs(), bakedPotato+l, snack, 1295, 'potato-large.png']);
     // Fries 
-    products.push([generateUUIDs(), truffleFries, snack, 495, imagePath+'truffle.png']);
-    products.push([generateUUIDs(), twisterFries, snack, 495, imagePath+'twister.png']);
+    products.push([generateUUIDs(), truffleFries, snack, 495, 'truffle.png']);
+    products.push([generateUUIDs(), twisterFries, snack, 495, 'twister.png']);
     
     // *** DESSERTS & DRINKS
     // Cookies
-    products.push([generateUUIDs(), cookies+getPcs(6), dessert, 250, imagePath+'pbutter-6.png']);
-    products.push([generateUUIDs(), cookies+getPcs(12), dessert, 480, imagePath+'pbutter-12.png']);
+    products.push([generateUUIDs(), cookies+getPcs(6), dessert, 250, 'pbutter-6.png']);
+    products.push([generateUUIDs(), cookies+getPcs(12), dessert, 480, 'pbutter-12.png']);
     // Crinkles
-    products.push([generateUUIDs(), crinkles+getPcs(6), dessert, 250, imagePath+'crinkles-10.png']);
-    products.push([generateUUIDs(), crinkles+getPcs(12), dessert, 480, imagePath+'crinkles-20.png']);
+    products.push([generateUUIDs(), crinkles+getPcs(6), dessert, 250, 'crinkles-10.png']);
+    products.push([generateUUIDs(), crinkles+getPcs(12), dessert, 480, 'crinkles-20.png']);
     // Cake
-    products.push([generateUUIDs(), cake, dessert, 695, imagePath+'cake.png']);
+    products.push([generateUUIDs(), cake, dessert, 695, 'cake.png']);
     // Drinks
-    products.push([generateUUIDs(), icedTea, drink, 60, imagePath+'iced-tea.png']);
-    products.push([generateUUIDs(), calamansi, drink, 60, imagePath+'calamansi.png']);
-    products.push([generateUUIDs(), mango, drink, 60, imagePath+'mango.png']);
-    products.push([generateUUIDs(), fourSeasons, drink, 60, imagePath+'four-seasons.png']);
+    products.push([generateUUIDs(), icedTea, drink, 60, 'iced-tea.png']);
+    products.push([generateUUIDs(), calamansi, drink, 60, 'calamansi.png']);
+    products.push([generateUUIDs(), mango, drink, 60, 'mango.png']);
+    products.push([generateUUIDs(), fourSeasons, drink, 60, 'four-seasons.png']);
     
     connection.query(sql, [products], async(error, results) => {
         if (error) {

@@ -1,6 +1,6 @@
 const express = require('express');
 const { general_controller, verifyRole } = require('../controllers/general_controller.js');
-const registration_controller = require('../controllers/registration_controller.js')
+const { registration_controller } = require('../controllers/registration_controller.js')
 const { login_controller } = require('../controllers/login_controller.js');
 const profile_controller = require('../controllers/profile_controller.js');
 const menu_controller = require('../controllers/menu_controller.js');
@@ -33,9 +33,9 @@ app.get('/menu', menu_controller.getMenu);
 app.get('/contact', contact_controller.getContact);
 app.get('/about', about_controller.getAbout);
 app.get('/addtobag/:id', bag_controller.getAddToBag);
-app.get('/viewproductspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getViewProducts) 
-app.get('/addproductpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getAddProduct) 
-//app.get('/editproductpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getEditProduct)
+app.get('/viewproductspage', admin_products_controller.getViewProducts) // FIX: ADD ISPRIVATE AND VERIFY ROLE
+app.get('/addproductpage', admin_products_controller.getAddProduct) // FIX: ADD ISPRIVATE AND VERIFY ROLE
+//app.get('/editproductpage', admin_products_controller.getEditProduct) // FIX: ADD ISPRIVATE AND VERIFY ROLE
 app.get('/viewfeedbackspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
 
 
@@ -50,6 +50,7 @@ app.post('/archiveproduct', admin_products_controller.postArchiveProduct) // FIX
 app.post('/unarchiveproduct', admin_products_controller.postUnarchiveProduct) // FIX: ADD VERIFY ROLE
 app.post('/addbestseller', admin_products_controller.postAddBestseller) // FIX: ADD VERIFY ROLE
 app.post('/removebestseller', admin_products_controller.postRemoveBestseller) // FIX: ADD VERIFY ROLE
-app.post('/deleteFeedback', admin_feedbacks_controller.postDeleteFeedback)
+app.post('/deleteFeedback', admin_feedbacks_controller.postDeleteFeedback) // FIX: ADD VERIFY ROLE
+app.post('/addproduct', admin_products_controller.postAddProduct) // FIX: ADD VERIFY ROLE
 
 module.exports = app;

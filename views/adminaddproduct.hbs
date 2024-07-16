@@ -29,7 +29,7 @@
                     <div class="break"></div>
 
                     <label for="price"><b>Price *</b></label><br>
-                    <input type="number" id="price" placeholder="Enter Price" name="price" required>
+                    <input type="number" id="price" placeholder="Enter Price" step="0.01" name="price" required>
 
                     <div class="break"></div>
 
@@ -45,6 +45,7 @@
                     <div class="break"></div>
                     
                     <p id="error">{{error_msg}}</p>
+                    <p id="success">{{success_msg}}</p>
 
                     <button type="submit" id="add-product-submit" disabled><strong>Add Product</strong></button>
                 

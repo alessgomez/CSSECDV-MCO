@@ -281,4 +281,9 @@ const registration_controller = {
 
 }
 
-module.exports = registration_controller;
+module.exports = {
+    registration_controller,
+    fileFilter,
+    getMimeType,
+    sanitizeImage
+  };
