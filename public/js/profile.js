@@ -76,7 +76,8 @@ $(document).ready(function() {
         var p = this.parentNode.parentNode;
         
         error_msg.innerHTML = "";
-        
+        document.getElementById("success").innerHTML = "";
+
         for (var  i = 0; i < p.children.length; i++)
         {
             var child = p.children[i];
@@ -117,6 +118,6 @@ $(document).ready(function() {
     }
 
     change.onclick = function () {
-        //window.location.assign('/changepw');
+        window.location.assign('/changePassword');
     }
 });

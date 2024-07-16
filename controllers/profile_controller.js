@@ -1,5 +1,9 @@
+const { get } = require('mongoose');
 const { getConnectionFromPool } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
+const bcrypt = require("bcrypt");
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('config.json'));
 
 async function checkAccountDetails(connection, accountId) {
     return new Promise((resolve, reject) => {
@@ -46,6 +50,11 @@ function validateDetails(newDetails) {
     return nameValid && emailValid && phoneNumberValid;
 }
 
+function validatePassword(newPassword) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
+    return passwordRegex.test(newPassword);
+}
+
 const profile_controller = {
     getProfile: async (req, res) => {
         const profilePageData = {
@@ -74,6 +83,32 @@ const profile_controller = {
             }
         } catch (error) {
             console.log("Error loading profile page");
+            console.log(error);
+        } finally {
+            if (connection)
+                connection.release();
+        }
+    },
+
+    getChangePassword: async (req, res) => {
+        const changePwPageData = {
+            style: ["navbar", "accountdetails", "profile"],
+            script: ["changepw"],
+            partialName: ["changepw"]
+        }
+
+        let connection = await getConnectionFromPool();
+
+        try {
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            if (sessionData) {
+                res.render("account", changePwPageData);
+            } else {
+                res.redirect("/login");
+            }
+        } catch (error) {
+            console.log("Error loading change password page");
             console.log(error);
         } finally {
             if (connection)
@@ -118,11 +153,13 @@ const profile_controller = {
                                 });
                             }
                         }
-                    } else {
-                        throw new Error("ERROR: Invalid new details.");
-                    }
 
-                    res.redirect("/profile");
+                        req.flash('success_msg', 'Account details successfully updated.');
+                        res.redirect("/profile");
+                    } else {
+                        req.flash('error_msg', 'Invalid new details.');
+                        return res.redirect('/profile');
+                    }
                 } else
                     res.redirect("/login");
             } else {
@@ -132,6 +169,61 @@ const profile_controller = {
             console.log(error);
             req.flash('error_msg', 'An error occurred during profile update. Please try again.');
             return res.redirect('/profile');
+        } finally {
+            if (connection)
+                connection.release();
+        }
+    },
+
+    postUpdatePassword: async (req, res) => {
+        let connection = await getConnectionFromPool();
+
+        try {
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            if (sessionData) {
+                const passwordDetails = req.body;
+                const currentAccount = await checkAccountDetails(connection, sessionData.accountId);
+
+                if (currentAccount) {
+                    const oldPasswordMatch = await bcrypt.compare(passwordDetails.oldPsw, currentAccount.password);
+
+                    if (oldPasswordMatch) {
+                        if (validatePassword(passwordDetails.newPsw)) {
+                            const newPasswordIsNotOld = await bcrypt.compare(passwordDetails.newPsw, currentAccount.password);
+
+                            if (!newPasswordIsNotOld) {
+                                const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, config.saltRounds);
+
+                                connection.query('UPDATE accounts SET password = ? WHERE accountId = ?', [hashedPassword, sessionData.accountId], function(error, results) {
+                                    if (error) {
+                                        throw error;
+                                    }
+
+                                    req.flash('success_msg', 'Password successfully changed.');
+                                    res.redirect("/profile");
+                                });
+                            } else {
+                                req.flash('error_msg', 'New password cannot be the same as the old password.');
+                                return res.redirect('/changePassword');
+                            }
+                        } else {
+                            req.flash('error_msg', 'Invalid new password.');
+                            return res.redirect('/changePassword');
+                        }
+                    } else {
+                        req.flash('error_msg', 'Incorrect current password. Please try again.');
+                        return res.redirect('/changePassword');
+                    }
+                } else
+                    res.redirect("/login");
+            } else {
+                res.redirect("/login");
+            }
+        } catch (error) {
+            console.log(error);
+            req.flash('error_msg', 'An error occurred during password update. Please try again.');
+            return res.redirect('/changePassword');
         } finally {
             if (connection)
                 connection.release();

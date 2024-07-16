@@ -28,6 +28,7 @@ app.get('/', general_controller.isPrivate, general_controller.getHome);
 app.get('/logout', general_controller.isPrivate, general_controller.getLogout);
 app.get('/2FA', general_controller.isPrivate2FA, login_controller.get2FA);
 app.get('/profile', general_controller.isPrivate, verifyRole('USER'), profile_controller.getProfile);
+app.get('/changePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.getChangePassword);
 app.get('/menu', menu_controller.getMenu);
 app.get('/contact', contact_controller.getContact);
 app.get('/about', about_controller.getAbout);
@@ -44,7 +45,7 @@ app.post('/addAccount', registration_controller.postAddAccount);
 app.post('/verify2FA', login_controller.postVerify2FA)
 app.post('/resendOTC', login_controller.postResendOTC)
 app.post('/updateAccount', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdateAccount);
-//app.post('/changePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.postChangePassword);
+app.post('/updatePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdatePassword);
 app.post('/archiveproduct', admin_products_controller.postArchiveProduct) // FIX: ADD VERIFY ROLE
 app.post('/unarchiveproduct', admin_products_controller.postUnarchiveProduct) // FIX: ADD VERIFY ROLE
 app.post('/addbestseller', admin_products_controller.postAddBestseller) // FIX: ADD VERIFY ROLE
