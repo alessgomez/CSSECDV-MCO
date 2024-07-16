@@ -29,6 +29,7 @@ app.get('/logout', general_controller.isPrivate, general_controller.getLogout);
 app.get('/2FA', general_controller.isPrivate2FA, login_controller.get2FA);
 app.get('/profile', general_controller.isPrivate, verifyRole('USER'), profile_controller.getProfile);
 app.get('/changePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.getChangePassword);
+app.get('/deleteAccount', general_controller.isPrivate, verifyRole('USER'), profile_controller.getDeleteAccount);
 app.get('/menu', menu_controller.getMenu);
 app.get('/contact', contact_controller.getContact);
 app.get('/about', about_controller.getAbout);

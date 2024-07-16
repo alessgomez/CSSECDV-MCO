@@ -1,5 +1,4 @@
 const {getConnectionFromPool} = require('../db');
-const { getSessionDataEntry } = require('./login_controller');
 
 const home_controller = {
 

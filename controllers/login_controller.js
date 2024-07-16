@@ -23,8 +23,8 @@ const emailRateLimiter = new RateLimiterMemory({
 
 async function verifyLogin(connection, email, password) {
     return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM accounts WHERE email = ?'; 
-      connection.query(sql, [email], async (error, results) => {
+      const sql = 'SELECT * FROM accounts WHERE email = ? AND isArchived = ?'; 
+      connection.query(sql, [email, false], async (error, results) => {
         if (error) {
           reject(error);
         } else {

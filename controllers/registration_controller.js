@@ -7,8 +7,6 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const sharp = require('sharp');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
-const { table } = require('console');
-
 const storage = multer.memoryStorage();
 
 function fileFilter(req, file, cb) {
@@ -286,4 +284,4 @@ module.exports = {
     fileFilter,
     getMimeType,
     sanitizeImage
-  };
+};

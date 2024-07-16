@@ -1,6 +1,6 @@
-const { get } = require('mongoose');
 const { getConnectionFromPool } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
+const { general_controller, verifyRole, deleteSessionDataEntry } = require('./general_controller.js');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
@@ -131,8 +131,8 @@ const profile_controller = {
 
                     if (validateDetails(newDetails)) {
                         if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || newDetails.phoneNumber !== currentDetails.phoneNumber) {
-                            const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, phoneNumber = ? WHERE accountId = ?';
-                            connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.phoneNumber, sessionData.accountId], function(error, results) {
+                            const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
+                            connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
                                 if (error) {
                                     throw error;
                                 }
@@ -146,7 +146,7 @@ const profile_controller = {
                                 req.flash('error_msg', 'Invalid email.');
                                 return res.redirect('/profile');
                             } else {
-                                connection.query('UPDATE accounts SET email = ? WHERE accountId = ?', [newDetails.email, sessionData.accountId], function(error, results) {
+                                connection.query('UPDATE accounts SET email = ?, dateEdited = ? WHERE accountId = ?', [newDetails.email, new Date(), sessionData.accountId], function(error, results) {
                                     if (error) {
                                         throw error;
                                     }
@@ -195,7 +195,7 @@ const profile_controller = {
                             if (!newPasswordIsNotOld) {
                                 const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, config.saltRounds);
 
-                                connection.query('UPDATE accounts SET password = ? WHERE accountId = ?', [hashedPassword, sessionData.accountId], function(error, results) {
+                                connection.query('UPDATE accounts SET password = ?, dateEdited = ? WHERE accountId = ?', [hashedPassword, new Date(), sessionData.accountId], function(error, results) {
                                     if (error) {
                                         throw error;
                                     }
@@ -224,6 +224,38 @@ const profile_controller = {
             console.log(error);
             req.flash('error_msg', 'An error occurred during password update. Please try again.');
             return res.redirect('/changePassword');
+        } finally {
+            if (connection)
+                connection.release();
+        }
+    },
+
+    getDeleteAccount: async (req, res) => {
+        let connection = await getConnectionFromPool();
+
+        try {
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            if (sessionData) {
+                connection.query('UPDATE accounts SET isArchived = ?, dateArchived = ? WHERE accountId = ?', [true, new Date(), sessionData.accountId], function(error, results) {
+                    if (error) {
+                        throw error;
+                    }
+                });
+                await deleteSessionDataEntry(connection, req.session.id)
+                
+                req.session.destroy(() => {
+                    res.clearCookie('thehungrycookie'); 
+                    console.log("Session successfully destroyed.");
+                    res.redirect('/login');
+                });
+            } else {
+                res.redirect("/login");
+            }
+        } catch (error) {
+            console.log(error);
+            req.flash('error_msg', 'An error occurred during account deletion. Please try again.');
+            return res.redirect('/profile');
         } finally {
             if (connection)
                 connection.release();

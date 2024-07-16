@@ -256,4 +256,4 @@ const general_controller = {
 
 }
 
-module.exports = {general_controller, verifyRole};
+module.exports = {general_controller, verifyRole, deleteSessionDataEntry};
