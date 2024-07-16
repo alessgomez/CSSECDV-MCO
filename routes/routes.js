@@ -41,5 +41,7 @@ app.post('/verifyAccount', login_controller.postVerifyAccount);
 app.post('/addAccount', registration_controller.postAddAccount);
 app.post('/verify2FA', login_controller.postVerify2FA)
 app.post('/resendOTC', login_controller.postResendOTC)
+app.post('/updateAccount', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdateAccount);
+//app.post('/changePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.postChangePassword);
 
 module.exports = app;

@@ -3,11 +3,11 @@
     <hr class="line-break">
     <div class="break2"></div>
 
-    <form action="/updateDetails" method="post">
+    <form action="/updateAccount" method="post">
         <div class="field">
             <p class="field-name">Profile Picture</p>
-            <img src="/uploads/{{accountDetails.profilePicFilename}}" alt="Profile Picture" class="profilePic"/>
-            <input type="file" id="inputFile" name="inputFile" accept="image/jpeg, image/png, image/jpg" class="hide">
+            <img src="/uploads/{{accountDetails.profilePicFilename}}" alt="Profile Picture" class="profilePic" id="profPic"/>
+            <input type="file" id="inputFile" name="inputFile" accept="image/jpeg, image/png, image/jpg" class="inputDetails hide">
         </div>
         <div class="field">
             <p class="field-name">First Name</p>
@@ -32,7 +32,7 @@
         <div class="break2"></div>
         <div class="buttons">
             <button type="button" class="btn" id="update"><strong>Update Details</strong></button>
-            <button type="submit" class="btn hide" id="save"><strong>Save Changes</strong></button>
+            <button type="submit" class="btn hide" id="save" disabled><strong>Save Changes</strong></button>
             <button type="button" class="btn" id="changepw"><strong>Change Password</strong></button>
         </div>
     </form>
