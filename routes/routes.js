@@ -49,5 +49,6 @@ app.post('/archiveproduct', admin_products_controller.postArchiveProduct) // FIX
 app.post('/unarchiveproduct', admin_products_controller.postUnarchiveProduct) // FIX: ADD VERIFY ROLE
 app.post('/addbestseller', admin_products_controller.postAddBestseller) // FIX: ADD VERIFY ROLE
 app.post('/removebestseller', admin_products_controller.postRemoveBestseller) // FIX: ADD VERIFY ROLE
+app.post('/deleteFeedback', admin_feedbacks_controller.postDeleteFeedback)
 
 module.exports = app;

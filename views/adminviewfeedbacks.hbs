@@ -17,7 +17,7 @@
                     <td>{{this.subject}}</td>
                     <td>{{this.message}}</td>
 
-                    <td class="deleteBtnCell" ><button class="deleteBtn" id = "delete" onclick="deleteFeedback('{{this.feedbackId}}')">Delete</button></td>
+                    <td class="deleteBtnCell" ><button class="deleteBtn" id = "delete" data-id="{{this.feedbackId}}">Delete</button></td>
                 </tr>
             {{/each}}
             </table>
