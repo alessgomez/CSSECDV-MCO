@@ -33,6 +33,19 @@ async function checkEmailExists(connection, email) {
     });
 }
 
+function validateDetails(newDetails) {
+    const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/;
+    const nameValid = nameRegex.test(newDetails.firstName) && nameRegex.test(newDetails.lastName);
+
+    const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
+    const emailValid = emailRegex.test(newDetails.email) && newDetails.email.substr(0, newDetails.email.indexOf('@')).length <= 64 && newDetails.email.substr(newDetails.email.indexOf('@')).length <= 255
+    
+    const phoneNumberRegex = /^(09|\+639)\d{9}$/;
+    const phoneNumberValid = phoneNumberRegex.test(newDetails.phoneNumber);
+
+    return nameValid && emailValid && phoneNumberValid;
+}
+
 const profile_controller = {
     getProfile: async (req, res) => {
         const profilePageData = {
@@ -79,33 +92,35 @@ const profile_controller = {
                 const currentDetails = await checkAccountDetails(connection, sessionData.accountId);
 
                 if (currentDetails) {
-                    // TODO: backend validation for all inputs, only if it passes validation can it proceed below
+                    // TODO: Changing & backend validation of profile pic
 
-                    if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || newDetails.phoneNumber !== currentDetails.phoneNumber) {
-                        const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, phoneNumber = ? WHERE accountId = ?';
-                        connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.phoneNumber, sessionData.accountId], function(error, results) {
-                            if (error) {
-                                throw error;
-                            }
-                        });
-                    }
-
-                    if (newDetails.email !== currentDetails.email) {
-                        const emailExists = await checkEmailExists(connection, newDetails.email);
-
-                        if (emailExists) {
-                            req.flash('error_msg', 'Invalid email.');
-                            return res.redirect('/profile');
-                        } else {
-                            connection.query('UPDATE accounts SET email = ? WHERE accountId = ?', [newDetails.email, sessionData.accountId], function(error, results) {
+                    if (validateDetails(newDetails)) {
+                        if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || newDetails.phoneNumber !== currentDetails.phoneNumber) {
+                            const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, phoneNumber = ? WHERE accountId = ?';
+                            connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.phoneNumber, sessionData.accountId], function(error, results) {
                                 if (error) {
                                     throw error;
                                 }
                             });
                         }
+    
+                        if (newDetails.email !== currentDetails.email) {
+                            const emailExists = await checkEmailExists(connection, newDetails.email);
+    
+                            if (emailExists) {
+                                req.flash('error_msg', 'Invalid email.');
+                                return res.redirect('/profile');
+                            } else {
+                                connection.query('UPDATE accounts SET email = ? WHERE accountId = ?', [newDetails.email, sessionData.accountId], function(error, results) {
+                                    if (error) {
+                                        throw error;
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        throw new Error("ERROR: Invalid new details.");
                     }
-
-                    // TODO: Changing profile pic
 
                     res.redirect("/profile");
                 } else
@@ -114,8 +129,9 @@ const profile_controller = {
                 res.redirect("/login");
             }
         } catch (error) {
-            console.log("Error updating account details");
             console.log(error);
+            req.flash('error_msg', 'An error occurred during profile update. Please try again.');
+            return res.redirect('/profile');
         } finally {
             if (connection)
                 connection.release();
