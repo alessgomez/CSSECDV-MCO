@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Products` (
   `category` VARCHAR(45) NOT NULL,
   `price` DECIMAL(10,0) NOT NULL,
   `imageFilename` VARCHAR(45) NOT NULL,
+  `isBestseller` TINYINT(1) NOT NULL DEFAULT 0,
   `isArchived` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`productId`),
   UNIQUE INDEX `productId_UNIQUE` (`productId` ASC) VISIBLE)
@@ -222,23 +223,6 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Feedbacks` (
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `the_hungry_sibs`.`Bestsellers`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `the_hungry_sibs`.`Bestsellers` ;
-
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Bestsellers` (
-  `productId` VARCHAR(36) NOT NULL,
-  PRIMARY KEY (`productId`),
-  CONSTRAINT `bestsellers_productId`
-    FOREIGN KEY (`productId`)
-    REFERENCES `the_hungry_sibs`.`Products` (`productId`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Inserts initial admin account (John Doe)
