@@ -12,21 +12,32 @@
                 <th>Category</th>
                 <th>Price</th>
                 <th>Image</th>
-                <th>Archive</th>
                 <th>Edit</th>
+                <th>Bestseller</th>
+                <th>Archive</th>
             </tr>
             {{#each products}}
                 <tr class="{{#if this.isArchived}}archived{{/if}}">
                     <td>{{this.name}}</td>
                     <td>{{this.category}}</td>
-                    <td>{{this.price}}</td>
+                    <td>&#8369;{{this.price}}</td>
                     <td><img src="{{this.imageFilename}}" alt="{{this.name}}" style="width: 100px; height: auto;"></td>
+                    <td class="productBtnCell" ><button class="editBtn" onclick="editProduct('{{this.id}}')">Edit</button></td>
+
+                    {{#if this.isBestseller}}
+                        <td class="productBtnCell" ><button class="unarchiveBtn" onclick="unarchiveProduct('{{this.id}}')">Remove from Bestsellers</button></td>
+                    {{else}}
+                        <td class="productBtnCell" ><button class="archiveBtn" onclick="archiveProduct('{{this.id}}')">Add to Bestsellers</button></td>
+                    {{/if}}
+
+
                     {{#if this.isArchived}}
                         <td class="productBtnCell" ><button class="unarchiveBtn" onclick="unarchiveProduct('{{this.id}}')">Unarchive</button></td>
                     {{else}}
                         <td class="productBtnCell" ><button class="archiveBtn" onclick="archiveProduct('{{this.id}}')">Archive</button></td>
                     {{/if}}
-                    <td class="productBtnCell" ><button class="editBtn" onclick="editProduct('{{this.id}}')">Edit</button></td>
+
+                   
                 </tr>
             {{/each}}
         </table>
