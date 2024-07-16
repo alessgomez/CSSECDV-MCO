@@ -2,11 +2,11 @@
     <div class="child category-container">
         <div class="title-container">
             <div class="header">WELCOME, ADMIN!</div>
-            <button class="viewProductsBtn" onclick="window.location.href='/viewproductspage'">View Products</button>
-            <button class="addProductBtn" onclick="window.location.href='/addproductpage'">Add Product</button>
+            <button class="viewProductsBtn productBtn" onclick="window.location.href='/viewproductspage'">View Products</button>
+            <button class="addProductBtn productBtn" onclick="window.location.href='/addproductpage'">Add Product</button>
             <div class="subheader">Here is the list of The Hungry Sibs products:</div>
         </div>
-        <table class= "userTable">
+        <table class= "productTable">
             <tr>
                 <th>Name</th>
                 <th>Category</th>
@@ -22,19 +22,38 @@
                     <td class="{{#if this.isBestseller}}bestseller{{/if}}">{{this.category}}</td>
                     <td class="{{#if this.isBestseller}}bestseller{{/if}}">&#8369;{{this.price}}</td>
                     <td><img src="{{this.imageFilename}}" alt="{{this.name}}" style="width: 100px; height: auto;"></td>
-                    <td class="productBtnCell" ><button class="editBtn" onclick="editProduct('{{this.id}}')">Edit</button></td>
+                    
+                    <td class="productBtnCell">
+                        {{#if this.isArchived}}
+                            <button class="productBtn editBtn" data-id="{{this.productId}}" disabled>Edit</button>
+                        {{else}}
+                            <button class="productBtn editBtn" data-id="{{this.productId}}">Edit</button>
+                        {{/if}}
+                    </td>
 
                     {{#if this.isBestseller}}
-                        <td class="productBtnCell" ><button class="unarchiveBtn" onclick="unarchiveProduct('{{this.id}}')">Remove from Bestsellers</button></td>
+                        <td class="productBtnCell">
+                            {{#if this.isArchived}}
+                                <button class="productBtn removeBestsellerBtn" data-id="{{this.productId}}" disabled>Remove from Bestsellers</button>
+                            {{else}}
+                                <button class="productBtn removeBestsellerBtn" data-id="{{this.productId}}">Remove from Bestsellers</button>
+                            {{/if}}
+                        </td>
                     {{else}}
-                        <td class="productBtnCell" ><button class="archiveBtn" onclick="archiveProduct('{{this.id}}')">Add to Bestsellers</button></td>
+                        <td class="productBtnCell">
+                            {{#if this.isArchived}}
+                                <button class="productBtn addBestsellerBtn" data-id="{{this.productId}}" disabled>Add to Bestsellers</button>
+                            {{else}}
+                                <button class="productBtn addBestsellerBtn" data-id="{{this.productId}}">Add to Bestsellers</button>
+                            {{/if}}
+                        </td>
                     {{/if}}
 
 
                     {{#if this.isArchived}}
-                        <td class="productBtnCell" ><button class="unarchiveBtn" onclick="unarchiveProduct('{{this.id}}')">Unarchive</button></td>
+                        <td class="productBtnCell" ><button class="productBtn unarchiveBtn"  data-id={{this.productId}}>Unarchive</button></td>
                     {{else}}
-                        <td class="productBtnCell" ><button class="archiveBtn" onclick="archiveProduct('{{this.id}}')">Archive</button></td>
+                        <td class="productBtnCell" ><button class="productBtn archiveBtn" data-id={{this.productId}}>Archive</button></td>
                     {{/if}}
 
                    

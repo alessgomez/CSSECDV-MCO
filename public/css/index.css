@@ -308,22 +308,22 @@
     cursor: pointer;
 }
 
-.userTable {
+.userTable, .productTable {
     background-color: #ffffff;
     border-collapse:collapse;
     margin-bottom: 50px; 
 }
-.userTable th {
+.userTable th, .productTable th {
     background-color: #FFC700;
     color: black;
 }
 
-.userTable td, .userTable th {
+.userTable td, .userTable th, .productTable td, .productTable th {
     padding: 5px;
     border: 1px solid #000;
 }
 
-.userTable td {
+.userTable td, .productTable td {
     text-align: center;
     vertical-align: middle;
 }

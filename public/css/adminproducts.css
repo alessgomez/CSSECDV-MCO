@@ -2,7 +2,7 @@
     background-color: lightgray; 
 }
 
-.archiveBtn, .unarchiveBtn, .editBtn, .viewProductsBtn, .addProductBtn {
+.productBtn {
     padding: 10px 20px; /* Adjust padding as needed */
     background-color: #c93020; /* Button background color */
     color: #fff; /* Button text color */
@@ -11,12 +11,12 @@
     border-radius: 4px; 
 }
 
-.archiveBtn:hover, .unarchiveBtn:hover, .editBtn:hover, .viewProductsBtn:hover, .addProductBtn:hover {
+.productBtn:not([disabled]):hover {
     background-color:#aa291b;
     cursor: pointer;
 }
 
-.userTable .productBtnCell {
+.productTable .productBtnCell {
     padding: 0px;
 }
 
@@ -28,4 +28,9 @@
 
 .bestseller {
     color: #c93020;
+}
+
+button:disabled {
+    cursor: auto;
+    background-color: gray;
 }
