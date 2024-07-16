@@ -18,9 +18,9 @@
             </tr>
             {{#each products}}
                 <tr class="{{#if this.isArchived}}archived{{/if}}">
-                    <td>{{this.name}}</td>
-                    <td>{{this.category}}</td>
-                    <td>&#8369;{{this.price}}</td>
+                    <td class="{{#if this.isBestseller}}bestseller{{/if}}">{{this.name}}</td>
+                    <td class="{{#if this.isBestseller}}bestseller{{/if}}">{{this.category}}</td>
+                    <td class="{{#if this.isBestseller}}bestseller{{/if}}">&#8369;{{this.price}}</td>
                     <td><img src="{{this.imageFilename}}" alt="{{this.name}}" style="width: 100px; height: auto;"></td>
                     <td class="productBtnCell" ><button class="editBtn" onclick="editProduct('{{this.id}}')">Edit</button></td>
 
