@@ -8,6 +8,7 @@ const contact_controller = require('../controllers/contact_controller.js');
 const about_controller = require('../controllers/about_controller.js');
 const bag_controller = require('../controllers/bag_controller.js');
 const admin_products_controller = require('../controllers/admin_products_controller.js');
+const admin_feedbacks_controller = require('../controllers/admin_feedbacks_controller.js');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get('/addtobag/:id', bag_controller.getAddToBag);
 app.get('/viewproductspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getViewProducts) 
 app.get('/addproductpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getAddProduct) 
 //app.get('/editproductpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getEditProduct)
+app.get('/viewfeedbackspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
 
 
 // POSTs
