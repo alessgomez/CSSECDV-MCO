@@ -32,8 +32,8 @@
     
 } */
 
-.add-product-container {
-    width: 100%; /* Adjust width as needed */
+.edit-product-container {
+    width: 50%; /* Adjust width as needed */
     margin: 0 auto; /* Center horizontally */
     text-align: center; /* Center text and inline elements */
 }
@@ -41,7 +41,7 @@
 .container form {
     display: inline-block; /* Ensures form elements are inline */
     text-align: left; /* Center form elements */
-    width: 50%
+    width: 100%
 }
 
 .container form label {
@@ -106,7 +106,7 @@ a:hover {
     color: black;
 }
 
-#add-product-submit {
+#save-changes-submit {
     background-color: #ffc700;
     border-radius: 5px;
     border: none;
@@ -114,16 +114,28 @@ a:hover {
     width: 100%;
     min-height: 50.5px;
     margin-top: 20px;
-    margin-bottom: 50px;
+    margin-bottom: 10px;
 }
 
+#discard-changes {
+    background-color:  #ffc700;
+    border-radius: 5px;
+    border: none;
+    font-size: 18px;
+    width: 100%;
+    min-height: 50.5px;
+    margin-top: 20px;
+    margin-bottom: 60px;
+}
 
-#add-product-submit:not([disabled]):hover {
+#discard-changes:hover, #save-changes-submit:not([disabled]):hover {
     cursor: pointer;
     background-color: whitesmoke;
 }
 
-#add-product-submit:disabled {
+#save-changes-submit:disabled {
     cursor: auto;
     background-color: lightgray;
 }
+
+

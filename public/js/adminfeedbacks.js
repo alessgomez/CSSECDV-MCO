@@ -7,7 +7,7 @@ $(document).ready(function() {
             $.post('/deleteFeedback', { feedbackId: feedbackId }, function(response){
                 if (response.success) {
                     console.log('Deleted feedback successfully');
-                    window.location.href = "/viewfeedbackspage"
+                    window.location.href = "/viewFeedbacksPage"
                 } else{
                     console.error('Failed to delete feedback');
                 }

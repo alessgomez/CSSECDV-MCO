@@ -8,6 +8,8 @@ const contact_controller = require('../controllers/contact_controller.js');
 const about_controller = require('../controllers/about_controller.js');
 const bag_controller = require('../controllers/bag_controller.js');
 const admin_products_controller = require('../controllers/admin_products_controller.js');
+const add_product_controller = require('../controllers/add_product_controller.js');
+const edit_product_controller = require('../controllers/edit_product_controller.js');
 const admin_feedbacks_controller = require('../controllers/admin_feedbacks_controller.js');
 
 const app = express();
@@ -34,10 +36,11 @@ app.get('/menu', menu_controller.getMenu);
 app.get('/contact', contact_controller.getContact);
 app.get('/about', about_controller.getAbout);
 app.get('/addtobag/:id', bag_controller.getAddToBag);
-app.get('/viewproductspage', admin_products_controller.getViewProducts) // FIX: ADD ISPRIVATE AND VERIFY ROLE
-app.get('/addproductpage', admin_products_controller.getAddProduct) // FIX: ADD ISPRIVATE AND VERIFY ROLE
-//app.get('/editproductpage', admin_products_controller.getEditProduct) // FIX: ADD ISPRIVATE AND VERIFY ROLE
-app.get('/viewfeedbackspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
+app.get('/viewProductsPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getViewProducts)
+app.get('/addProductPage', general_controller.isPrivate, verifyRole('ADMIN'), add_product_controller.getAddProduct) 
+app.get('/editProductPage/:id', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.isArchived, edit_product_controller.getEditProduct)
+app.get('/getProduct', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.getProduct) 
+app.get('/viewFeedbacksPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
 
 
 // POSTs
@@ -47,11 +50,13 @@ app.post('/verify2FA', login_controller.postVerify2FA)
 app.post('/resendOTC', login_controller.postResendOTC)
 app.post('/updateAccount', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdateAccount);
 app.post('/updatePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdatePassword);
-app.post('/archiveproduct', admin_products_controller.postArchiveProduct) // FIX: ADD VERIFY ROLE
-app.post('/unarchiveproduct', admin_products_controller.postUnarchiveProduct) // FIX: ADD VERIFY ROLE
-app.post('/addbestseller', admin_products_controller.postAddBestseller) // FIX: ADD VERIFY ROLE
-app.post('/removebestseller', admin_products_controller.postRemoveBestseller) // FIX: ADD VERIFY ROLE
-app.post('/deleteFeedback', admin_feedbacks_controller.postDeleteFeedback) // FIX: ADD VERIFY ROLE
-app.post('/addproduct', admin_products_controller.postAddProduct) // FIX: ADD VERIFY ROLE
+app.post('/archiveProduct', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postArchiveProduct)
+app.post('/unarchiveProduct', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postUnarchiveProduct) 
+app.post('/addBestseller', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.isArchived, admin_products_controller.postAddBestseller)
+app.post('/removeBestseller', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postRemoveBestseller)
+app.post('/deleteFeedback', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.postDeleteFeedback)
+app.post('/addProduct', general_controller.isPrivate, verifyRole('ADMIN'), add_product_controller.postAddProduct) 
+app.post('/editProduct', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.isArchived, edit_product_controller.postEditProduct) 
+
 
 module.exports = app;

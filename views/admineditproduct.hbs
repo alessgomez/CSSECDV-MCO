@@ -1,0 +1,60 @@
+<div class="parent-container">
+    <div class="child category-container">
+        <div class="title-container">
+            <div class="header">WELCOME, ADMIN!</div>
+            <button class="viewProductsBtn productBtn" onclick="window.location.href='/viewProductsPage'">View Products</button>
+            <button class="addProductBtn productBtn" onclick="window.location.href='/addProductPage'">Add Product</button>
+        </div>
+        
+        <div class="edit-product-container">
+            <div class="container">
+                <h1 id="header">Edit a Product</h1>
+                <form action="/editProduct" method="post" enctype="multipart/form-data">
+
+                    <label for="name"><b>Name *</b></label><br>
+                    <input type="text" placeholder="Enter Product Name" id="name" name="name" value="{{product.name}}" required>
+
+                    <div class="break"></div>
+
+                    <label for="category"><b>Category *</b></label><br>
+                    <select id="category" name="category" required>
+                        <option value="" disabled {{#unless product.category}}selected{{/unless}}>Select a category...</option>
+                        <option value="main" {{#if this.isMain}}selected{{/if}}>Main</option>
+                        <option value="snack" {{#if this.isSnack}}selected{{/if}}>Snack</option>
+                        <option value="drink" {{#if this.isDrink}}selected{{/if}}>Drink</option>
+                        <option value="dessert" {{#if this.isDessert}}selected{{/if}}>Dessert</option>
+                    </select>
+                    
+
+                    <div class="break"></div>
+
+                    <label for="price"><b>Price *</b></label><br>
+                    <input type="number" id="price" placeholder="Enter Price" name="price" value={{product.price}} required>
+
+                    <div class="break"></div>
+
+                    <div class="two-fields">
+                        <div class="field-one">
+                            <label for="inputFile" id="file-button">Upload New Product Picture *</label>
+                        </div>
+                        <div class="field-two">
+                            <input type="file" id="inputFile" name="inputFile" accept="image/jpeg, image/png, image/jpg">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="productId" value="{{product.productId}}">
+                    
+                    <div class="break"></div>
+                    
+                    <p id="error">{{error_msg}}</p>
+                    <p id="success">{{success_msg}}</p>
+
+                    <button type="submit" id="save-changes-submit" data-id="{{product.productId}}" disabled><strong>Save Changes</strong></button>            
+                </form>
+                    <button id="discard-changes"><strong>Discard Changes</strong></button>
+            </div>
+          </div>
+        
+
+    </div>
+</div>

@@ -13,7 +13,7 @@ $(document).ready(function() {
             } else {
               console.error('Failed to archive product');
             }
-          });
+        });
     });
 
     $(document).on('click', '.unarchiveBtn', function() {
@@ -30,8 +30,7 @@ $(document).ready(function() {
             }
           });
     });
-
-
+    
     $(document).on('click', '.addBestsellerBtn', function() {
         const productId = $(this).data('id');
         const $productRow = $(this).closest('tr');
@@ -60,4 +59,8 @@ $(document).ready(function() {
           });
     });
 
+    $(document).on('click', '.editBtn', function() {
+      const productId = $(this).data('id');
+      window.location.href = `/editProductPage/${productId}`;;
+    });
 });

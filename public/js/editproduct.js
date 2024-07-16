@@ -1,17 +1,29 @@
 $(document).ready(function(){
+    $(document).on('click', '#discard-changes', function() {
+        window.location.href = `/viewProductsPage`;
+    });
+
     var nameInput = document.getElementById("name");
     var categoryInput = document.getElementById("category")
     var priceInput = document.getElementById("price")
     var fileUploadInput = document.getElementById("inputFile");
 
-    var submit = document.getElementById("add-product-submit");
+    var submit = document.getElementById("save-changes-submit");
     const maxFileSize = 3 * 1024 * 1024; 
     const acceptedTypes = ["image/jpeg", "image/png"]
 
-    var nameValid = false;
-    var categoryValid = false
-    var priceValid = false;
+    var nameValid = true;
+    var categoryValid = true;
+    var priceValid = true;
     var fileUploadValid = false;
+    var fileUploadEmpty = true;
+
+    var nameChanged = false;
+    var categoryChanged = false;
+    var priceChanged = false;
+    var fileChanged = false;
+
+    const productId = $('#save-changes-submit').data('id');
 
     function readFile(file) {
         return new Promise((resolve, reject) => {
@@ -49,18 +61,25 @@ $(document).ready(function(){
     }
 
     function validateFields() {
-        submit.disabled = !(nameValid && categoryValid && priceValid && fileUploadValid);
+        if (nameChanged || categoryChanged || priceChanged || fileChanged) {
+            submit.disabled = !(nameValid && categoryValid && priceValid && (fileUploadValid || fileUploadEmpty));
+        }
+        else {
+            submit.disabled = true;
+        }
     }
 
     fileUploadInput.onchange = async function () {
-        var fileName = fileUploadInput.files[0].name;
-        
+        var file = fileUploadInput.files[0];
         fileUploadValid = false;
 
-        if (fileName != null) {
+        if (file != null) {
+            var fileName = file.name;
+            fileChanged = true
+            fileUploadEmpty = false;
             let regexFileName = new RegExp(/^[A-Za-z0-9]+([-._ ]*[A-Za-z0-9])*\.(jpg|jpeg|png|JPG|JPEG|PNG)$/);
             
-            if (regexFileName.test(fileName) && fileName.length <= 255) {                
+            if (regexFileName.test(fileName) && fileName.length <= 255) {              
                 var file = fileUploadInput.files[0];
                 let byteStream = await readFile(file); 
                 const uint = new Uint8Array(byteStream);
@@ -82,37 +101,87 @@ $(document).ready(function(){
                         }
                         image.onerror = function() {
                             console.log("ERROR: Cannot load image")
+                            fileUploadValid = false;
+                            validateFields()
                         }
-
+                    
                         image.src = URL.createObjectURL(fileUploadInput.files[0]);                          
+                    } else {
+                        fileUploadValid = false;
+                        validateFields()
                     }
+                } else {
+                    fileUploadValid = false;
+                    validateFields()
                 }
             }
-        }
-        
-        validateFields();
+        } else {
+            fileUploadEmpty = true;
+            fileChanged = false;
+            validateFields()
+        }       
     }
 
     // name
     let regexName = new RegExp(/^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z0-9()]+(?:[ ,'-][A-Za-z0-9()]+)*(?:, [A-Za-z()]+)*\.?$/);
 
     nameInput.onkeyup = function() {
+
         var name = nameInput.value
         nameValid = name != null && regexName.test(name);
-        validateFields();
+
+        $.get('/getProduct', { productId: productId }, function(response) {
+            if (response.success) {
+                if (response.product.name == name) {
+                    nameChanged = false;
+                } else {
+                    nameChanged = true;
+                }
+                validateFields();
+            } else {
+              console.error(response.error);
+            }
+        });
     }
 
     // category
     categoryInput.onchange = function() {
         var selectedCategory = categoryInput.value;
         categoryValid = validateSelectedCategory(selectedCategory);
-        validateFields();
+
+        $.get('/getProduct', { productId: productId }, function(response) {
+            if (response.success) {
+                if (response.product.category == selectedCategory) {
+                    categoryChanged = false;
+                } else {
+                    categoryChanged = true;
+                }
+                validateFields();
+            } else {
+              console.error(response.error);
+            }
+        });
+
     }
 
     // price
     priceInput.onkeyup = function() {
         var price = parseFloat(priceInput.value);
         priceValid = !isNaN(price) && price > 0;
-        validateFields();
+
+        $.get('/getProduct', { productId: productId }, function(response) {
+            if (response.success) {
+                if (response.product.price == price) {
+                    priceChanged = false;
+                } else {
+                    priceChanged = true;
+                }
+                validateFields();
+            } else {
+              console.error(response.error);
+            }
+        });
     }
+
+
 });
