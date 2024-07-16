@@ -5,6 +5,7 @@
             <button class="viewProductsBtn productBtn" onclick="window.location.href='/viewproductspage'">View Products</button>
             <button class="addProductBtn productBtn" onclick="window.location.href='/addproductpage'">Add Product</button>
             <div class="subheader">Here is the list of The Hungry Sibs products:</div>
+            <div class="subheader" style="color: #c93020;">NOTE: Bestsellers are indicated in red</div>
         </div>
         <table class= "productTable">
             <tr>
@@ -18,9 +19,9 @@
             </tr>
             {{#each products}}
                 <tr class="{{#if this.isArchived}}archived{{/if}}">
-                    <td class="{{#if this.isBestseller}}bestseller{{/if}}">{{this.name}}</td>
-                    <td class="{{#if this.isBestseller}}bestseller{{/if}}">{{this.category}}</td>
-                    <td class="{{#if this.isBestseller}}bestseller{{/if}}">&#8369;{{this.price}}</td>
+                    <td class="{{#if this.isBestseller}}bestseller{{/if}} productInfo">{{this.name}}</td>
+                    <td class="{{#if this.isBestseller}}bestseller{{/if}} productInfo">{{this.category}}</td>
+                    <td class="{{#if this.isBestseller}}bestseller{{/if}} productInfo">&#8369;{{this.price}}</td>
                     <td><img src="{{this.imageFilename}}" alt="{{this.name}}" style="width: 100px; height: auto;"></td>
                     
                     <td class="productBtnCell">

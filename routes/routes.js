@@ -45,5 +45,9 @@ app.post('/verify2FA', login_controller.postVerify2FA)
 app.post('/resendOTC', login_controller.postResendOTC)
 app.post('/updateAccount', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdateAccount);
 //app.post('/changePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.postChangePassword);
+app.post('/archiveproduct', admin_products_controller.postArchiveProduct) // FIX: ADD VERIFY ROLE
+app.post('/unarchiveproduct', admin_products_controller.postUnarchiveProduct) // FIX: ADD VERIFY ROLE
+app.post('/addbestseller', admin_products_controller.postAddBestseller) // FIX: ADD VERIFY ROLE
+app.post('/removebestseller', admin_products_controller.postRemoveBestseller) // FIX: ADD VERIFY ROLE
 
 module.exports = app;
