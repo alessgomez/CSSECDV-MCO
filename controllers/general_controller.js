@@ -4,7 +4,7 @@ const home_controller = require('./home_controller');
 
 async function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM accounts WHERE accountId = ?';
+      const sql = 'SELECT * FROM accounts WHERE accountId = ? AND isArchived = False';
       connection.query(sql, [accountId], (error, results) => {
         if (error) {
           reject(error);
