@@ -40,7 +40,8 @@ const menu_controller = {
                     const menuPageData = {
                         style: ["navbar", "menu"],
                         topbar: true,
-                        category: [main, snack, dnd]
+                        category: [main, snack, dnd], 
+                        bag: req.bag
                     }
             
                     res.render("menu", menuPageData);

@@ -4,7 +4,7 @@
     <div class="row justify-content-center mb-5">
       <div class="col-auto">
         <div class="card mt-5 ms-4  w-20" style="box-shadow: 0px 4px 5px rgb(165, 165, 165); width: 18rem; border-radius: 25px; background-color: #F8C922">
-          <img class="card-img-top" src="{{this.productdetails.image}}" alt="Card image cap" style="height: 11.5rem; border-radius: 25px;">
+          <img class="card-img-top" src="/images/products/{{this.productdetails.imageFilename}}" alt="Card image cap" style="height: 11.5rem; border-radius: 25px;">
           <div class="card-body">
             <div>
               <h5 class="card-title fw-bold mb-5 ms-2" id="productName">{{this.productdetails.name}}</h5>     
@@ -16,7 +16,7 @@
               </div>    
             </div>
             <div class="text-center">
-              <a  class="btn btn-danger mt-1 mb-2 fw-bold text-center rounded-pill" id="addtobag">Add to Bag</a>
+              <a  class="btn btn-danger mt-1 mb-2 fw-bold text-center rounded-pill" id="addtobag" data-id="{{this.productdetails.productId}}">Add to Bag</a>
             </div>
             <div class="text-center">
               <a href="/menu" class="btn btn-outline-light mt-1 mb-2 fw-bold text-center rounded-pill" id="backtomenu">Back to Menu</a>

@@ -60,3 +60,21 @@
   font-family: arial;
   font-size: 0.82rem;
 }
+
+.info-box {
+  border: 1px solid #d1d1d1;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #f4f4f4;
+  font-family: Arial, sans-serif;
+}
+
+.info-box .label {
+  color: #676e75;
+  font-size: 14px; /* Smaller font size for label */
+}
+
+.info-box .value {
+  color: black;
+  font-size: 16px; /* Larger font size for value */
+}

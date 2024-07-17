@@ -2,8 +2,8 @@
     <div class="bag-item-container">
         <div class="header">My Bag</div>
         <div class="list-container">
-            {{#each orderItems}}
-                <div class="order-container" id="{{orderItemId}}">
+            {{#each bagItems}}
+                <div class="order-container" id="{{bagItemId}}">
                     <div class="quantity-container">
                         <button class="minus"><img src="/images/minus.png" width="18" height="18"></button>
                         <div class="quantity">{{quantity}}</div>
@@ -12,14 +12,6 @@
 
                     <div class="detail-container">
                         <div class="product-name">{{product.name}}</div>
-                        {{#each product.inclusion}}
-                            <div class="product-inclusion">{{quantity}} {{productName}}</div>
-                        {{/each}}
-                            
-                        {{#each addOns}}
-                            <div class="product-inclusion">{{name}}</div>
-                        {{/each}}
-                        <a class="edit">Edit</a> | 
                         <button class="delete">Delete</button>
                     </div>
 
