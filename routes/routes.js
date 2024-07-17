@@ -38,10 +38,11 @@ app.get('/menu', general_controller.isPrivate, verifyRole('USER'), bag_controlle
 app.get('/contact', contact_controller.getContact);
 app.get('/about', about_controller.getAbout);
 app.get('/addtobag/:id', addtobag_controller.getAddToBag);
-app.get('/viewproductspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getViewProducts) 
-app.get('/addproductpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getAddProduct) 
-//app.get('/editproductpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getEditProduct)
-app.get('/viewfeedbackspage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
+app.get('/viewProductsPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.getViewProducts)
+app.get('/addProductPage', general_controller.isPrivate, verifyRole('ADMIN'), add_product_controller.getAddProduct) 
+app.get('/editProductPage/:id', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.getEditProduct)
+app.get('/getProduct', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.getProduct) 
+app.get('/viewFeedbacksPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
 app.get('/getItemQuantity', bag_controller.getItemQuantity);
 app.get('/checkout', checkout_controller.getCheckout);
 
@@ -53,11 +54,12 @@ app.post('/verify2FA', login_controller.postVerify2FA)
 app.post('/resendOTC', login_controller.postResendOTC)
 app.post('/updateAccount', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdateAccount);
 app.post('/updatePassword', general_controller.isPrivate, verifyRole('USER'), profile_controller.postUpdatePassword);
-app.post('/archiveproduct', admin_products_controller.postArchiveProduct) // FIX: ADD VERIFY ROLE
-app.post('/unarchiveproduct', admin_products_controller.postUnarchiveProduct) // FIX: ADD VERIFY ROLE
-app.post('/addbestseller', admin_products_controller.postAddBestseller) // FIX: ADD VERIFY ROLE
-app.post('/removebestseller', admin_products_controller.postRemoveBestseller) // FIX: ADD VERIFY ROLE
-app.post('/deleteFeedback', admin_feedbacks_controller.postDeleteFeedback) // FIX: ADD VERIFY ROLE
-app.post('/addproduct', admin_products_controller.postAddProduct) // FIX: ADD VERIFY ROLE
+app.post('/archiveProduct', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postArchiveProduct)
+app.post('/unarchiveProduct', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postUnarchiveProduct) 
+app.post('/addBestseller', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postAddBestseller)
+app.post('/removeBestseller', general_controller.isPrivate, verifyRole('ADMIN'), admin_products_controller.postRemoveBestseller)
+app.post('/deleteFeedback', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.postDeleteFeedback)
+app.post('/addProduct', general_controller.isPrivate, verifyRole('ADMIN'), add_product_controller.postAddProduct) 
+app.post('/editProduct', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.postEditProduct)
 
 module.exports = app;
