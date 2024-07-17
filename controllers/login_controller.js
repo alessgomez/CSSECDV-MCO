@@ -444,7 +444,7 @@ const login_controller = {
           }
 
           const oneTimeCode = generateOneTimeCode();
-          //sendOneTimeCode(email, oneTimeCode); // FIX: UNCOMMENT
+          sendOneTimeCode(email, oneTimeCode); 
 
           await updateSessionDataOTC(connection, req.session.id, oneTimeCode, new Date())
 
