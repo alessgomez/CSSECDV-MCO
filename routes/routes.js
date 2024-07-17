@@ -8,6 +8,7 @@ const contact_controller = require('../controllers/contact_controller.js');
 const about_controller = require('../controllers/about_controller.js');
 const addtobag_controller = require('../controllers/addtobag_controller.js');
 const admin_products_controller = require('../controllers/admin_products_controller.js');
+const admin_orders_controller = require('../controllers/admin_orders_controller.js');
 const add_product_controller = require('../controllers/add_product_controller.js');
 const { edit_product_controller } = require('../controllers/edit_product_controller.js');
 const admin_feedbacks_controller = require('../controllers/admin_feedbacks_controller.js');
@@ -42,6 +43,7 @@ app.get('/viewProductsPage', general_controller.isPrivate, verifyRole('ADMIN'), 
 app.get('/addProductPage', general_controller.isPrivate, verifyRole('ADMIN'), add_product_controller.getAddProduct) 
 app.get('/editProductPage/:id', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.getEditProduct)
 app.get('/getProduct', general_controller.isPrivate, verifyRole('ADMIN'), edit_product_controller.getProduct) 
+app.get('/viewOrdersPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_orders_controller.getViewOrders)
 app.get('/viewFeedbacksPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
 app.get('/getItemQuantity', bag_controller.getItemQuantity);
 app.get('/checkout', checkout_controller.getCheckout);

@@ -34,3 +34,8 @@ button:disabled {
     cursor: auto;
     background-color: gray;
 }
+
+.nestedTable {
+    margin: 0 auto; /* Center the nested table */
+    /* border-collapse: collapse; */
+}

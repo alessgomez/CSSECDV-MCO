@@ -92,7 +92,10 @@ const admin_products_controller = {
                 if (error) {
                     throw error;
                 } else {
-                    data.products = results;
+                    data.products = results.map(product => {
+                        product.price = parseFloat(product.price).toFixed(2);
+                        return product;
+                    });    
                     res.render('adminviewproducts', data);
                 }
             });
@@ -306,95 +309,7 @@ const admin_products_controller = {
                 return res.redirect('/addProductPage');
             }
         })
-
-    },
-
-    getEditProduct: async (req, res) => {
-        const data = {
-            style: ["navbar", "index", "adminproducts", "editproduct"],
-            script: ["editproduct"],
-            isAdmin: true,
-        }
-
-        res.render('admineditproduct', data);
-    },
-
-    postEditProduct:  function (req, res) {
-        upload(req, res, async (err) => {
-            if (err) {
-                console.error(err);
-                req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
-                return res.redirect('/addProductPage');
-            }
-            if (!req.file) {
-                req.flash('error_msg', 'Please upload a file.');
-                return res.redirect('/addProductPage');
-            }
-     
-            var newProduct = {
-                name: req.body.name,
-                category: req.body.category,
-                price: req.body.price,
-            };
-
-            try {
-                // START OF RESPONSE VALIDATION
-                if (validateDetails(newProduct)) {
-                    // 1. File signature 
-                    signature = req.file.buffer.toString('hex').toUpperCase();
-                    fileMimeType = getMimeType(signature);
-                    if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
-                        // 2. Image rewriting 
-                        sanitizeImage(req.file.buffer)
-                            .then(async sanitizedBuffer => {
-                                // 3. save to folder - filename!
-                                let connection = await getConnectionFromPool();
-                                let newFileName;
-                                let uuidExists = true;
-                                filePath = './public/images/products/';
-                                fileExtension = fileMimeType.split("/")[1];
-
-                                while (uuidExists) {
-                                    newFileName = uuidv4() + "." + fileExtension;
-                                    uuidExists = await checkUuidExists(connection, newFileName, "imageFilename");
-                                }
-                                
-                                fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
-                                newProduct['imageFilename'] = newFileName;
-    
-                                // 4. save to DB.
-                                const product = await addProduct(connection, newProduct);
-            
-                                if (product === null) {
-                                    req.flash('error_msg', 'Invalid details.');
-                                    return res.redirect('/addProductPage');
-                                } else {
-                                    req.flash('success_msg', 'Product successfully added.');
-                                    return res.redirect('/addProductPage');
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Image sanitization failed: ', error);
-                                throw new Error("ERROR: Image sanitization failed.");
-                            })
-                    }
-                    else {
-                        throw new Error("ERROR: Invalid file.")
-                    }
-                }
-                else {
-                    throw new Error("ERROR: Invalid product details.");
-                }
-            }
-            catch (error) {
-                console.error(error)
-                req.flash('error_msg', 'An error occurred when adding the product. Please try again.');
-                return res.redirect('/addProductPage');
-            }
-        })
-
-    },
-
+    }
 }
 
 

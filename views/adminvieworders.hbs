@@ -1,0 +1,53 @@
+<div class="parent-container">
+    <div class="child category-container">
+        <div class="title-container">
+            <div class="header">WELCOME, ADMIN!</div>
+            <div class="subheader">Here is the list of The Hungry Sibs orders:</div>
+        </div>
+        <table class= "productTable">
+            <tr>
+                <th>Order ID</th>
+                <th>Order Items</th>
+                <th>Subtotal</th>
+                <th>Delivery Fee</th>
+                <th>Total</th>
+                <th>Date Ordered</th>
+                <th>Notes</th>
+            </tr>
+
+            {{#each orders}}
+                <tr>
+                    <td class="productInfo">{{this.orderId}}</td>
+                    <td class="productInfo">
+                        <table class="nestedTable">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Order Item Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each this.orderItems}}
+                                    <tr>
+                                        <td>{{this.productName}}</td>
+                                        <td>{{this.quantity}}</td>
+                                        <td>&#8369; {{this.productPrice}}</td>
+                                        <td>&#8369; {{this.orderItemTotal}}</td>
+                                    </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </td>
+
+                    <td class="productInfo">&#8369; {{this.orderSubtotal}}</td>
+                    <td class="productInfo">&#8369; {{this.deliveryFee}}</td>
+                    <td class="productInfo">&#8369; {{this.orderTotal}}</td>
+                    <td class="productInfo">{{this.notes}}</td>
+                    <td class="productInfo">{{this.dateOrdered}}</td>
+                </tr>
+            {{/each}}
+        </table>
+    </div>
+</div>
