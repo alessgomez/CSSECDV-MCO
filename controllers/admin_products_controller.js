@@ -1,5 +1,6 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const { fileFilter, getMimeType, sanitizeImage } = require('./registration_controller.js')
+const { isProductArchived } = require('./edit_product_controller.js');
 const fs = require('fs');
 const sharp = require('sharp');
 const multer = require('multer');
@@ -150,46 +151,52 @@ const admin_products_controller = {
     postAddBestseller: async (req, res) => {
         const productId = req.body.productId;
         let connection = await getConnectionFromPool();
-        try {
-            // Check if the product is not archived before updating as bestseller
-            const checkQuery = 'SELECT isArchived FROM products WHERE productId = ?';
-            connection.query(checkQuery, [productId], (checkError, checkResults) => {
-                if (checkError) {
-                    console.error('Error checking product archive status:', checkError);
-                    res.json({ success: false, error: 'Error checking product archive status' });
-                    return;
-                }
-    
-                if (checkResults.length === 0) {
-                    console.error('Product not found:', productId);
-                    res.json({ success: false, error: 'Product not found' });
-                    return;
-                }
-    
-                const isArchived = checkResults[0].isArchived;
-    
-                // Only update as bestseller if the product is not archived
-                if (!isArchived) {
-                    const updateQuery = 'UPDATE products SET isBestseller = ? WHERE productId = ?';
-                    connection.query(updateQuery, [true, productId], (updateError, updateResults) => {
-                        if (updateError) {
-                            console.error('Error adding product to bestsellers:', updateError);
-                            res.json({ success: false, error: 'Error adding product to bestsellers' });
-                        } else {
-                            res.json({ success: true });
-                        }
-                    });
-                } else {
-                    // Product is archived, cannot be set as bestseller
-                    res.json({ success: false, error: 'Product is archived, cannot be set as bestseller' });
-                }
-            });
-        } catch (error) {
-            console.log(error);
-            res.json({ success: false, error: 'Server error' });
-        } finally {
-            if (connection)
-                connection.release();
+        const isArchived = await isProductArchived(connection, productId)    
+
+        if (isArchived) {
+            res.json({ success: false, error: 'Archived products cannot be added to bestsellers' });
+        } else {
+            try {
+                // Check if the product is not archived before updating as bestseller
+                const checkQuery = 'SELECT isArchived FROM products WHERE productId = ?';
+                connection.query(checkQuery, [productId], (checkError, checkResults) => {
+                    if (checkError) {
+                        console.error('Error checking product archive status:', checkError);
+                        res.json({ success: false, error: 'Error checking product archive status' });
+                        return;
+                    }
+        
+                    if (checkResults.length === 0) {
+                        console.error('Product not found:', productId);
+                        res.json({ success: false, error: 'Product not found' });
+                        return;
+                    }
+        
+                    const isArchived = checkResults[0].isArchived;
+        
+                    // Only update as bestseller if the product is not archived
+                    if (!isArchived) {
+                        const updateQuery = 'UPDATE products SET isBestseller = ? WHERE productId = ?';
+                        connection.query(updateQuery, [true, productId], (updateError, updateResults) => {
+                            if (updateError) {
+                                console.error('Error adding product to bestsellers:', updateError);
+                                res.json({ success: false, error: 'Error adding product to bestsellers' });
+                            } else {
+                                res.json({ success: true });
+                            }
+                        });
+                    } else {
+                        // Product is archived, cannot be set as bestseller
+                        res.json({ success: false, error: 'Product is archived, cannot be set as bestseller' });
+                    }
+                });
+            } catch (error) {
+                console.log(error);
+                res.json({ success: false, error: 'Server error' });
+            } finally {
+                if (connection)
+                    connection.release();
+            }
         }
     },
     
