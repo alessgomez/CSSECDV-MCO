@@ -62,9 +62,8 @@ async function getEmail(connection, accountId) {
   });
 }
 
-async function createSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp) {
+async function createSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp, verified) {
   return new Promise((resolve, reject) => {
-    const verified = false
     const sql = 'INSERT INTO sessiondata (sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp) VALUES (?, ?, ?, ?, ?)';
       const values = [sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp];
       connection.query(sql, values, async (error, results) => {
@@ -76,6 +75,27 @@ async function createSessionDataEntry(connection, sessionId, accountId, pendingO
       });
   });
 }
+
+async function updateSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp, verified) {
+  return new Promise((resolve, reject) => {
+    const sql = 'UPDATE sessiondata SET accountId = ?, pendingOTC = ?, pendingOTCTimestamp = ?, verified = ?  WHERE sessionId = ?';
+    const values = [accountId, pendingOTC, pendingOTCTimestamp, verified, sessionId];
+    connection.query(sql, values, async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.affectedRows > 0) {
+          resolve(true); // Update was successful
+        } else {
+          resolve(false); // No rows were updated (sessionId not found)
+        }
+      }
+    });
+  });
+}
+
+
+
 
 async function getSessionDataEntry(connection, sessionId) {
   return new Promise((resolve, reject) => {
@@ -243,13 +263,24 @@ const login_controller = {
 
           if (accountId) {
               const oneTimeCode = generateOneTimeCode();
-               
-              try {
-                await createSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date())
-              } catch (error) {
-                console.error('Error during session data entry creation');
-                req.flash('error_msg', 'Session expired. Please log in again.');
-                return res.redirect('/login');
+              const sessionDataEntry = await getSessionDataEntry(connection, req.session.id)
+
+              if (!sessionDataEntry) {
+                try {
+                  await createSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false)
+                } catch (error) {
+                  console.error('Error during session data entry creation: ', error);
+                  req.flash('error_msg', 'An error occurred during login. Please try again.');
+                  return res.redirect('/login');
+                }
+              } else {
+                try {
+                  await updateSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false)
+                } catch (error) {
+                  console.error('Error during session data entry update: ', error);
+                  req.flash('error_msg', 'An error occurred during login. Please try again.');
+                  return res.redirect('/login');
+                }
               }
 
               sendOneTimeCode(req.body.email, oneTimeCode);
@@ -333,8 +364,44 @@ const login_controller = {
               return res.redirect('/2FA');
           }
 
-          await updateSessionDataVerified(connection, req.session.id)
-          return res.redirect('/');
+          const oldSessionDataEntry = await getSessionDataEntry(connection, req.session.id)
+
+          req.session.regenerate( async (error) => {
+            if (error) {
+              console.error('Error during session regeneration:', error);
+              req.flash('error_msg', 'An error occurred during verification. Please try again.');
+              return res.redirect('/2FA');
+            }
+
+            const newSessionId = req.session.id;
+
+            try {
+              // Wait for the session store to create the new session before proceeding
+              await new Promise((resolve, reject) => {
+                req.session.save((error) => {
+                  if (error) return reject(error);
+                  resolve();
+                });
+              });
+
+              await createSessionDataEntry(connection, req.session.id, oldSessionDataEntry.accountId, null, null, true)
+
+              // Destroy the old session
+              req.sessionStore.destroy(oldSessionId, (error) => {
+                if (error) {
+                  console.error('Failed to destroy old session:', error);
+                }
+
+                return res.redirect('/');
+
+              });
+
+            } catch (error) {
+              console.error('Error during session data entry creation: ', error);
+              req.flash('error_msg', 'An error occurred during 2FA verification. Please try again.');
+              return res.redirect('/2FA');
+            }
+          });
 
       } catch (error) {
           console.error('Error during 2FA verification:', error);
@@ -377,7 +444,7 @@ const login_controller = {
           }
 
           const oneTimeCode = generateOneTimeCode();
-          sendOneTimeCode(email, oneTimeCode);
+          //sendOneTimeCode(email, oneTimeCode); // FIX: UNCOMMENT
 
           await updateSessionDataOTC(connection, req.session.id, oneTimeCode, new Date())
 
