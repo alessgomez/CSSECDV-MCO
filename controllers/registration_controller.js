@@ -72,8 +72,8 @@ async function registerAccount(connection, newAccount) {
                     if (error) {
                         reject(error);
                     } else {
-                        const sql = 'INSERT INTO accounts (accountId, firstName, lastName, email, password, phoneNumber, profilePicFilename, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-                        const values = [newId, newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.number, newAccount.profilePicFilename, 'USER', new Date()];
+                        const sql = 'INSERT INTO accounts (accountId, firstName, lastName, email, password, address, phoneNumber, profilePicFilename, role, dateCreated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+                        const values = [newId, newAccount.first, newAccount.last, newAccount.email, newAccount.pw, newAccount.address, newAccount.number, newAccount.profilePicFilename, 'USER', new Date()];
 
                         connection.query(sql, values, async (error, results) => {
                             if (error) {
@@ -145,13 +145,16 @@ function validateDetails(newAccount) {
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailValid = emailRegex.test(newAccount.email) && newAccount.email.substr(0, newAccount.email.indexOf('@')).length <= 64 && newAccount.email.substr(newAccount.email.indexOf('@')).length <= 255
     
+    // TODO: change this to regex test for address
+    const addressValid = newAccount.address != null && newAccount.address.length > 0 && newAccount.address.length <= 255;
+
     const phoneNumberRegex = /^(09|\+639)\d{9}$/;
     const phoneNumberValid = phoneNumberRegex.test(newAccount.number);
   
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9\s]).{8,64}$/;
     const passwordValid = passwordRegex.test(newAccount.pw);
 
-    return nameValid && emailValid && phoneNumberValid && passwordValid;
+    return nameValid && emailValid && addressValid && phoneNumberValid && passwordValid;
 }
 
 async function sanitizeImage(inputBuffer) {
@@ -196,7 +199,8 @@ const registration_controller = {
                 last: req.body.lastname,
                 email: req.body.email,
                 pw: req.body.psw,
-                number: req.body.contactno,
+                address: req.body.address,
+                number: req.body.contactno
             };
 
             try {

@@ -2,6 +2,7 @@ $(document).ready(function(){
     var firstNameInput = document.getElementById("firstname");
     var lastNameInput = document.getElementById("lastname");
     var emailInput = document.getElementById("email");
+    var addressInput = document.getElementById("address");
     var phoneNumberInput = document.getElementById("contactno");
     var fileUploadInput = document.getElementById("inputFile");
     var passwordInput = document.getElementById("psw");
@@ -14,6 +15,7 @@ $(document).ready(function(){
     var firstNameValid = false;
     var lastNameValid = false;
     var emailValid = false;
+    var addressValid = false;
     var phoneNumberValid = false;
     var fileUploadValid = false;
     var passwordsValid = false;
@@ -45,7 +47,7 @@ $(document).ready(function(){
     }
 
     function validateFields() {
-        submit.disabled = !(firstNameValid && lastNameValid && emailValid && phoneNumberValid && fileUploadValid && passwordsValid);
+        submit.disabled = !(firstNameValid && lastNameValid && emailValid && addressValid && phoneNumberValid && fileUploadValid && passwordsValid);
 
         error_msg.innerHTML = "";
 
@@ -59,6 +61,10 @@ $(document).ready(function(){
         
         if (passwordInput.value.length > 0 && confirmPasswordInput.value.length > 0 && !passwordsValid) {
             error_msg.innerHTML += "Password must be between 8 to 64 characters and contain at least one uppercase letter, one lowercase letter, one number, and one special character.<br>";
+        }
+
+        if (addressInput.value.length > 0 && !addressValid) {
+            error_msg.innerHTML += "Invalid address.<br>";
         }
 
         if (phoneNumberInput.value.length > 0 && !phoneNumberValid) {
@@ -75,6 +81,15 @@ $(document).ready(function(){
         let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/)
 
         emailValid = email != null && regexEmail.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255;
+
+        validateFields();
+    }
+
+    addressInput.onkeyup = function() {
+        var address = addressInput.value
+        // TODO: add regex for address
+        
+        addressValid = address != null && address.length > 0 && address.length <= 255;
 
         validateFields();
     }

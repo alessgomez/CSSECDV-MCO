@@ -7,7 +7,7 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 
 async function checkAccountDetails(connection, accountId) {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT firstName, lastName, email, password, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?';
+        const sql = 'SELECT firstName, lastName, email, password, address, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?';
         connection.query(sql, [accountId], (error, results) => {
             if (error) {
                 reject(error);
@@ -44,10 +44,13 @@ function validateDetails(newDetails) {
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailValid = emailRegex.test(newDetails.email) && newDetails.email.substr(0, newDetails.email.indexOf('@')).length <= 64 && newDetails.email.substr(newDetails.email.indexOf('@')).length <= 255
     
+    // TODO: change this to regex test for address
+    const addressValid = newDetails.address != null && newDetails.address.length > 0 && newDetails.address.length <= 255;
+
     const phoneNumberRegex = /^(09|\+639)\d{9}$/;
     const phoneNumberValid = phoneNumberRegex.test(newDetails.phoneNumber);
 
-    return nameValid && emailValid && phoneNumberValid;
+    return nameValid && emailValid && addressValid && phoneNumberValid;
 }
 
 function validatePassword(newPassword) {
@@ -70,7 +73,7 @@ const profile_controller = {
             const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
-                connection.query('SELECT firstName, lastName, email, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?', [sessionData.accountId], function(error, results) {
+                connection.query('SELECT firstName, lastName, email, address, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?', [sessionData.accountId], function(error, results) {
                     if (error) {
                         throw error;
                     } else {
@@ -108,7 +111,7 @@ const profile_controller = {
                 res.redirect("/login");
             }
         } catch (error) {
-            console.log("Error loading change password page");
+            console.log("Error loading change password page.");
             console.log(error);
         } finally {
             if (connection)
@@ -130,9 +133,10 @@ const profile_controller = {
                     // TODO: Changing & backend validation of profile pic
 
                     if (validateDetails(newDetails)) {
-                        if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || newDetails.phoneNumber !== currentDetails.phoneNumber) {
-                            const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
-                            connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
+                        if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
+                            newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
+                            const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
+                            connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
                                 if (error) {
                                     throw error;
                                 }
