@@ -190,22 +190,23 @@ const profile_controller = {
                 const currentAccount = await checkAccountDetails(connection, sessionData.accountId);
 
                 if (currentAccount) {
-                    const oldPasswordMatch = await bcrypt.compare(passwordDetails.oldPsw, currentAccount.password);
-
-                    if (oldPasswordMatch) {
+                    if (await bcrypt.compare(passwordDetails.oldPsw, currentAccount.password)) {
                         if (validatePassword(passwordDetails.newPsw)) {
-                            const newPasswordIsNotOld = await bcrypt.compare(passwordDetails.newPsw, currentAccount.password);
-
-                            if (!newPasswordIsNotOld) {
+                            if (!await bcrypt.compare(passwordDetails.newPsw, currentAccount.password)) {
                                 const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, config.saltRounds);
 
                                 connection.query('UPDATE accounts SET password = ?, dateEdited = ? WHERE accountId = ?', [hashedPassword, new Date(), sessionData.accountId], function(error, results) {
                                     if (error) {
                                         throw error;
                                     }
+                                });
 
-                                    req.flash('success_msg', 'Password successfully changed.');
-                                    res.redirect("/profile");
+                                await deleteSessionDataEntry(connection, sessionData.sessionId);
+
+                                req.session.destroy(() => {
+                                    res.clearCookie('thehungrycookie'); 
+                                    console.log("Session successfully destroyed.");
+                                    res.redirect('/login');
                                 });
                             } else {
                                 req.flash('error_msg', 'New password cannot be the same as the old password.');
@@ -246,7 +247,8 @@ const profile_controller = {
                         throw error;
                     }
                 });
-                await deleteSessionDataEntry(connection, req.session.id)
+
+                await deleteSessionDataEntry(connection, sessionData.sessionId);
                 
                 req.session.destroy(() => {
                     res.clearCookie('thehungrycookie'); 

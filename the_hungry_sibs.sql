@@ -35,8 +35,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Accounts` (
   `dateArchived` DATETIME NULL DEFAULT NULL,
   `isArchived` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`accountId`),
-  UNIQUE INDEX `accountId_UNIQUE` (`accountId` ASC) VISIBLE,
-  UNIQUE INDEX `phoneNumber_UNIQUE` (`phoneNumber` ASC) VISIBLE)
+  UNIQUE INDEX `accountId_UNIQUE` (`accountId` ASC) VISIBLE)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 

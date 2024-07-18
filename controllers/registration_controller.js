@@ -54,7 +54,7 @@ const upload = multer({
 
 async function registerAccount(connection, newAccount) {
     return new Promise((resolve, reject) => {
-        connection.query('SELECT * FROM accounts WHERE email = ? OR phoneNumber = ?', [newAccount.email, newAccount.number], async (error, results) => {
+        connection.query('SELECT * FROM accounts WHERE (email = ? OR phoneNumber = ?) AND isArchived = ?', [newAccount.email, newAccount.number, false], async (error, results) => {
             if (error) {
                 reject(error);
             } else {
