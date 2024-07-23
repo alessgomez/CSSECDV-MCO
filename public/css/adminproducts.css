@@ -39,3 +39,52 @@ button:disabled {
     margin: 0 auto; /* Center the nested table */
     /* border-collapse: collapse; */
 }
+
+.parent-container-orders .category-container-orders {
+    width: 90%;
+}
+
+.orderIdHeader {
+    width: 6%
+}
+
+.orderItemsHeader {
+    width: 35%
+}
+
+.productNameHeader {
+    width: 12%
+}
+
+.quantityHeader {
+    width: 1%
+}
+
+.unitPriceHeader {
+    width: 10%;
+}
+
+.orderItemTotalHeader {
+    width: 10%
+}
+
+.orderTotalHeader {
+    width: 8%;
+}
+
+.notesHeader {
+    width: 12%
+}
+
+.dateOrderedHeader {
+    width: 15%    
+}
+
+.addressHeader {
+    width: 15%
+}
+
+.phoneNumberHeader {
+    width: 12%
+}
+

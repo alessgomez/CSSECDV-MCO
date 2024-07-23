@@ -12,11 +12,13 @@ const admin_orders_controller = {
         try {
             const query = `SELECT orders.orderId AS dbOrderId, orders.total AS orderTotal, orders.subtotal AS orderSubtotal, 
                         orders.deliveryFee AS deliveryFee, orders.dateOrdered AS dateOrdered, orders.notes AS notes, 
-                        orderitems.quantity AS quantity, orderitems.totalPrice AS orderItemTotal, 
-                        products.name AS productName, products.price AS productPrice 
+                        orderitems.quantity AS quantity, orderitems.totalPrice AS orderItemTotal,
+                        products.name AS productName, products.price AS productPrice, accounts.address AS address, 
+                        accounts.phoneNumber AS phoneNumber
                         FROM orders 
                         INNER JOIN orderitems ON orders.orderId = orderitems.orderId 
                         INNER JOIN products ON orderitems.productId = products.productId 
+                        INNER JOIN accounts ON orders.accountId = accounts.accountId
                         ORDER BY orders.dateOrdered DESC, orders.orderId`;
             connection.query(query, function(error, results) {
                 if (error) {
@@ -34,6 +36,8 @@ const admin_orders_controller = {
                                 orderSubtotal: parseFloat(row.orderSubtotal).toFixed(2), 
                                 deliveryFee: parseFloat(row.deliveryFee).toFixed(2),
                                 orderTotal: parseFloat(row.orderTotal).toFixed(2),
+                                phoneNumber: row.phoneNumber,
+                                address: row.address,
                                 notes: row.notes,
                                 dateOrdered: row.dateOrdered,
                                 orderItems: []

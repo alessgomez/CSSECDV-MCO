@@ -1,31 +1,31 @@
-<div class="parent-container">
-    <div class="child category-container">
+<div class="parent-container parent-container-orders">
+    <div class="child category-container category-container-orders">
         <div class="title-container">
             <div class="header">WELCOME, ADMIN!</div>
             <div class="subheader">Here is the list of The Hungry Sibs orders:</div>
         </div>
-        <table class= "productTable">
+        <table class= "productTable ordersTable">
             <tr>
-                <th>Order ID</th>
-                <th>Order Items</th>
-                <th>Subtotal</th>
-                <th>Delivery Fee</th>
-                <th>Total</th>
-                <th>Date Ordered</th>
-                <th>Notes</th>
+                <th class="orderIdHeader">Order ID</th>
+                <th class="orderItemsHeader">Order Items</th>
+                <th class="orderTotalHeader">Total</th>
+                <th class="notesHeader">Notes</th>
+                <th class="dateOrderedHeader">Date Ordered</th>
+                <th class="addressHeader">Delivery Address</th>
+                <th class="phoneNumberHeader">Phone Number</th>
             </tr>
 
             {{#each orders}}
                 <tr>
-                    <td class="productInfo">{{this.orderId}}</td>
+                    <td class="productInfo orderId">{{this.orderId}}</td>
                     <td class="productInfo">
                         <table class="nestedTable">
                             <thead>
                                 <tr>
-                                    <th>Product Name</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Order Item Total</th>
+                                    <th class="productNameHeader">Product Name</th>
+                                    <th class="quantityHeader">Quantity</th>
+                                    <th class="unitPriceHeader">Unit Price</th>
+                                    <th class="orderItemTotalHeader">Order Item Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -33,19 +33,18 @@
                                     <tr>
                                         <td>{{this.productName}}</td>
                                         <td>{{this.quantity}}</td>
-                                        <td>&#8369; {{this.productPrice}}</td>
+                                        <td class="unitPrice">&#8369; {{this.productPrice}}</td>
                                         <td>&#8369; {{this.orderItemTotal}}</td>
                                     </tr>
                                 {{/each}}
                             </tbody>
                         </table>
                     </td>
-
-                    <td class="productInfo">&#8369; {{this.orderSubtotal}}</td>
-                    <td class="productInfo">&#8369; {{this.deliveryFee}}</td>
-                    <td class="productInfo">&#8369; {{this.orderTotal}}</td>
-                    <td class="productInfo">{{this.notes}}</td>
-                    <td class="productInfo">{{this.dateOrdered}}</td>
+                    <td class="productInfo orderTotal">&#8369; {{this.orderTotal}}</td>
+                    <td class="productInfo notes">{{this.notes}}</td>
+                    <td class="productInfo dateOrdered">{{this.dateOrdered}}</td>
+                    <td class="productInfo address">{{this.address}}</td>
+                    <td class="productInfo phoneNumber">{{this.phoneNumber}}</td>
                 </tr>
             {{/each}}
         </table>
