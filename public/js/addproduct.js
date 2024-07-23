@@ -53,11 +53,11 @@ $(document).ready(function(){
     }
 
     fileUploadInput.onchange = async function () {
-        var fileName = fileUploadInput.files[0].name;
-        
+        var file = fileUploadInput.files[0];
         fileUploadValid = false;
 
-        if (fileName != null) {
+        if (file != null) {
+            var fileName = file.name;
             let regexFileName = new RegExp(/^[A-Za-z0-9]+([-._ ]*[A-Za-z0-9])*\.(jpg|jpeg|png|JPG|JPEG|PNG)$/);
             
             if (regexFileName.test(fileName) && fileName.length <= 255) {                
