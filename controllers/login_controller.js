@@ -373,8 +373,6 @@ const login_controller = {
               return res.redirect('/2FA');
             }
 
-            const newSessionId = req.session.id;
-
             try {
               // Wait for the session store to create the new session before proceeding
               await new Promise((resolve, reject) => {
@@ -444,6 +442,7 @@ const login_controller = {
           }
 
           const oneTimeCode = generateOneTimeCode();
+          console.log("OTP: " + oneTimeCode)
           sendOneTimeCode(email, oneTimeCode); 
 
           await updateSessionDataOTC(connection, req.session.id, oneTimeCode, new Date())
