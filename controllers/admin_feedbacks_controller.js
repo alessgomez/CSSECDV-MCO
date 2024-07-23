@@ -1,4 +1,8 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 const admin_feedbacks_controller = {
     getViewFeedbacks: async (req, res) => {
@@ -11,11 +15,16 @@ const admin_feedbacks_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            connection.query("SELECT * FROM feedbacks", function(error, results) {
+            connection.query("SELECT feedbackId, subject, message FROM feedbacks", function(error, results) {
                 if (error) {
                     throw error;
                 } else {
-                    data.feedbacks = results;
+                    data.feedbacks = results.map(feedback => {
+                        feedback.feedbackId = DOMPurify.sanitize(feedback.feedbackId);
+                        feedback.subject = DOMPurify.sanitize(feedback.subject);
+                        feedback.message = DOMPurify.sanitize(feedback.message);
+                        return feedback;
+                    });    
                     res.render('adminviewfeedbacks', data);
                 }
             });

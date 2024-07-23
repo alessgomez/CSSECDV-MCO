@@ -6,6 +6,10 @@ const sharp = require('sharp');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const storage = multer.memoryStorage();
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
@@ -93,7 +97,13 @@ const admin_products_controller = {
                     throw error;
                 } else {
                     data.products = results.map(product => {
+                        product.productId = DOMPurify.sanitize(product.productId);
+                        product.name = DOMPurify.sanitize(product.name);
+                        product.category = DOMPurify.sanitize(product.category)
                         product.price = parseFloat(product.price).toFixed(2);
+                        product.imageFilename = DOMPurify.sanitize(product.imageFilename);
+                        product.isBestSeller = parseInt(product.isBestSeller);
+                        product.isArchived = parseInt(product.isArchived)
                         return product;
                     });    
                     res.render('adminviewproducts', data);
@@ -249,9 +259,9 @@ const admin_products_controller = {
             }
      
             var newProduct = {
-                name: req.body.name,
-                category: req.body.category,
-                price: req.body.price,
+                name: DOMPurify.sanitize(req.body.name),
+                category: DOMPurify.sanitize(req.body.category),
+                price: DOMPurify.sanitize(req.body.price),
             };
 
             try {

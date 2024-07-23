@@ -1,4 +1,8 @@
-const { getConnectionFromPool, logPoolStats } = require('../db');;
+const { getConnectionFromPool, logPoolStats } = require('../db');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 const admin_orders_controller = {
     getViewOrders: async (req, res) => {
@@ -32,14 +36,14 @@ const admin_orders_controller = {
                         if (!orderMap.has(row.dbOrderId)) {
                             const order = {
                                 orderId: autoIncrementedOrderId++, // auto-incremented orderId
-                                dbOrderId: row.dbOrderId,
+                                dbOrderId: DOMPurify.sanitize(row.dbOrderId),
                                 orderSubtotal: parseFloat(row.orderSubtotal).toFixed(2), 
                                 deliveryFee: parseFloat(row.deliveryFee).toFixed(2),
                                 orderTotal: parseFloat(row.orderTotal).toFixed(2),
-                                phoneNumber: row.phoneNumber,
-                                address: row.address,
-                                notes: row.notes,
-                                dateOrdered: row.dateOrdered,
+                                phoneNumber: DOMPurify.sanitize(row.phoneNumber),
+                                address: DOMPurify.sanitize(row.address),
+                                notes: DOMPurify.sanitize(row.notes),
+                                dateOrdered: DOMPurify.sanitize(row.dateOrdered),
                                 orderItems: []
                             };
                             orders.push(order);
@@ -47,9 +51,9 @@ const admin_orders_controller = {
                         }
                 
                         const orderItem = {
-                            productName: row.productName,
+                            productName: DOMPurify.sanitize(row.productName),
                             productPrice: parseFloat(row.productPrice).toFixed(2),
-                            quantity: row.quantity,
+                            quantity: parseInt(row.quantity),
                             orderItemTotal: parseFloat(row.orderItemTotal).toFixed(2)
                         };
                 

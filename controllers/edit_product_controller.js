@@ -6,6 +6,10 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const { isArchived } = require('./general_controller.js');
 const storage = multer.memoryStorage();
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
@@ -116,7 +120,7 @@ const edit_product_controller = {
             }
     
             try {
-                const sql = 'SELECT * FROM products WHERE productId = ?'; 
+                const sql = 'SELECT productId, name, category, price FROM products WHERE productId = ?'; 
                 connection.query(sql, [productId], async (error, results) => {
                   if (error) {
                     reject(error);
@@ -124,7 +128,12 @@ const edit_product_controller = {
                     if (results.length === 0) {
                         res.redirect('/viewProductsPage')
                     } else {
-                        data.product = results[0];
+                        var product = results[0];
+                        product.productId = DOMPurify.sanitize(product.productId)
+                        product.name = DOMPurify.sanitize(product.name)
+                        product.category = DOMPurify.sanitize(product.category)
+                        product.price = parseFloat(product.price).toFixed(2);
+                        data.product = product                     
                         const category = data.product.category;
     
                         if (category == 'main')
@@ -165,20 +174,18 @@ const edit_product_controller = {
                 return res.redirect('/viewProductsPage');
             } else {
                 var updatedProduct = {
-                    productId: productId,
-                    name: req.body.name,
-                    category: req.body.category,
-                    price: req.body.price,
+                    productId: DOMPurify.sanitize(productId),
+                    name: DOMPurify.sanitize(req.body.name),
+                    category: DOMPurify.sanitize(req.body.category),
+                    price:  parseFloat(req.body.price).toFixed(2)
                 };
-    
-                // TO DO: CHECK IF PRODUCT IS ARCHIOVED
     
                 try {
                     // START OF RESPONSE VALIDATION
                     if (validateDetails(updatedProduct)) {
                         if (!req.file) {
     
-                            // save to DB.
+                            // save to DB already if there's no new image being uploaded
                             const result = await editProduct(connection, updatedProduct, false);
                             if (result === null) 
                                 req.flash('error_msg', 'Invalid details.');
@@ -252,7 +259,7 @@ const edit_product_controller = {
         const productId = req.query.productId;
         let connection = await getConnectionFromPool();
         try {
-            const query = 'SELECT * FROM products WHERE productId = ?';
+            const query = 'SELECT name, category, price FROM products WHERE productId = ?';
             connection.query(query, [productId], (error, results) => {
                 if (error) {
                     console.error(error);
@@ -264,7 +271,10 @@ const edit_product_controller = {
                     res.json({ success: false, error: 'Product not found' });
                     return;
                 } else {
-                    const product = results[0];
+                    var product = results[0];
+                    product.name = DOMPurify.sanitize(product.name);
+                    product.category = DOMPurify.sanitize(product.category);
+                    product.price = parseFloat(product.price).toFixed(2)
                     res.json({ success: true, product: product });
                     return;
                 }

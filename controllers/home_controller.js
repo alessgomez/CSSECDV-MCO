@@ -1,4 +1,8 @@
 const {getConnectionFromPool} = require('../db');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 const home_controller = {
 
@@ -22,11 +26,22 @@ const home_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            connection.query("SELECT * FROM accounts WHERE role = 'USER' ORDER BY dateCreated ASC", function(error, results) {
+            connection.query(`SELECT firstName, lastName, email, phoneNumber, dateCreated, dateEdited, dateArchived
+                             FROM accounts WHERE role = 'USER' ORDER BY dateCreated ASC`, function(error, results) {
                 if (error) {
                     throw error;
                 } else {
-                    adminPageData.users = results;
+                    adminPageData.users = results.map(user => {
+                        user.firstName = DOMPurify.sanitize(user.firstName);
+                        user.lastName = DOMPurify.sanitize(user.lastName);
+                        user.email = DOMPurify.sanitize(user.email);
+                        user.phoneNumber = DOMPurify.sanitize(user.phoneNumber);
+                        user.dateCreated = DOMPurify.sanitize(user.dateCreated);
+                        user.dateEdited = DOMPurify.sanitize(user.dateEdited);
+                        user.dateArchived = DOMPurify.sanitize(user.dateArchived);
+                        return user;
+                    });    
+
                     res.render("admin", adminPageData);
                 }
             });
