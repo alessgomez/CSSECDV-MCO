@@ -3,6 +3,7 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
+const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 

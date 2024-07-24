@@ -2,6 +2,7 @@ const { getConnectionFromPool, logPoolStats } = require('../db');
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
+const fs = require('fs');
 const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;

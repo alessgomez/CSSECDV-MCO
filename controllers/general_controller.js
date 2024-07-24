@@ -1,6 +1,7 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
 const home_controller = require('./home_controller');
+const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 
