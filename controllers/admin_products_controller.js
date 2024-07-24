@@ -317,6 +317,10 @@ const admin_products_controller = {
                 console.error(error)
                 req.flash('error_msg', 'An error occurred when adding the product. Please try again.');
                 return res.redirect('/addProductPage');
+            } finally {
+                if (connection) {
+                    connection.release();
+                }
             }
         })
     }

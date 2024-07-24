@@ -203,7 +203,6 @@ const edit_product_controller = {
                                 sanitizeImage(req.file.buffer)
                                     .then(async sanitizedBuffer => {
                                         // 3. save to folder - filename!
-                                        let connection = await getConnectionFromPool();
                                         let newFileName;
                                         let uuidExists = true;
                                         filePath = './public/images/products/';
@@ -248,6 +247,9 @@ const edit_product_controller = {
                     console.error(error)
                     req.flash('error_msg', 'An error occurred when updating the product. Please try again.');
                     return res.redirect('/editProductPage/' + productId);
+                } finally {
+                    if (connection)
+                        connection.release();
                 }
             }
             
