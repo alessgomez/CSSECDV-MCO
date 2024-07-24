@@ -3,6 +3,8 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
 
 const admin_feedbacks_controller = {
     getViewFeedbacks: async (req, res) => {

@@ -9,7 +9,8 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
-
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
@@ -18,7 +19,7 @@ const upload = multer({
     fileFilter: fileFilter
 }).single('inputFile');
 
-const checkUuidExists = (connection, newId, field) => {
+const checkProductUuidExists = (connection, newId, field) => {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM products WHERE ? = ?';
         connection.query(sql, [field, newId], (error, results) => {
@@ -38,7 +39,7 @@ async function addProduct(connection, newProduct) {
 
         while (uuidExists) {
             newId = uuidv4();
-            uuidExists = await checkUuidExists(connection, newId, 'productId');
+            uuidExists = await checkProductUuidExists(connection, newId, 'productId');
         }
 
         return new Promise((resolve, reject) => {
@@ -129,7 +130,7 @@ const add_product_controller = {
 
                                 while (uuidExists) {
                                     newFileName = uuidv4() + "." + fileExtension;
-                                    uuidExists = await checkUuidExists(connection, newFileName, "imageFilename");
+                                    uuidExists = await checkProductUuidExists(connection, newFileName, "imageFilename");
                                 }
                                 
                                 fs.writeFileSync(filePath + newFileName, sanitizedBuffer);

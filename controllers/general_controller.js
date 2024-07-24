@@ -1,6 +1,8 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
 const home_controller = require('./home_controller');
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
 
 async function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
