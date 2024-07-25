@@ -57,8 +57,8 @@ $(document).ready(function() {
         emailValid = email != null && regexEmail.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255;
 
         var address = inputFields[4].value;
-        // TODO: add regex for address
-        addressValid = address != null && address.length > 0 && address.length <= 255;
+        let regexAddress = new RegExp(/^([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9]{4})$/)
+        addressValid = address != null && regexAddress.test(address) && address.length <= 160;
 
         var phoneNumber = inputFields[5].value;
         let regexPhoneNumber = new RegExp(/^(09|\+639)\d{9}$/);

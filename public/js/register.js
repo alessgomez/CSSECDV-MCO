@@ -87,9 +87,9 @@ $(document).ready(function(){
 
     addressInput.onkeyup = function() {
         var address = addressInput.value
-        // TODO: add regex for address
+        let regexAddress = new RegExp(/^([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9]{4})$/)
         
-        addressValid = address != null && address.length > 0 && address.length <= 255;
+        addressValid = address != null && regexAddress.test(address) && address.length <= 160;
 
         validateFields();
     }

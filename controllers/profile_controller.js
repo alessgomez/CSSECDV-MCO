@@ -69,8 +69,8 @@ function validateDetails(newDetails) {
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailValid = emailRegex.test(newDetails.email) && newDetails.email.substr(0, newDetails.email.indexOf('@')).length <= 64 && newDetails.email.substr(newDetails.email.indexOf('@')).length <= 255
     
-    // TODO: change this to regex test for address
-    const addressValid = newDetails.address != null && newDetails.address.length > 0 && newDetails.address.length <= 255;
+    const addressRegex = /^([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9]{4})$/;
+    const addressValid = addressRegex.test(newDetails.address) && newDetails.address.length <= 160;
 
     const phoneNumberRegex = /^(09|\+639)\d{9}$/;
     const phoneNumberValid = phoneNumberRegex.test(newDetails.phoneNumber);
