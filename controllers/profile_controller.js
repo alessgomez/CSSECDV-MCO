@@ -95,7 +95,7 @@ const profile_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 connection.query('SELECT firstName, lastName, email, address, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?', [sessionData.accountId], function(error, results) {
@@ -128,7 +128,7 @@ const profile_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 res.render("account", changePwPageData);
@@ -148,7 +148,7 @@ const profile_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
             
             if (sessionData) {
                 upload(req, res, async (err) => {
@@ -244,7 +244,7 @@ const profile_controller = {
             }
         } catch (error) {
             req.flash('error_msg', 'An error occurred during profile update. Please relogin and try again.');
-            deleteSessionDataEntry(connection, req.session.sessionId);
+            await deleteSessionDataEntry(connection, req.session.sessionId);
             return res.redirect('/login');
         } finally {
             if (connection)
@@ -256,7 +256,7 @@ const profile_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 const passwordDetails = req.body;
@@ -274,7 +274,7 @@ const profile_controller = {
                                     }
                                 });
 
-                                deleteSessionDataEntry(connection, sessionData.sessionId);
+                                await deleteSessionDataEntry(connection, sessionData.sessionId);
 
                                 req.session.destroy(() => {
                                     res.clearCookie('thehungrycookie'); 
@@ -312,7 +312,7 @@ const profile_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 connection.query('UPDATE accounts SET isArchived = ?, dateArchived = ? WHERE accountId = ?', [true, new Date(), sessionData.accountId], function(error, results) {
@@ -321,7 +321,7 @@ const profile_controller = {
                     }
                 });
 
-                deleteSessionDataEntry(connection, sessionData.sessionId);
+                await deleteSessionDataEntry(connection, sessionData.sessionId);
                 
                 req.session.destroy(() => {
                     res.clearCookie('thehungrycookie'); 

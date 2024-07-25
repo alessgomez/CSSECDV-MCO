@@ -115,7 +115,7 @@ const admin_products_controller = {
         try {
             connection = await getConnectionFromPool();
 
-            const isProductArchived = isProductArchived(connection, productId);
+            const isProductArchived = await isProductArchived(connection, productId);
 
             if (isProductArchived) 
                 throw new Error('Product is archived and cannot be set as bestseller');

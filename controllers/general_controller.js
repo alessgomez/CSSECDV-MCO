@@ -45,19 +45,19 @@ const verifyRole = (requiredRole) => {
         try {
             connection = await getConnectionFromPool();
 
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (!sessionData || !sessionData.verified) {
                 return res.redirect('/login');
             }
 
-            const accountIdExists = checkAccountIdExists(connection, sessionData.accountId);
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
 
             if (!accountIdExists) {
                 return res.redirect('/login');
             }
 
-            const role = checkAccountRole(connection, sessionData.accountId);
+            const role = await checkAccountRole(connection, sessionData.accountId);
 
             if (role === requiredRole) {
                 return next();
@@ -90,13 +90,13 @@ const general_controller = {
         try {
             connection = await getConnectionFromPool();
             
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (!sessionData || !sessionData.verified) {
                 return res.redirect('/login');
             }
 
-            const accountIdExists = checkAccountIdExists(connection, sessionData.accountId);
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
 
             if (accountIdExists) {
                 return next(); 
@@ -126,13 +126,13 @@ const general_controller = {
         try {
             connection = await getConnectionFromPool();
             
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
     
             if (!sessionData) {
                 return res.redirect('/login'); 
             }
     
-            const accountIdExists = checkAccountIdExists(connection, sessionData.accountId);
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
             if (!accountIdExists) {
                 return res.redirect('/login'); 
             }
@@ -165,10 +165,10 @@ const general_controller = {
         try {
             connection = await getConnectionFromPool();
     
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
     
             if (sessionData) {
-                const accountIdExists = checkAccountIdExists(connection, sessionData.accountId);
+                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
                 if (accountIdExists && sessionData.verified) {
                     // Redirect authenticated and verified users away from public routes
                     return res.redirect('/');
@@ -199,12 +199,12 @@ const general_controller = {
         try {
             connection = await getConnectionFromPool();
     
-            const sessionData = getSessionDataEntry(connection, req.session.id);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
     
             if (sessionData) {
-                const accountIdExists = checkAccountIdExists(connection, sessionData.accountId);
+                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
                 if (accountIdExists && sessionData.verified) {
-                    const role = checkAccountRole(connection, sessionData.accountId);
+                    const role = await checkAccountRole(connection, sessionData.accountId);
     
                     switch (role) {
                         case 'USER':
@@ -240,8 +240,8 @@ const general_controller = {
         try {
             connection = await getConnectionFromPool();
 
-            // Attempt to delete session data from the database
-            deleteSessionDataEntry(connection, req.session.id);
+             // Attempt to delete session data from the database
+            await deleteSessionDataEntry(connection, req.session.id);
 
         } catch (error) {
             if (debug)

@@ -209,16 +209,16 @@ const login_controller = {
 
         // Proceed with login verification if input validation, reCAPTCHA, and rate limiting ARE successful
         connection = await getConnectionFromPool();
-        const accountId = verifyLogin(connection, email, pw);
+        const accountId = await verifyLogin(connection, email, pw);
 
         if (accountId) {
             const oneTimeCode = generateOneTimeCode();
-            const sessionDataEntry = getSessionDataEntry(connection, req.session.id)
+            const sessionDataEntry = await getSessionDataEntry(connection, req.session.id)
 
             if (!sessionDataEntry) {
-              createSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
+              await createSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
             } else {
-              updateSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
+                await updateSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
             }
 
             sendOneTimeCode(req.body.email, oneTimeCode);
@@ -259,7 +259,7 @@ const login_controller = {
     try {
       connection = await getConnectionFromPool();
       const otc = req.body.otc;
-      const sessionData = getSessionDataEntry(connection, req.session.id);
+      const sessionData = await getSessionDataEntry(connection, req.session.id);
 
       if (!sessionData) {
           req.flash('error_msg', 'Session expired. Please log in again.');
@@ -301,7 +301,7 @@ const login_controller = {
       });
 
       // Create new session data entry
-      createSessionDataEntry(connection, req.session.id, accountId, null, null, true);
+      await createSessionDataEntry(connection, req.session.id, accountId, null, null, true);
 
       // Destroy the old session
       await new Promise((resolve, reject) => {
@@ -332,7 +332,7 @@ const login_controller = {
     let connection;
     try {
         connection = await getConnectionFromPool();
-        const sessionData = getSessionDataEntry(connection, req.session.id);
+        const sessionData = await getSessionDataEntry(connection, req.session.id);
 
         if (!sessionData || !sessionData.accountId) {     
             req.flash('error_msg', 'Session expired. Please log in again.');
@@ -340,7 +340,7 @@ const login_controller = {
         }
 
         const { pendingOTCTimestamp, accountId } = sessionData;
-        const email = getEmail(connection, accountId);
+        const email = await getEmail(connection, accountId);
 
         const now = Date.now();
         const resendCooldown = 2 * 60 * 1000; // 2 minutes
@@ -354,7 +354,7 @@ const login_controller = {
         sendOneTimeCode(email, oneTimeCode);
         // console.log("OTP: " + oneTimeCode);
 
-        updateSessionDataOTC(connection, req.session.id, oneTimeCode, now);
+        await updateSessionDataOTC(connection, req.session.id, oneTimeCode, now);
 
         req.flash('success_msg', 'A new verification code has been sent to your email.');
         res.redirect('/2FA');
