@@ -91,7 +91,7 @@ const admin_products_controller = {
             const [results] = await connection.promise().query(query, [false, productId]);
 
             if (results.affectedRows === 0) 
-                throw new Error('Failed to unarchive product not found');
+                throw new Error('Failed to unarchive product or product not found');
             else 
                 res.json({ success: true });
             

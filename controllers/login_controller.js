@@ -85,7 +85,7 @@ async function updateSessionDataEntry(connection, sessionId, accountId, pendingO
       if (error) {
         reject(error);
       } else {
-        resolve(result.affectedRows > 0)
+        resolve(results.affectedRows > 0)
       }
     });
   });
@@ -117,7 +117,7 @@ async function updateSessionDataOTC(connection, sessionId, newPendingOTC, newPen
       if (error) {
         reject(error);
       } else {
-        resolve(result.affectedRows > 0)
+        resolve(results.affectedRows > 0)
       }
     });
   });
@@ -231,7 +231,7 @@ const login_controller = {
             if (!sessionDataEntry) {
               await createSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
             } else {
-                await updateSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
+              await updateSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
             }
 
             sendOneTimeCode(req.body.email, oneTimeCode);

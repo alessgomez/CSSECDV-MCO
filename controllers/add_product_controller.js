@@ -21,23 +21,29 @@ const upload = multer({
 
 
 async function checkProductUuidExists(connection, newId) {
-    try {
-        const sql = 'SELECT * FROM products WHERE productId = ?';
-        const [results] = await connection.promise().query(sql, [newId]);
-        return results.length > 0;
-    } catch (error) {
-        throw error; 
-    }
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM products WHERE ? = ?';
+        connection.query(sql, [field, newId], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results.length > 0);
+            }
+        });
+    });
 }
 
 async function checkImageUuidExists(connection, newFilename) {
-    try {
+    return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM products WHERE imageFilename = ?';
-        const [results] = await connection.promise().query(sql, [newFilename]);
-        return results.length > 0;
-    } catch (error) {
-        throw error; 
-    }
+        connection.query(sql, [field, newFilename], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results.length > 0);
+            }
+        });
+    });
 }
 
 async function addProduct(connection, newProduct) {
@@ -50,12 +56,17 @@ async function addProduct(connection, newProduct) {
             uuidExists = await checkProductUuidExists(connection, newId);
         }
 
-        const sql = 'INSERT INTO products (productId, name, category, price, imageFilename, isBestseller, isArchived) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        const values = [newId, newProduct.name, newProduct.category, newProduct.price, newProduct.imageFilename, false, false];
-        
-        await connection.promise().query(sql, values);
-
-        return newId; 
+        return new Promise((resolve, reject) => {
+            const sql = 'INSERT INTO products (productId, name, category, price, imageFilename, isBestseller, isArchived) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            const values = [newId, newProduct.name, newProduct.category, newProduct.price, newProduct.imageFilename, false, false];
+            connection.query(sql, values, async (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(newId); // product successfully added
+                }
+            });
+        });
     } catch (error) {
         throw error; 
     }

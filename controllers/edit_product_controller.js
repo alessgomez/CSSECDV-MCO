@@ -20,45 +20,43 @@ const upload = multer({
 }).single('inputFile');
 
 async function editProduct(connection, updatedProduct, hasNewImage) {
-    try {
-        let query = '';
+    return new Promise((resolve, reject) => {
+        let query = ''
         let values = [];
 
         if (hasNewImage) {
-            query = 'UPDATE products SET name = ?, category = ?, price= ?, imageFilename = ? WHERE productId = ?';
+            query = 'UPDATE products SET name = ?, category = ?, price= ?, imageFilename = ?  WHERE productId = ?';
             values = [updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.imageFilename, updatedProduct.productId];
-        } else {
-            query = 'UPDATE products SET name = ?, category = ?, price= ? WHERE productId = ?';
+        }
+        else {
+            query = 'UPDATE products SET name = ?, category = ?, price= ?  WHERE productId = ?';
             values = [updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.productId];
         }
-
-        const [results] = await connection.promise().query(query, values);
-
-        // Check if the update was successful
-        if (results.affectedRows === 0) {
-            throw new Error('Failed to update product or product not found');
-        }
-
-        return updatedProduct.productId;
-    } catch (error) {
-        throw error;
-    }  
+        connection.query(query, values, async (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                if (results.affectedRows > 0)
+                    resolve(results)     // product was successfully updated
+                else
+                    resolve(null)  
+            }
+        });
+    });
 }
 
 const isProductArchived = async (connection, productId) => {
-    try {
+    return new Promise((resolve, reject) => {
         const query = 'SELECT isArchived FROM products WHERE productId = ?';
         const values = [productId];
-        const [results] = await connection.promise().query(query, values);
-
-        if (results.length === 0) {
-            throw new Error('Product not found');
-        }
-
-        return results[0].isArchived;
-    } catch (error) {
-        throw error;
-    }
+        connection.query(query, values, async (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results[0].isArchived); 
+            }
+        });
+    });
 };
 
 
@@ -161,7 +159,7 @@ const edit_product_controller = {
                 if (!req.file) {
                     const result = await editProduct(connection, updatedProduct, false);
                     if (result === null) {
-                        req.flash('error_msg', 'Invalid details.');
+                        throw new Error('Product not found');
                     } else {
                         req.flash('success_msg', 'Product successfully updated.');
                     }
@@ -190,7 +188,7 @@ const edit_product_controller = {
     
                     const result = await editProduct(connection, updatedProduct, true);
                     if (result === null) {
-                        req.flash('error_msg', 'Invalid details.');
+                        throw new Error('Product not found');
                     } else {
                         req.flash('success_msg', 'Product successfully updated.');
                     }
@@ -201,7 +199,7 @@ const edit_product_controller = {
                     console.error('Error updating product:', error);
                 else    
                     console.error('An error occurred.')
-                req.flash('error_msg','There was an error with updating product. Please try again.');
+                req.flash('error_msg','There was an error with updating the product. Please try again.');
                 res.redirect('/editProductPage/' + productId);
             } finally {
                 if (connection) 
