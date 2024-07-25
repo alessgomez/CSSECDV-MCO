@@ -6,37 +6,50 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 
 async function checkAccountIdExists(connection, accountId) {
-    try {
-        const [rows] = await connection.query('SELECT 1 FROM accounts WHERE accountId = ? AND isArchived = FALSE', [accountId]);
-        return rows.length > 0;
-    } catch (error) {
-        throw error;
-    }
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM accounts WHERE accountId = ? AND isArchived = False';
+        connection.query(sql, [accountId], (error, results) => {
+            if (error) {
+                reject(error);
+            } 
+            else {
+                resolve(results.length > 0)
+            }
+        });
+    });
 }
 
 async function checkAccountRole(connection, accountId) {
-    try {
-        const [rows] = await connection.query('SELECT role FROM accounts WHERE accountId = ?', [accountId]);
-        if (rows.length === 0) {
-            return null;
-        }
-        return rows[0].role;
-    } catch (error) {
-        throw error; 
-    }
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM accounts WHERE accountId = ?';
+        connection.query(sql, [accountId], (error, results) => {
+            if (error) {
+                reject(error);
+            } 
+            else {
+                if (results.length === 0) 
+                    resolve(null)
+                resolve(results[0].role);
+            }
+        });
+    });
 }
 
 async function deleteSessionDataEntry(connection, sessionId) {
-    try {
-        const [results] = await connection.query('DELETE FROM sessiondata WHERE sessionId = ?', [sessionId]);
-        return results.affectedRows > 0;
-    } catch (error) {
-        throw error;
-    }
+    return new Promise((resolve, reject) => {
+        const sql = 'DELETE FROM sessiondata WHERE sessionId = ?';
+        connection.query(sql, [sessionId], (error, results) => {
+            if (error) {
+                reject(error);
+            } 
+            else {
+                resolve( results.affectedRows > 0)
+            }
+        });
+    });
 }
 
-const verifyRole = (requiredRole) => {
-    return async (req, res, next) => {
+const verifyRole = (requiredRole) => { return async function(req, res, next) {
         if (!req.session) {
             return res.redirect('/login');
         }
@@ -76,7 +89,7 @@ const verifyRole = (requiredRole) => {
                 connection.release();
             }
         }
-    };
+    }
 };
 
 const general_controller = {

@@ -23,91 +23,104 @@ const emailRateLimiter = new RateLimiterMemory({
 });
 
 async function verifyLogin(connection, email, password) {
-  try {
-    const sql = 'SELECT * FROM accounts WHERE email = ? AND isArchived = ?';
-    const [results] = await connection.query(sql, [email, false]);
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM accounts WHERE email = ? AND isArchived = ?'; 
+    connection.query(sql, [email, false], async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
 
-    if (results.length === 0) {
-        return null; // Account not found
-    }
+        if (results.length === 0) {
+          resolve(null); // account not found
+        } 
 
-    const account = results[0];
-    const passwordMatch = await bcrypt.compare(password, account.password);
+        const account = results[0];
+        const passwordMatch = await bcrypt.compare(password, account.password);
 
-    if (passwordMatch) {
-        return account.accountId;
-    } else {
-        return null; 
-    }
-  } catch (error) {
-      throw error; 
-  }
+        if (passwordMatch) {
+          resolve(account.accountId); // Passwords match, return account data
+        } else {
+          resolve(null); // Passwords do not match
+        }
+      }
+    });
+  });
 }
 
 async function getEmail(connection, accountId) {
-  try {
-    const sql = 'SELECT email FROM accounts WHERE accountId = ?';
-    const [results] = await connection.query(sql, [accountId]);
-
-    if (results.length === 0) {
-      return null; // Account not found
-    }
-
-    return results[0].email; 
-
-  } catch (error) {
-      throw error; 
-  }
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM accounts WHERE accountId = ?'; 
+    connection.query(sql, [accountId], async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.length === 0) {
+          resolve(null); // account not found
+        } 
+        resolve( results[0].email); 
+      }
+    });
+  });
 }
 
 async function createSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp, verified) {
-  try {
+  return new Promise((resolve, reject) => {
     const sql = 'INSERT INTO sessiondata (sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp) VALUES (?, ?, ?, ?, ?)';
     const values = [sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp];
-    const [result] = await connection.query(sql, values);
-    
-    return result;
-  } catch (error) {
-      throw error;
-  }
+      connection.query(sql, values, async (error, results) => {
+          if (error) {
+              reject(error);
+          } else {
+              resolve(results); // session data entry successfully created
+          }
+      });
+  });
 }
 
 async function updateSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp, verified) {
-  try {
+  return new Promise((resolve, reject) => {
     const sql = 'UPDATE sessiondata SET accountId = ?, pendingOTC = ?, pendingOTCTimestamp = ?, verified = ? WHERE sessionId = ?';
     const values = [accountId, pendingOTC, pendingOTCTimestamp, verified, sessionId];
-    const [result] = await connection.query(sql, values);
-    
-    return result.affectedRows > 0; 
-  } catch (error) {
-      throw error; 
-  }
+    connection.query(sql, values, async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result.affectedRows > 0)
+      }
+    });
+  });
 }
 
 
 async function getSessionDataEntry(connection, sessionId) {
-  try {
-    const sql = 'SELECT * FROM sessiondata WHERE sessionId = ?';
-    const [results] = await connection.query(sql, [sessionId]);
-    
-    if (results.length > 0)
-      return results[0];
-    else
-      return null;
-  } catch (error) {
-      throw error;
-  }
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM sessiondata WHERE sessionId = ?'; 
+    connection.query(sql, [sessionId], async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (results.length === 0) {
+          resolve(null); // session data not found
+        } else {
+          resolve(results[0]); 
+        }
+      }
+    });
+  });
 }
 
 async function updateSessionDataOTC(connection, sessionId, newPendingOTC, newPendingOTCTimestamp) {
-  try {
+  return new Promise((resolve, reject) => {
     const sql = 'UPDATE sessiondata SET pendingOTC = ?, pendingOTCTimestamp = ? WHERE sessionId = ?';
-    const [result] = await connection.query(sql, [newPendingOTC, newPendingOTCTimestamp, sessionId]);
-
-    return result.affectedRows > 0;
-  } catch (error) {
-      throw error; 
-  }
+    const values = [newPendingOTC, newPendingOTCTimestamp, sessionId];
+    connection.query(sql, values, async (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result.affectedRows > 0)
+      }
+    });
+  });
 }
 
 // Function to send email with one-time code
