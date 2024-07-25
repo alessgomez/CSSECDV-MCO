@@ -7,13 +7,42 @@ $(document).ready(function() {
     var inputFields;
     var currentValues = {};
 
+    const maxFileSize = 3 * 1024 * 1024; 
+    const acceptedTypes = ["image/jpeg", "image/png"]
+
     var firstNameValid = false;
     var lastNameValid = false;
     var emailValid = false;
     var addressValid = false;
     var phoneNumberValid = false;
+    var fileUploadValid = false;
+    var fileError = false;
 
-    // TODO: input validation for profile pic
+    function readFile(file) {
+        return new Promise((resolve, reject) => {
+            const filereader = new FileReader();
+            filereader.onloadend = (event) => {
+                if (event.target.readyState === FileReader.DONE) {
+                    resolve(event.target.result);
+                }
+            };
+            filereader.onerror = reject;
+            const blob = file.slice(0, 12);
+            filereader.readAsArrayBuffer(blob);
+        })
+    }
+
+    function getMimeType(signature) {
+        if (signature.startsWith("FFD8FFDB") || signature.startsWith("FFD8FFE0") || signature.startsWith("FFD8FFEE")) {
+            return "image/jpeg";
+        } 
+        else if (signature.startsWith("89504E47")) {
+            return "image/png";
+        }
+        else {
+            return "invalid";
+        }
+    }
 
     function validateFields() {
         let regexName = new RegExp(/^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/);
@@ -41,6 +70,10 @@ $(document).ready(function() {
     function displayErrorMessages() {
         error_msg.innerHTML = "";
 
+        if (fileError) {
+            error_msg.innerHTML += "Invalid file upload. File size must be less than 3MB.<br>File name can only contain alphanumeric characters, hypen, underscore, or period.<br>";
+        }
+
         if ((inputFields[1].value.length > 0 && !firstNameValid) || (inputFields[2].value.length > 0 && !lastNameValid)) {
             error_msg.innerHTML += "Invalid name.<br>";
         }
@@ -59,8 +92,57 @@ $(document).ready(function() {
     }
 
     function createOnChangeHandler() {
-        return function() {
-            save.disabled = false;
+        return async function() {
+            error_msg.innerHTML = "";
+            fileError = false;
+
+            var fileName = inputFields[0].files[0].name;
+            const fileErrorMessage = "Invalid file upload. File size must be less than 3MB.<br>File name can only contain alphanumeric characters, hypen, underscore, or period.<br>";
+        
+            fileUploadValid = false;
+            save.disabled = true;
+
+            if (fileName != null) {
+                let regexFileName = new RegExp(/^[A-Za-z0-9]+([-._ ]*[A-Za-z0-9])*\.(jpg|jpeg|png|JPG|JPEG|PNG)$/);
+                
+                if (regexFileName.test(fileName) && fileName.length <= 255) {                
+                    var file = inputFields[0].files[0];
+                    let byteStream = await readFile(file); 
+                    const uint = new Uint8Array(byteStream);
+                    let bytes = [];
+                    uint.forEach((byte) => {
+                        bytes.push(byte.toString(16));
+                    });
+                    const hex = bytes.join("").toUpperCase();
+                    let mimeType = getMimeType(hex);
+
+                    if (acceptedTypes.includes(mimeType)) {
+                        var fileSize = inputFields[0].files[0].size;
+                        if (fileSize < maxFileSize) {
+                            var image = new Image();
+
+                            image.onload = function() { // Image upload successful
+                                fileUploadValid = true;
+                                save.disabled = !(validateFields() && fileUploadValid);
+                            }
+                            image.onerror = function() {
+                                console.log("ERROR: Cannot load image")
+                            }
+
+                            image.src = URL.createObjectURL(inputFields[0].files[0]);                          
+                        } else {
+                            fileError = true;
+                            error_msg.innerHTML += fileErrorMessage;
+                        }
+                    } else {
+                        fileError = true;
+                        error_msg.innerHTML += fileErrorMessage;
+                    }
+                } else {
+                    fileError = true;
+                    error_msg.innerHTML += fileErrorMessage;
+                }
+            }
         }
     }
 

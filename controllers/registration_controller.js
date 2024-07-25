@@ -272,10 +272,13 @@ const registration_controller = {
                 else {
                     throw new Error("ERROR: Invalid registration details.");
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 req.flash('error_msg', 'An error occurred during registration. Please try again.');
                 return res.redirect('/login');
+            } finally {
+                if (connection) {
+                    connection.release();
+                }
             }
         })
 

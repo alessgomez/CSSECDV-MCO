@@ -3,7 +3,7 @@
     <hr class="line-break">
     <div class="break2"></div>
 
-    <form action="/updateAccount" method="post">
+    <form action="/updateAccount" method="post" enctype="multipart/form-data">
         <div class="field">
             <p class="field-name">Profile Picture</p>
             <img src="/uploads/{{accountDetails.profilePicFilename}}" alt="Profile Picture" class="profilePic" id="profPic"/>

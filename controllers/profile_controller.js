@@ -1,9 +1,34 @@
 const { getConnectionFromPool } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
-const { general_controller, verifyRole, deleteSessionDataEntry } = require('./general_controller.js');
+const { deleteSessionDataEntry } = require('./general_controller.js');
+const { fileFilter, getMimeType, sanitizeImage } = require('./registration_controller.js')
 const bcrypt = require("bcrypt");
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
+
+const checkUuidExists = (connection, newId) => {
+    return new Promise((resolve, reject) => {
+        let sql = 'SELECT * FROM accounts WHERE profilePicFilename = ?';
+        
+        connection.query(sql, [newId], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results.length > 0);
+            }
+        });
+    });
+};
+
+// Initialize upload middleware and add file size limit
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 3 * 1024 * 1024}, // 3 MB file size limit
+    fileFilter: fileFilter
+}).single('inputFile');
 
 async function checkAccountDetails(connection, accountId) {
     return new Promise((resolve, reject) => {
@@ -124,55 +149,103 @@ const profile_controller = {
 
         try {
             const sessionData = await getSessionDataEntry(connection, req.session.id);
-
+            
             if (sessionData) {
-                const newDetails = req.body;
-                const currentDetails = await checkAccountDetails(connection, sessionData.accountId);
+                upload(req, res, async (err) => {
+                    if (err) {
+                        console.error(err);
+                        req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
+                        return res.redirect('/profile');
+                    }
+                    
+                    const newDetails = req.body;
+                    const currentDetails = await checkAccountDetails(connection, sessionData.accountId);
 
-                if (currentDetails) {
-                    // TODO: Changing & backend validation of profile pic
-
-                    if (validateDetails(newDetails)) {
-                        if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
-                            newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
-                            const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
-                            connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
-                                if (error) {
-                                    throw error;
-                                }
-                            });
-                        }
-    
-                        if (newDetails.email !== currentDetails.email) {
-                            const emailExists = await checkEmailExists(connection, newDetails.email);
-    
-                            if (emailExists) {
-                                req.flash('error_msg', 'Invalid email.');
-                                return res.redirect('/profile');
-                            } else {
-                                connection.query('UPDATE accounts SET email = ?, dateEdited = ? WHERE accountId = ?', [newDetails.email, new Date(), sessionData.accountId], function(error, results) {
+                    if (currentDetails) {
+                        // START OF RESPONSE VALIDATION
+                        if (validateDetails(newDetails)) {
+                            if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
+                                newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
+                                const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
+                                connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
                                     if (error) {
                                         throw error;
                                     }
                                 });
                             }
-                        }
+        
+                            if (newDetails.email !== currentDetails.email) {
+                                const emailExists = await checkEmailExists(connection, newDetails.email);
+        
+                                if (emailExists) {
+                                    req.flash('error_msg', 'Invalid email.');
+                                    return res.redirect('/profile');
+                                } else {
+                                    connection.query('UPDATE accounts SET email = ?, dateEdited = ? WHERE accountId = ?', [newDetails.email, new Date(), sessionData.accountId], function(error, results) {
+                                        if (error) {
+                                            throw error;
+                                        }
+                                    });
+                                }
+                            }
 
-                        req.flash('success_msg', 'Account details successfully updated.');
-                        res.redirect("/profile");
-                    } else {
-                        req.flash('error_msg', 'Invalid new details.');
-                        return res.redirect('/profile');
-                    }
-                } else
-                    res.redirect("/login");
-            } else {
-                res.redirect("/login");
+                            if (!req.file) {
+                                req.flash('success_msg', 'Account details successfully updated.');
+                                res.redirect("/profile");
+                            } else if (req.file) {
+                                // 1. File signature 
+                                signature = req.file.buffer.toString('hex').toUpperCase();
+                                fileMimeType = getMimeType(signature);
+                                if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
+                                    // 2. Image rewriting 
+                                    sanitizeImage(req.file.buffer)
+                                        .then(async sanitizedBuffer => {
+                                            // 3. save to folder - filename!
+                                            let newFileName;
+                                            let uuidExists = true;
+                                            filePath = './public/uploads/';
+                                            fileExtension = fileMimeType.split("/")[1];
+
+                                            while (uuidExists) {
+                                                newFileName = uuidv4() + "." + fileExtension;
+                                                uuidExists = await checkUuidExists(connection, newFileName);
+                                            }
+                                            fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
+                                            newDetails['profilePicFilename'] = newFileName;
+                
+                                            // 4. update profile picture in DB.
+                                            if (newDetails.profilePicFilename !== currentDetails.profilePicFilename) {
+                                                connection.query('UPDATE accounts SET profilePicFilename = ?, dateEdited = ? WHERE accountId = ?', [newDetails.profilePicFilename, new Date(), sessionData.accountId], function(error, results) {
+                                                    if (error) {
+                                                        throw error;
+                                                    }
+                                                });
+                                            }
+                    
+                                            req.flash('success_msg', 'Account details successfully updated.');
+                                            res.redirect("/profile");
+                                        })
+                                        .catch(error => {
+                                            console.error('Image sanitization failed: ', error);
+                                            throw new Error("ERROR: Image sanitization failed.");
+                                        })
+                                }
+                                else {
+                                    throw new Error("ERROR: Invalid file.")
+                                }
+                            }
+                        } else {
+                            req.flash('error_msg', 'Invalid new details.');
+                            return res.redirect('/profile');
+                        }
+                    } else
+                        res.redirect("/login");
+                })
             }
         } catch (error) {
-            console.log(error);
-            req.flash('error_msg', 'An error occurred during profile update. Please try again.');
-            return res.redirect('/profile');
+            req.flash('error_msg', 'An error occurred during profile update. Please relogin and try again.');
+            await deleteSessionDataEntry(connection, req.session.sessionId);
+            return res.redirect('/login');
         } finally {
             if (connection)
                 connection.release();
