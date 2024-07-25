@@ -10,9 +10,7 @@ $(document).ready(function() {
                 $productRow.find('.productInfo').removeClass('bestseller');
                 $productRow.find('.removeBestsellerBtn').removeClass('removeBestsellerBtn').addClass('addBestsellerBtn').text('Add to Bestsellers');
                 $productRow.find('.editBtn, .addBestsellerBtn').prop('disabled', true); // Disable edit and add to bestseller buttons
-            } else {
-              console.error('Failed to archive product');
-            }
+            } 
         });
     });
 
@@ -25,9 +23,7 @@ $(document).ready(function() {
                 $productRow.removeClass('archived');
                 $productRow.find('.unarchiveBtn').removeClass('unarchiveBtn').addClass('archiveBtn').text('Archive');
                 $productRow.find('.editBtn, .addBestsellerBtn').prop('disabled', false); // Enable edit and add to bestseller buttons
-            } else {
-              console.error('Failed to unarchive product');
-            }
+            } 
           });
     });
     
@@ -39,9 +35,7 @@ $(document).ready(function() {
             if (response.success) {
                 $productRow.find('.productInfo').addClass('bestseller');
                 $productRow.find('.addBestsellerBtn').removeClass('addBestsellerBtn').addClass('removeBestsellerBtn').text('Remove from Bestsellers');
-            } else {
-              console.error('Failed to add product to bestsellers');
-            }
+            } 
           });
     });
 
@@ -53,8 +47,6 @@ $(document).ready(function() {
             if (response.success) {
                 $productRow.find('.productInfo').removeClass('bestseller');
                 $productRow.find('.removeBestsellerBtn').removeClass('removeBestsellerBtn').addClass('addBestsellerBtn').text('Add to Bestsellers');
-            } else {
-              console.error('Failed to remove product from bestsellers');
             }
           });
     });

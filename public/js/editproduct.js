@@ -72,6 +72,8 @@ $(document).ready(function(){
     fileUploadInput.onchange = async function () {
         var file = fileUploadInput.files[0];
         fileUploadValid = false;
+        fileChanged = false;
+        fileUploadEmpty = true;
 
         if (file != null) {
             var fileName = file.name;
@@ -100,27 +102,19 @@ $(document).ready(function(){
                             validateFields();
                         }
                         image.onerror = function() {
-                            console.log("ERROR: Cannot load image")
                             fileUploadValid = false;
                             validateFields()
                         }
                     
-                        image.src = URL.createObjectURL(fileUploadInput.files[0]);                          
-                    } else {
-                        fileUploadValid = false;
-                        validateFields()
-                    }
-                } else {
-                    fileUploadValid = false;
-                    validateFields()
-                }
-            }
-        } else {
-            fileUploadEmpty = true;
-            fileChanged = false;
-            validateFields()
-        }       
-    }
+                        image.src = URL.createObjectURL(fileUploadInput.files[0]);            
+                        return;              
+                    } 
+                } 
+            } 
+        }    
+        
+        validateFields();
+    };
 
     // name
     let regexName = new RegExp(/^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z0-9()]+(?:[ ,'-][A-Za-z0-9()]+)*(?:, [A-Za-z()]+)*\.?$/);
@@ -138,9 +132,7 @@ $(document).ready(function(){
                     nameChanged = true;
                 }
                 validateFields();
-            } else {
-              console.error(response.error);
-            }
+            } 
         });
     }
 
@@ -157,9 +149,7 @@ $(document).ready(function(){
                     categoryChanged = true;
                 }
                 validateFields();
-            } else {
-              console.error(response.error);
-            }
+            } 
         });
 
     }
@@ -177,9 +167,7 @@ $(document).ready(function(){
                     priceChanged = true;
                 }
                 validateFields();
-            } else {
-              console.error(response.error);
-            }
+            } 
         });
     }
 

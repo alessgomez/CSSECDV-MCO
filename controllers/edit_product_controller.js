@@ -1,5 +1,6 @@
 const { getConnectionFromPool, logPoolStats } = require('../db.js');
 const { fileFilter, getMimeType, sanitizeImage } = require('./registration_controller.js')
+const { checkImageUuidExists, validateSelectedCategory, validateDetails } = require('./add_product_controller.js')
 const fs = require('fs');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
@@ -18,97 +19,62 @@ const upload = multer({
     fileFilter: fileFilter
 }).single('inputFile');
 
-const checkProductUuidExists = (connection, newId, field) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM products WHERE ? = ?';
-        connection.query(sql, [field, newId], (error, results) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results.length > 0);
-            }
-        });
-    });
-};
-
 async function editProduct(connection, updatedProduct, hasNewImage) {
     try {
-        return new Promise((resolve, reject) => {
-            let query = ''
-            let values = [];
+        let query = '';
+        let values = [];
 
-            if (hasNewImage) {
-                query = 'UPDATE products SET name = ?, category = ?, price= ?, imageFilename = ?  WHERE productId = ?';
-                values = [updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.imageFilename, updatedProduct.productId];
-            }
-            else {
-                query = 'UPDATE products SET name = ?, category = ?, price= ?  WHERE productId = ?';
-                values = [updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.productId];
-            }
-            connection.query(query, values, async (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(updatedProduct.productId)   // product was successfully updated
-                }
-            });
-        });
+        if (hasNewImage) {
+            query = 'UPDATE products SET name = ?, category = ?, price= ?, imageFilename = ? WHERE productId = ?';
+            values = [updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.imageFilename, updatedProduct.productId];
+        } else {
+            query = 'UPDATE products SET name = ?, category = ?, price= ? WHERE productId = ?';
+            values = [updatedProduct.name, updatedProduct.category, updatedProduct.price, updatedProduct.productId];
+        }
+
+        const [results] = await connection.promise().query(query, values);
+
+        // Check if the update was successful
+        if (results.affectedRows === 0) {
+            throw new Error('Failed to update product or product not found');
+        }
+
+        return updatedProduct.productId;
     } catch (error) {
-        console.error(error);
-    }   
+        throw error;
+    }  
 }
 
-async function isProductArchived(connection, productId) {
+const isProductArchived = async (connection, productId) => {
     try {
-        return new Promise((resolve, reject) => {
-            const query = 'SELECT isArchived FROM products WHERE productId = ?';
-            const values = [productId];
-            
-            connection.query(query, values, async (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(results[0].isArchived); 
-                }
-            });
-        });
+        const query = 'SELECT isArchived FROM products WHERE productId = ?';
+        const values = [productId];
+        const [results] = await connection.promise().query(query, values);
+
+        if (results.length === 0) {
+            throw new Error('Product not found');
+        }
+
+        return results[0].isArchived;
     } catch (error) {
-        console.error(error);
-    }   
-}
-
-
-function validateSelectedCategory(selectedCategory) {
-    validOptions = ['main', 'snack', 'drink', 'dessert']
-    if (validOptions.includes(selectedCategory)) {
-        return true
-    } else {
-        return false
+        throw error;
     }
-}
-
-function validateDetails(newProduct) {
-    const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z0-9()]+(?:[ ,'-][A-Za-z0-9()]+)*(?:, [A-Za-z()]+)*\.?$/;
-    const nameValid = newProduct.name != null && nameRegex.test(newProduct.name);
-
-    const categoryValid = validateSelectedCategory(newProduct.category);
-
-    const price = parseFloat(newProduct.price)
-    const priceValid = !isNaN(price) && price > 0;
-
-    return nameValid && categoryValid && priceValid;
-}
+};
 
 
 const edit_product_controller = {
     getEditProduct: async (req, res) => {
-        const productId = req.params.id
-        let connection = await getConnectionFromPool();
-        const isArchived = await isProductArchived(connection, productId)    
+        const productId = req.params.id;
+        let connection;
 
-        if (isArchived) {
-            res.redirect('/viewProductsPage');
-        } else {
+        try {
+            connection = await getConnectionFromPool();
+            const isArchived = await isProductArchived(connection, productId);
+
+            if (isArchived) {
+                return res.redirect('/viewProductsPage');
+            }
+
             const data = {
                 style: ["navbar", "index", "adminproducts", "editproduct"],
                 script: ["editproduct"],
@@ -116,44 +82,48 @@ const edit_product_controller = {
                 isMain: false,
                 isSnack: false,
                 isDrink: false,
-                isDessert: false
+                isDessert: false,
+            };
+
+            const query = 'SELECT productId, name, category, price FROM products WHERE productId = ?';
+            const [results] = await connection.promise().query(query, [productId]);
+
+            if (results.length === 0) {
+                return res.redirect('/viewProductsPage');
             }
-    
-            try {
-                const sql = 'SELECT productId, name, category, price FROM products WHERE productId = ?'; 
-                connection.query(sql, [productId], async (error, results) => {
-                  if (error) {
-                    reject(error);
-                  } else {
-                    if (results.length === 0) {
-                        res.redirect('/viewProductsPage')
-                    } else {
-                        var product = results[0];
-                        product.productId = DOMPurify.sanitize(product.productId)
-                        product.name = DOMPurify.sanitize(product.name)
-                        product.category = DOMPurify.sanitize(product.category)
-                        product.price = parseFloat(product.price).toFixed(2);
-                        data.product = product                     
-                        const category = data.product.category;
-    
-                        if (category == 'main')
-                            data.isMain = true;
-                        else if (category == 'snack')
-                            data.isSnack = true
-                        else if (category == 'drink')
-                            data.isDrink = true
-                        else if (category == 'dessert')
-                            data.isDessert = true
-    
-                        res.render('admineditproduct', data);
-                    }
-                  }
-                });
-            } catch (error) {
-                console.log(error);
-            } finally {
-                if (connection)
-                    connection.release();
+
+            const product = results[0];
+            product.productId = DOMPurify.sanitize(product.productId);
+            product.name = DOMPurify.sanitize(product.name);
+            product.category = DOMPurify.sanitize(product.category);
+            product.price = parseFloat(product.price).toFixed(2);
+            data.product = product;
+
+            switch (product.category) {
+                case 'main':
+                    data.isMain = true;
+                    break;
+                case 'snack':
+                    data.isSnack = true;
+                    break;
+                case 'drink':
+                    data.isDrink = true;
+                    break;
+                case 'dessert':
+                    data.isDessert = true;
+                    break;
+            }
+
+            res.render('admineditproduct', data);
+        } catch (error) {
+            if (debug)
+                console.error('Error editing product:', error);
+            else    
+                console.error('An error occurred');
+            res.status(500).send('Internal Server error');
+        } finally {
+            if (connection) {
+                connection.release();
             }
         }
     },
@@ -161,131 +131,113 @@ const edit_product_controller = {
     postEditProduct:  function (req, res) {
         upload(req, res, async (err) => {
             const productId = req.body.productId;
-            let connection = await getConnectionFromPool();
-            if (err) {
-                console.error(err);
-                req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
-                return res.redirect('/editProductPage/' + productId);
-            }
-
-            const isArchived = await isProductArchived(connection, productId)    
-
-            if (isArchived) {
-                return res.redirect('/viewProductsPage');
-            } else {
-                var updatedProduct = {
+            let connection;
+    
+            try {
+                connection = await getConnectionFromPool();
+    
+                if (err) {
+                    req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hyphen, underscore, or period.');
+                    return res.redirect('/editProductPage/' + productId);
+                }
+    
+                const isProductArchived = await isProductArchived(connection, productId);
+    
+                if (isProductArchived) {
+                    throw new Error("Cannot edit archived product.");
+                }
+    
+                const updatedProduct = {
                     productId: DOMPurify.sanitize(productId),
                     name: DOMPurify.sanitize(req.body.name),
                     category: DOMPurify.sanitize(req.body.category),
-                    price:  parseFloat(req.body.price).toFixed(2)
+                    price: parseFloat(req.body.price).toFixed(2),
                 };
     
-                try {
-                    // START OF RESPONSE VALIDATION
-                    if (validateDetails(updatedProduct)) {
-                        if (!req.file) {
-    
-                            // save to DB already if there's no new image being uploaded
-                            const result = await editProduct(connection, updatedProduct, false);
-                            if (result === null) 
-                                req.flash('error_msg', 'Invalid details.');
-                            else 
-                                req.flash('success_msg', 'Product successfully updated.');
-                            
-                            return res.redirect('/editProductPage/' + productId);
-    
-                        } else {
-                            // 1. File signature 
-                            signature = req.file.buffer.toString('hex').toUpperCase();
-                            fileMimeType = getMimeType(signature);
-                            if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
-                                // 2. Image rewriting 
-                                sanitizeImage(req.file.buffer)
-                                    .then(async sanitizedBuffer => {
-                                        // 3. save to folder - filename!
-                                        let newFileName;
-                                        let uuidExists = true;
-                                        filePath = './public/images/products/';
-                                        fileExtension = fileMimeType.split("/")[1];
-    
-                                        while (uuidExists) {
-                                            newFileName = uuidv4() + "." + fileExtension;
-                                            uuidExists = await checkProductUuidExists(connection, newFileName, "imageFilename");
-                                        }
-                                        
-                                        fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
-                                        updatedProduct['imageFilename'] = newFileName;
-            
-                                        // 4. save to DB.
-                                        const result = await editProduct(connection, updatedProduct, true);
-                    
-                                        if (result === null) 
-                                            req.flash('error_msg', 'Invalid details.');
-                                        else 
-                                            req.flash('success_msg', 'Product successfully updated.');
-                                        
-                                        return res.redirect('/editProductPage/' + productId);
-    
-                                    })
-                                    .catch(error => {
-                                        console.error('Image sanitization failed: ', error);
-                                        throw new Error("ERROR: Image sanitization failed.");
-                                    })
-                            }
-                            else {
-                                throw new Error("ERROR: Invalid file.")
-                            }
-                        }
-    
-                        
-                    }
-                    else {
-                        throw new Error("ERROR: Invalid product details.");
-                    }
+                if (!validateDetails(updatedProduct)) {
+                    throw new Error("Invalid product details.");
                 }
-                catch (error) {
-                    console.error(error)
-                    req.flash('error_msg', 'An error occurred when updating the product. Please try again.');
+    
+                if (!req.file) {
+                    const result = await editProduct(connection, updatedProduct, false);
+                    if (result === null) {
+                        req.flash('error_msg', 'Invalid details.');
+                    } else {
+                        req.flash('success_msg', 'Product successfully updated.');
+                    }
                     return res.redirect('/editProductPage/' + productId);
-                } finally {
-                    if (connection)
-                        connection.release();
+                } else {
+                    const signature = req.file.buffer.toString('hex').toUpperCase();
+                    const fileMimeType = getMimeType(signature);
+    
+                    if (fileMimeType !== 'image/jpeg' && fileMimeType !== 'image/png') {
+                        throw new Error("Invalid file type.");
+                    }
+    
+                    const sanitizedBuffer = await sanitizeImage(req.file.buffer);
+                    let newFileName;
+                    const filePath = './public/images/products/';
+                    const fileExtension = fileMimeType.split("/")[1];
+                    let uuidExists = true;
+    
+                    while (uuidExists) {
+                        newFileName = uuidv4() + "." + fileExtension;
+                        uuidExists = await checkImageUuidExists(connection, newFileName);
+                    }
+    
+                    fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
+                    updatedProduct.imageFilename = newFileName;
+    
+                    const result = await editProduct(connection, updatedProduct, true);
+                    if (result === null) {
+                        req.flash('error_msg', 'Invalid details.');
+                    } else {
+                        req.flash('success_msg', 'Product successfully updated.');
+                    }
+                    return res.redirect('/editProductPage/' + productId);
                 }
+            } catch (error) {
+                if (debug)
+                    console.error('Error updating product:', error);
+                else    
+                    console.error('An error occurred.')
+                req.flash('error_msg','There was an error with updating product. Please try again.');
+                res.redirect('/editProductPage/' + productId);
+            } finally {
+                if (connection) 
+                    connection.release();
             }
-            
-        })
+        });
     
     },
 
     getProduct: async (req, res) => {
         const productId = req.query.productId;
-        let connection = await getConnectionFromPool();
+        let connection;
+
         try {
+            connection = await getConnectionFromPool();
+
             const query = 'SELECT name, category, price FROM products WHERE productId = ?';
-            connection.query(query, [productId], (error, results) => {
-                if (error) {
-                    console.error(error);
-                    res.json({ success: false, error: error});
-                    return;
-                }
-                if (results.length === 0) {
-                    console.error('Product not found:', productId);
-                    res.json({ success: false, error: 'Product not found' });
-                    return;
-                } else {
-                    var product = results[0];
-                    product.name = DOMPurify.sanitize(product.name);
-                    product.category = DOMPurify.sanitize(product.category);
-                    product.price = parseFloat(product.price).toFixed(2)
-                    res.json({ success: true, product: product });
-                    return;
-                }
-            });
+            const [results] = await connection.query(query, [productId]);
+
+            if (results.length === 0) 
+                throw new Error('Product not found');
+
+            const product = results[0];
+            product.name = DOMPurify.sanitize(product.name);
+            product.category = DOMPurify.sanitize(product.category);
+            product.price = parseFloat(product.price).toFixed(2);
+
+            res.json({ success: true, product: product });
         } catch (error) {
-            console.log(error);
-            res.json({ success: false, error: 'Server error' });
+            if (debug)
+                console.error('Error retrieving product:', error);
+            else        
+                console.error('An error occurred.')
+            res.status(500).json({ success: false});
         } finally {
-            if (connection)
+            if (connection) 
                 connection.release();
         }
     }

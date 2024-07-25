@@ -80,15 +80,18 @@ $(document).ready(function(){
                             fileUploadValid = true;
                             validateFields();
                         }
+
                         image.onerror = function() {
-                            console.log("ERROR: Cannot load image")
+                            fileUploadValid = false;
+                            validateFields()
                         }
 
-                        image.src = URL.createObjectURL(fileUploadInput.files[0]);                          
-                    }
-                }
-            }
-        }
+                        image.src = URL.createObjectURL(fileUploadInput.files[0]);  
+                        return;                        
+                    } 
+                } 
+            } 
+        } 
         
         validateFields();
     }

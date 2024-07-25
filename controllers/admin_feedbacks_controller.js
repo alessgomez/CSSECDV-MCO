@@ -13,55 +13,65 @@ const admin_feedbacks_controller = {
             style: ["navbar", "index", "adminfeedbacks"],
             script: ["adminfeedbacks"],
             isAdmin: true,
-        }
-
-        let connection = await getConnectionFromPool();
-
+        };
+    
+        let connection;
+        
         try {
-            connection.query("SELECT feedbackId, subject, message FROM feedbacks", function(error, results) {
-                if (error) {
-                    throw error;
-                } else {
-                    data.feedbacks = results.map(feedback => {
-                        feedback.feedbackId = DOMPurify.sanitize(feedback.feedbackId);
-                        feedback.subject = DOMPurify.sanitize(feedback.subject);
-                        feedback.message = DOMPurify.sanitize(feedback.message);
-                        return feedback;
-                    });    
-                    res.render('adminviewfeedbacks', data);
-                }
+            connection = await getConnectionFromPool();
+            
+            const sql = "SELECT feedbackId, subject, message FROM feedbacks";
+            const [results] = await connection.promise().query(sql);
+            
+            data.feedbacks = results.map(feedback => {
+                feedback.feedbackId = DOMPurify.sanitize(feedback.feedbackId);
+                feedback.subject = DOMPurify.sanitize(feedback.subject);
+                feedback.message = DOMPurify.sanitize(feedback.message);
+                return feedback;
             });
+    
+            res.render('adminviewfeedbacks', data);
+
         } catch (error) {
-            console.log(error);
+            if (debug)
+                console.error('Error retrieving feedbacks:', error);
+            else 
+                console.error('An error occurred.')
+            res.status(500).send('Internal Server Error');
         } finally {
-            if (connection)
+            if (connection) {
                 connection.release();
+            }
         }
 
     },
 
     postDeleteFeedback: async (req, res) => {
         const feedbackId = req.body.feedbackId;
-
-        let connection = await getConnectionFromPool();
+        let connection;
 
         try {
+            connection = await getConnectionFromPool();
             const query = 'DELETE FROM feedbacks WHERE feedbackId = ?';
-            connection.query(query, [feedbackId], (error, results) => {
-                if (error) {
-                    console.error('Error deleting feedback:', error);
-                    res.json({ success: false, error: 'Error deleting feedback' });
-                  } else {
-                    res.json({ success: true });
-                  }
-            });
+            const [results] = await connection.promise().query(query, [feedbackId]);
+
+            if (results.affectedRows === 0) {
+                throw new Error('Feedback not found');
+            } else {
+                res.json({ success: true });
+            }
         } catch (error) {
-            console.log(error);
+            if (debug)
+                console.error('Error deleting feedback:', error);
+            else 
+                console.error('An error occurred.')
+            res.status(500).json({ success: false });
         } finally {
-            if (connection)
+            if (connection) {
                 connection.release();
-        }    
-    },
+            }
+        }
+    }
 
 }
 

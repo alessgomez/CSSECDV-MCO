@@ -6,125 +6,113 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 
 async function checkAccountIdExists(connection, accountId) {
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM accounts WHERE accountId = ? AND isArchived = False';
-      connection.query(sql, [accountId], (error, results) => {
-        if (error) {
-          reject(error);
-        } 
-        else {
-            if (results.length === 0) {
-                resolve(false); // account not found
-              } 
-              else {
-                const account = results[0]
-                resolve(true);
-            }
-        }
-      });
-    });
+    try {
+        const [rows] = await connection.query('SELECT 1 FROM accounts WHERE accountId = ? AND isArchived = FALSE', [accountId]);
+        return rows.length > 0;
+    } catch (error) {
+        throw error;
+    }
 }
 
 async function checkAccountRole(connection, accountId) {
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM accounts WHERE accountId = ?';
-      connection.query(sql, [accountId], (error, results) => {
-        if (error) {
-          reject(error);
-        } 
-        else {
-            resolve(results[0].role);
+    try {
+        const [rows] = await connection.query('SELECT role FROM accounts WHERE accountId = ?', [accountId]);
+        if (rows.length === 0) {
+            return null;
         }
-      });
-    });
+        return rows[0].role;
+    } catch (error) {
+        throw error; 
+    }
 }
 
 async function deleteSessionDataEntry(connection, sessionId) {
-    return new Promise((resolve, reject) => {
-      const sql = 'DELETE FROM sessiondata WHERE sessionId = ?';
-      connection.query(sql, [sessionId], (error, results) => {
-        if (error) {
-          reject(error);
-        } 
-        else {
-            if (results.affectedRows === 0) {
-                resolve(false); // No rows were deleted, sessionId not found
-              } else {
-                resolve(true); // Deletion was successful
-              }
-        }
-      });
-    });
+    try {
+        const [results] = await connection.query('DELETE FROM sessiondata WHERE sessionId = ?', [sessionId]);
+        return results.affectedRows > 0;
+    } catch (error) {
+        throw error;
+    }
 }
 
-const verifyRole = (requiredRole) => {return async function(req, res, next) {
-    if (!req.session) {
-        return res.redirect('/login');
-    }
-
-    const connection = await getConnectionFromPool();
-
-    try {
-        const sessionData = await getSessionDataEntry(connection, req.session.id)
-
-        if (sessionData) {
-            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
-            if (accountIdExists && sessionData.verified) {
-                const role = await checkAccountRole(connection, sessionData.accountId);
-
-                if (role === requiredRole) {
-                    return next(); // Allow access to the requested page
-                } else {
-                    res.redirect('/'); // Redirects back to their designated home page
-                }
-            }
-            else {
-                res.redirect('/login');
-            }
-        } else {
-            res.redirect('/login');
-        }
-    } catch (error) {
-        console.error(error);
-    }
-    finally {
-        if (connection) {
-            connection.release();
-        }
-    }
-}}
-
-const general_controller = {
-
-    isPrivate: async function(req, res, next) {
-
+const verifyRole = (requiredRole) => {
+    return async (req, res, next) => {
         if (!req.session) {
             return res.redirect('/login');
         }
 
-        const connection = await getConnectionFromPool();
-
+        let connection;
         try {
-            
-            const sessionData = await getSessionDataEntry(connection, req.session.id)
+            connection = await getConnectionFromPool();
 
-            if (sessionData) {
-                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
 
-                if (accountIdExists && sessionData.verified)    
-                    return next();
-                else    
-                    res.redirect('/login');
+            if (!sessionData || !sessionData.verified) {
+                return res.redirect('/login');
             }
-            else    
-                res.redirect('/login');
-           
+
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+
+            if (!accountIdExists) {
+                return res.redirect('/login');
+            }
+
+            const role = await checkAccountRole(connection, sessionData.accountId);
+
+            if (role === requiredRole) {
+                return next();
+            } else {
+                return res.redirect('/'); // Redirects back to the user's designated home page
+            }
+
         } catch (error) {
-            console.error(error);
-        }
-        finally {
+            if (debug)
+                console.error('Error in verifyRole middleware:', error);
+            else
+                console.error('An error occurred')
+            return res.redirect('/login'); 
+        } finally {
             if (connection) {
-              connection.release();
+                connection.release();
+            }
+        }
+    };
+};
+
+const general_controller = {
+
+    isPrivate: async function(req, res, next) {
+        if (!req.session) {
+            return res.redirect('/login');
+        }
+    
+        let connection;
+        try {
+            connection = await getConnectionFromPool();
+            
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            if (!sessionData || !sessionData.verified) {
+                return res.redirect('/login');
+            }
+
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+
+            if (accountIdExists) {
+                return next(); 
+            } else {
+                return res.redirect('/login'); 
+            }
+            
+        } catch (error) {
+            if (debug)
+                console.error('Error in isPrivate middleware:', error);
+            else
+                console.error('An error occurred.')
+            return res.redirect('/login'); 
+        } finally {
+            if (connection) {
+                connection.release(); 
             }
         }
     },
@@ -133,32 +121,37 @@ const general_controller = {
         if (!req.session) {
             return res.redirect('/login');
         }
-
-        const connection = await getConnectionFromPool();
-
+    
+        let connection;
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id)
-
-            if (sessionData) {
-                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
-                if (accountIdExists) {
-                    if (sessionData.verified)
-                        res.redirect('/');
-                    else
-                        return next();
-                }
-                else
-                    res.redirect('/login');
-            }
-            else
-                res.redirect('/login');
+            connection = await getConnectionFromPool();
             
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+    
+            if (!sessionData) {
+                return res.redirect('/login'); 
+            }
+    
+            const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+            if (!accountIdExists) {
+                return res.redirect('/login'); 
+            }
+    
+            if (sessionData.verified) {
+                return res.redirect('/'); // Redirect to home if already verified
+            } else {
+                return next(); // Proceed to 2FA verification if not verified
+            }
+    
         } catch (error) {
-            console.error(error);
-        }
-        finally {
+            if (debug)
+                console.error('Error in isPrivate2FA middleware:', error);
+            else    
+                console.error('An error occurred.')
+            return res.redirect('/login'); 
+        } finally {
             if (connection) {
-              connection.release();
+                connection.release(); 
             }
         }
     },
@@ -167,94 +160,112 @@ const general_controller = {
         if (!req.session) {
             return next();
         }
-
-        const connection = await getConnectionFromPool();
-
+    
+        let connection;
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id)
-
+            connection = await getConnectionFromPool();
+    
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+    
             if (sessionData) {
                 const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
-                if (accountIdExists && sessionData.verified){
-                    res.redirect('/');
-                } else {
-                    return next();
+                if (accountIdExists && sessionData.verified) {
+                    // Redirect authenticated and verified users away from public routes
+                    return res.redirect('/');
                 }
             }
-            else {
-                return next();
-            }
-           
+            
+            return next();
+    
         } catch (error) {
-            console.error(error);
+            if (debug)
+                console.error('Error in isPublic middleware:', error);
+            else
+                console.error('An error occurred.')
+            return next();
+        } finally {
+            if (connection) {
+                connection.release(); 
+            }
         }
-        finally {
+    },
+
+    getHome: async function(req, res, next) {
+        if (!req.session) {
+            return res.redirect('/login');
+        }
+    
+        let connection;
+        try {
+            connection = await getConnectionFromPool();
+    
+            const sessionData = await getSessionDataEntry(connection, req.session.id);
+    
+            if (sessionData) {
+                const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
+                if (accountIdExists && sessionData.verified) {
+                    const role = await checkAccountRole(connection, sessionData.accountId);
+    
+                    switch (role) {
+                        case 'USER':
+                            return home_controller.getUserHome(req, res);
+                        case 'ADMIN':
+                            return home_controller.getAdminHome(req, res);
+                        default:
+                            return res.redirect('/login');
+                    }
+                }
+            }
+            return res.redirect('/login');
+    
+        } catch (error) {
+            if (debug)
+                console.error('Error in getHome middleware:', error);
+            else
+                console.error('An error occurred.')
+            return res.redirect('/login'); 
+        } finally {
             if (connection) {
                 connection.release();
             }
         }
     },
 
-    getHome: async function(req, res, next) {
-            if (!req.session) {
-                return res.redirect('/login');
-            }
-    
-            const connection = await getConnectionFromPool();
-    
-            try {
-                const sessionData = await getSessionDataEntry(connection, req.session.id)
-    
-                if (sessionData) {
-                    const accountIdExists = await checkAccountIdExists(connection, sessionData.accountId);
-                    if (accountIdExists && sessionData.verified) {
-                        const role = await checkAccountRole(connection, sessionData.accountId);
-
-                        if (role === "USER") {
-                            home_controller.getUserHome(req, res);
-                        } else if (role === "ADMIN") {
-                            home_controller.getAdminHome(req, res);
-                        } else {
-                            res.redirect('/login');
-                        }
-                    } else {
-                        res.redirect('/login');
-                    }
-                } else {
-                    res.redirect('/login');
-                }
-            } catch (error) {
-                console.error(error);
-            }
-            finally {
-                if (connection) {
-                    connection.release();
-                }
-            }
-    },
-
     getLogout: async function(req, res) {
-
-        if (req.session)
-        {
-            const connection = await getConnectionFromPool();
-            try {
-                await deleteSessionDataEntry(connection, req.session.id)
-            } catch (error) {
-                console.error(error);
-            }
-            finally {
-                if (connection) {
-                connection.release();
-                }
-            }
-            
-            req.session.destroy(() => {
-                res.clearCookie('thehungrycookie'); 
-                console.log("Session successfully destroyed.");
-                res.redirect('/login');
-            });
+        if (!req.session) {
+            return res.redirect('/login'); 
         }
+
+        let connection;
+        try {
+            connection = await getConnectionFromPool();
+
+             // Attempt to delete session data from the database
+            await deleteSessionDataEntry(connection, req.session.id);
+
+        } catch (error) {
+            if (debug)
+                console.error('Error deleting session data:', error);
+            else
+                console.error('An error occurred.')
+        } finally {
+            if (connection) {
+                connection.release();
+            }
+        }
+
+        // Destroy the session and clear the cookie
+        req.session.destroy(err => {
+            if (err) {
+                if (debug)
+                    console.error('Error destroying session:', err);
+                else 
+                    console.error('An error occurred.')
+                return res.redirect('/login'); 
+            }
+            res.clearCookie('thehungrycookie'); 
+            res.redirect('/login');
+        });
     }
 
 }

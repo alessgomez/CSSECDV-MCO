@@ -23,36 +23,53 @@ const home_controller = {
     getAdminHome: async (req, res) => {
         const adminPageData = {
             style: ["navbar", "index"],
-            isAdmin: true,
-        }
-
-        let connection = await getConnectionFromPool();
-
+            isAdmin: true
+        };
+    
+        let connection;
+    
         try {
-            connection.query(`SELECT firstName, lastName, email, phoneNumber, dateCreated, dateEdited, dateArchived
-                             FROM accounts WHERE role = 'USER' ORDER BY dateCreated ASC`, function(error, results) {
-                if (error) {
-                    throw error;
-                } else {
-                    adminPageData.users = results.map(user => {
-                        user.firstName = DOMPurify.sanitize(user.firstName);
-                        user.lastName = DOMPurify.sanitize(user.lastName);
-                        user.email = DOMPurify.sanitize(user.email);
-                        user.phoneNumber = DOMPurify.sanitize(user.phoneNumber);
-                        user.dateCreated = DOMPurify.sanitize(user.dateCreated);
-                        user.dateEdited = DOMPurify.sanitize(user.dateEdited);
-                        user.dateArchived = DOMPurify.sanitize(user.dateArchived);
-                        return user;
-                    });    
-
-                    res.render("admin", adminPageData);
-                }
+            connection = await getConnectionFromPool();
+            const query = `
+                SELECT firstName, lastName, email, phoneNumber, dateCreated, dateEdited, dateArchived
+                FROM accounts
+                WHERE role = 'USER'
+                ORDER BY dateCreated ASC
+            `;
+    
+            const results = await new Promise((resolve, reject) => {
+                connection.query(query, (error, results) => {
+                    if (error) {
+                        return reject(error);
+                    }
+                    resolve(results);
+                });
             });
+    
+            adminPageData.users = results.map(user => {
+                return {
+                    firstName: DOMPurify.sanitize(user.firstName),
+                    lastName: DOMPurify.sanitize(user.lastName),
+                    email: DOMPurify.sanitize(user.email),
+                    phoneNumber: DOMPurify.sanitize(user.phoneNumber),
+                    dateCreated: DOMPurify.sanitize(user.dateCreated),
+                    dateEdited: DOMPurify.sanitize(user.dateEdited),
+                    dateArchived: DOMPurify.sanitize(user.dateArchived),
+                };
+            });
+    
+            res.render("admin", adminPageData);
+    
         } catch (error) {
-            console.log(error);
+            if (debug)
+                console.error('Error fetching admin home data:', error);
+            else 
+                console.error('An error occurred.')
+            res.status(500).send('Internal Server Error');
         } finally {
-            if (connection)
+            if (connection) {
                 connection.release();
+            }
         }
     }
 }

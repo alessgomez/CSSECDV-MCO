@@ -3,7 +3,7 @@ const { fileFilter, getMimeType, sanitizeImage } = require('./registration_contr
 const fs = require('fs');
 const sharp = require('sharp');
 const multer = require('multer');
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, validate } = require('uuid');
 const storage = multer.memoryStorage();
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
@@ -19,18 +19,26 @@ const upload = multer({
     fileFilter: fileFilter
 }).single('inputFile');
 
-const checkProductUuidExists = (connection, newId, field) => {
-    return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM products WHERE ? = ?';
-        connection.query(sql, [field, newId], (error, results) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results.length > 0);
-            }
-        });
-    });
-};
+
+async function checkProductUuidExists(connection, newId) {
+    try {
+        const sql = 'SELECT * FROM products WHERE productId = ?';
+        const [results] = await connection.promise().query(sql, [newId]);
+        return results.length > 0;
+    } catch (error) {
+        throw error; 
+    }
+}
+
+async function checkImageUuidExists(connection, newFilename) {
+    try {
+        const sql = 'SELECT * FROM products WHERE imageFilename = ?';
+        const [results] = await connection.promise().query(sql, [newFilename]);
+        return results.length > 0;
+    } catch (error) {
+        throw error; 
+    }
+}
 
 async function addProduct(connection, newProduct) {
     try {
@@ -39,34 +47,26 @@ async function addProduct(connection, newProduct) {
 
         while (uuidExists) {
             newId = uuidv4();
-            uuidExists = await checkProductUuidExists(connection, newId, 'productId');
+            uuidExists = await checkProductUuidExists(connection, newId);
         }
 
-        return new Promise((resolve, reject) => {
-            const sql = 'INSERT INTO products (productId, name, category, price, imageFilename, isBestseller, isArchived) VALUES (?, ?, ?, ?, ?, ?, ?)';
-            const values = [newId, newProduct.name, newProduct.category, newProduct.price, newProduct.imageFilename, false, false];
-    
-            connection.query(sql, values, async (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(newId); // product successfully added
-                }
-            });
-        });
+        const sql = 'INSERT INTO products (productId, name, category, price, imageFilename, isBestseller, isArchived) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const values = [newId, newProduct.name, newProduct.category, newProduct.price, newProduct.imageFilename, false, false];
+        
+        await connection.promise().query(sql, values);
+
+        return newId; 
     } catch (error) {
-        console.error(error);
+        throw error; 
     }
-    
 }
 
 function validateSelectedCategory(selectedCategory) {
     validOptions = ['main', 'snack', 'drink', 'dessert']
-    if (validOptions.includes(selectedCategory)) {
+    if (validOptions.includes(selectedCategory)) 
         return true
-    } else {
+    else 
         return false
-    }
 }
 
 function validateDetails(newProduct) {
@@ -95,72 +95,73 @@ const add_product_controller = {
 
     postAddProduct:  function (req, res) {
         upload(req, res, async (err) => {
-            if (err) {
-                console.error(err);
-                req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
-                return res.redirect('/addProductPage');
-            }
-            if (!req.file) {
-                req.flash('error_msg', 'Please upload a file.');
-                return res.redirect('/addProductPage');
-            }
-     
-            var newProduct = {
-                name: DOMPurify.sanitize(req.body.name),
-                category: DOMPurify.sanitize(req.body.category),
-                price: DOMPurify.sanitize(req.body.price),
-            };
-
+            let connection;
             try {
-                // START OF RESPONSE VALIDATION
-                if (validateDetails(newProduct)) {
-                    // 1. File signature 
-                    signature = req.file.buffer.toString('hex').toUpperCase();
-                    fileMimeType = getMimeType(signature);
-                    if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
-                        // 2. Image rewriting 
-                        sanitizeImage(req.file.buffer)
-                            .then(async sanitizedBuffer => {
-                                // 3. save to folder - filename!
-                                let connection = await getConnectionFromPool();
-                                let newFileName;
-                                let uuidExists = true;
-                                filePath = './public/images/products/';
-                                fileExtension = fileMimeType.split("/")[1];
+                if (err) {
+                    if (debug)
+                        console.error('Error uploading the file: ', err);
+                    else    
+                        console.error('An error occurred.')
 
-                                while (uuidExists) {
-                                    newFileName = uuidv4() + "." + fileExtension;
-                                    uuidExists = await checkProductUuidExists(connection, newFileName, "imageFilename");
-                                }
-                                
-                                fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
-                                newProduct['imageFilename'] = newFileName;
-    
-                                // 4. save to DB.
-                                const result = await addProduct(connection, newProduct);
+                    req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
+                    return res.redirect('/addProductPage');
+                }
+
+                if (!req.file) {
+                    req.flash('error_msg', 'Please upload a file.');
+                    return res.redirect('/addProductPage');
+                }
+        
+                const newProduct = {
+                    name: DOMPurify.sanitize(req.body.name),
+                    category: DOMPurify.sanitize(req.body.category),
+                    price: parseFloat(DOMPurify.sanitize(req.body.price)).toFixed(2),
+                };
+
             
-                                if (result === null)
-                                    req.flash('error_msg', 'Invalid details.');   
-                                else 
-                                    req.flash('success_msg', 'Product successfully added.');
+                if (!validateDetails(newProduct)) {
+                    throw new Error("Invalid product details.");
+                }
+    
+                const fileSignature = req.file.buffer.toString('hex').toUpperCase();
+                const fileMimeType = getMimeType(fileSignature);
+    
+                if (fileMimeType !== 'image/jpeg' && fileMimeType !== 'image/png') {
+                    throw new Error("Invalid file type.");
+                }
+    
+                const sanitizedBuffer = await sanitizeImage(req.file.buffer);
+    
+                connection = await getConnectionFromPool();
+                const fileExtension = fileMimeType.split("/")[1];
+                let newFileName;
+                let uuidExists = true;
+                const filePath = './public/images/products/';
+    
+                while (uuidExists) {
+                    newFileName = `${uuidv4()}.${fileExtension}`;
+                    uuidExists = await checkImageUuidExists(connection, newFileName);
+                }
+    
+                fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
+                newProduct.imageFilename = newFileName;
+    
+                const result = await addProduct(connection, newProduct);
+    
+                if (result === null) {
+                    req.flash('error_msg', 'Invalid details.');
+                } else {
+                    req.flash('success_msg', 'Product successfully added.');
+                }
+    
+                return res.redirect('/addProductPage');
 
-                                return res.redirect('/addProductPage');
-                            })
-                            .catch(error => {
-                                console.error('Image sanitization failed: ', error);
-                                throw new Error("ERROR: Image sanitization failed.");
-                            })
-                    }
-                    else {
-                        throw new Error("ERROR: Invalid file.")
-                    }
-                }
-                else {
-                    throw new Error("ERROR: Invalid product details.");
-                }
-            }
-            catch (error) {
-                console.error(error)
+            } catch (error) {
+                if (debug)
+                    console.error('Error adding a product: ', error)
+                else    
+                    console.error('An error occurred.')
+                
                 req.flash('error_msg', 'An error occurred when adding the product. Please try again.');
                 return res.redirect('/addProductPage');
             } finally {
@@ -173,4 +174,9 @@ const add_product_controller = {
 }
 
 
-module.exports = add_product_controller;
+module.exports = {
+    add_product_controller,
+    checkImageUuidExists,
+    validateSelectedCategory,
+    validateDetails
+};
