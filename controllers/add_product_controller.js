@@ -22,8 +22,8 @@ const upload = multer({
 
 async function checkProductUuidExists(connection, newId) {
     return new Promise((resolve, reject) => {
-        const sql = 'SELECT * FROM products WHERE ? = ?';
-        connection.query(sql, [field, newId], (error, results) => {
+        const sql = 'SELECT * FROM products WHERE productId = ?';
+        connection.query(sql, [newId], (error, results) => {
             if (error) {
                 reject(error);
             } else {
@@ -36,7 +36,7 @@ async function checkProductUuidExists(connection, newId) {
 async function checkImageUuidExists(connection, newFilename) {
     return new Promise((resolve, reject) => {
         const sql = 'SELECT * FROM products WHERE imageFilename = ?';
-        connection.query(sql, [field, newFilename], (error, results) => {
+        connection.query(sql, [newFilename], (error, results) => {
             if (error) {
                 reject(error);
             } else {

@@ -139,9 +139,9 @@ const edit_product_controller = {
                     return res.redirect('/editProductPage/' + productId);
                 }
     
-                const isProductArchived = await isProductArchived(connection, productId);
+                const isArchived = await isProductArchived(connection, productId);
     
-                if (isProductArchived) {
+                if (isArchived) {
                     throw new Error("Cannot edit archived product.");
                 }
     
@@ -217,7 +217,7 @@ const edit_product_controller = {
             connection = await getConnectionFromPool();
 
             const query = 'SELECT name, category, price FROM products WHERE productId = ?';
-            const [results] = await connection.query(query, [productId]);
+            const [results] = await connection.promise().query(query, [productId]);
 
             if (results.length === 0) 
                 throw new Error('Product not found');

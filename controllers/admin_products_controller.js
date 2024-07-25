@@ -115,9 +115,9 @@ const admin_products_controller = {
         try {
             connection = await getConnectionFromPool();
 
-            const isProductArchived = await isProductArchived(connection, productId);
+            const isArchived = await isProductArchived(connection, productId);
 
-            if (isProductArchived) 
+            if (isArchived) 
                 throw new Error('Product is archived and cannot be set as bestseller');
 
             const updateQuery = 'UPDATE products SET isBestseller = ? WHERE productId = ?';
