@@ -145,8 +145,8 @@ function validateDetails(newAccount) {
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailValid = emailRegex.test(newAccount.email) && newAccount.email.substr(0, newAccount.email.indexOf('@')).length <= 64 && newAccount.email.substr(newAccount.email.indexOf('@')).length <= 255
     
-    // TODO: change this to regex test for address
-    const addressValid = newAccount.address != null && newAccount.address.length > 0 && newAccount.address.length <= 255;
+    const addressRegex = /^([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9]{4})$/;
+    const addressValid = addressRegex.test(newAccount.address) && newAccount.address.length <= 160;
 
     const phoneNumberRegex = /^(09|\+639)\d{9}$/;
     const phoneNumberValid = phoneNumberRegex.test(newAccount.number);
@@ -274,11 +274,8 @@ const registration_controller = {
                 }
             } catch (error) {
                 req.flash('error_msg', 'An error occurred during registration. Please try again.');
+                console.log(error);
                 return res.redirect('/login');
-            } finally {
-                if (connection) {
-                    connection.release();
-                }
             }
         })
 
