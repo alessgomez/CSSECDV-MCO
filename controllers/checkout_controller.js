@@ -7,7 +7,7 @@ const checkout_controller = {
         let connection = await getConnectionFromPool();
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            const sessionData = getSessionDataEntry(connection, req.session.id);
             const bagId = await getBagId(connection, req.session.id);
             const bagItems = await getBagItems(connection, req.session.id);
 

@@ -47,7 +47,7 @@ async function addProduct(connection, newProduct) {
 
         while (uuidExists) {
             newId = uuidv4();
-            uuidExists = await checkProductUuidExists(connection, newId);
+            uuidExists = checkProductUuidExists(connection, newId);
         }
 
         const sql = 'INSERT INTO products (productId, name, category, price, imageFilename, isBestseller, isArchived) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -140,13 +140,13 @@ const add_product_controller = {
     
                 while (uuidExists) {
                     newFileName = `${uuidv4()}.${fileExtension}`;
-                    uuidExists = await checkImageUuidExists(connection, newFileName);
+                    uuidExists = checkImageUuidExists(connection, newFileName);
                 }
     
                 fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
                 newProduct.imageFilename = newFileName;
     
-                const result = await addProduct(connection, newProduct);
+                const result = addProduct(connection, newProduct);
     
                 if (result === null) {
                     req.flash('error_msg', 'Invalid details.');

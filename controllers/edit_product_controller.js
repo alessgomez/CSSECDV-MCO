@@ -69,9 +69,9 @@ const edit_product_controller = {
 
         try {
             connection = await getConnectionFromPool();
-            const isArchived = await isProductArchived(connection, productId);
+            const isProductArchived = isProductArchived(connection, productId);
 
-            if (isArchived) {
+            if (isProductArchived) {
                 return res.redirect('/viewProductsPage');
             }
 
@@ -141,7 +141,7 @@ const edit_product_controller = {
                     return res.redirect('/editProductPage/' + productId);
                 }
     
-                const isProductArchived = await isProductArchived(connection, productId);
+                const isProductArchived = isProductArchived(connection, productId);
     
                 if (isProductArchived) {
                     throw new Error("Cannot edit archived product.");
@@ -159,7 +159,7 @@ const edit_product_controller = {
                 }
     
                 if (!req.file) {
-                    const result = await editProduct(connection, updatedProduct, false);
+                    const result = editProduct(connection, updatedProduct, false);
                     if (result === null) {
                         req.flash('error_msg', 'Invalid details.');
                     } else {
@@ -182,13 +182,13 @@ const edit_product_controller = {
     
                     while (uuidExists) {
                         newFileName = uuidv4() + "." + fileExtension;
-                        uuidExists = await checkImageUuidExists(connection, newFileName);
+                        uuidExists = checkImageUuidExists(connection, newFileName);
                     }
     
                     fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
                     updatedProduct.imageFilename = newFileName;
     
-                    const result = await editProduct(connection, updatedProduct, true);
+                    const result = editProduct(connection, updatedProduct, true);
                     if (result === null) {
                         req.flash('error_msg', 'Invalid details.');
                     } else {

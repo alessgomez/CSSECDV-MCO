@@ -18,7 +18,7 @@ const checkUuidExists = (connection, newId, field) => {
 async function getBagId(connection, sessionId) {
     try {
         console.log("HI 1");
-        const sessionData = await getSessionDataEntry(connection, sessionId);
+        const sessionData = getSessionDataEntry(connection, sessionId);
         console.log("HI 4");
         if (sessionData) {
             console.log("HI 5");
