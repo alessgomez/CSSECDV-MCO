@@ -2,6 +2,7 @@ const {getConnectionFromPool} = require('../db');
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
+const { getSessionDataEntry } = require('./login_controller');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
@@ -27,9 +28,11 @@ const home_controller = {
         };
     
         let connection;
-    
+        let sessionData;
         try {
             connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
             const query = `
                 SELECT firstName, lastName, email, phoneNumber, dateCreated, dateEdited, dateArchived
                 FROM accounts
@@ -65,6 +68,20 @@ const home_controller = {
                 console.error('Error fetching admin home data:', error);
             else 
                 console.error('An error occurred.')
+
+            logger.error('Error when admin attempted to view users', {
+                meta: {
+                    event: 'VIEW_USERS_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.status(500).send('Internal Server Error');
         } finally {
             if (connection) {

@@ -6,6 +6,8 @@ const DOMPurify = createDOMPurify(window);
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
+const logger = require('../logger');
+const { getSessionDataEntry } = require('./login_controller');
 
 const admin_feedbacks_controller = {
     getViewFeedbacks: async (req, res) => {
@@ -16,9 +18,10 @@ const admin_feedbacks_controller = {
         };
     
         let connection;
-        
+        let sessionData;
         try {
             connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
             
             const sql = "SELECT feedbackId, subject, message FROM feedbacks";
             const [results] = await connection.promise().query(sql);
@@ -37,6 +40,20 @@ const admin_feedbacks_controller = {
                 console.error('Error retrieving feedbacks:', error);
             else 
                 console.error('An error occurred.')
+
+            logger.error('Error when admin attempted to view feedbacks', {
+                meta: {
+                    event: 'VIEW_FEEDBACKS_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+            
             res.status(500).send('Internal Server Error');
         } finally {
             if (connection) {
@@ -49,15 +66,29 @@ const admin_feedbacks_controller = {
     postDeleteFeedback: async (req, res) => {
         const feedbackId = req.body.feedbackId;
         let connection;
-
+        let sessionData;
         try {
             connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id)
             const query = 'DELETE FROM feedbacks WHERE feedbackId = ?';
             const [results] = await connection.promise().query(query, [feedbackId]);
 
             if (results.affectedRows === 0) {
                 throw new Error('Feedback not found');
             } else {
+                logger.info('Admin successfully deleted feedback', {
+                    meta: {
+                      event: 'DELETE_FEEDBACK_SUCCESS',
+                      method: req.method,
+                      url: req.originalUrl,
+                      accountId: sessionData.accountId,
+                      feedbackId: feedbackId, 
+                      sourceIp: req.ip,
+                      userAgent: req.headers['user-agent'],
+                      sessionId: req.session.id 
+                    }
+                });
+
                 res.json({ success: true });
             }
         } catch (error) {
@@ -65,6 +96,21 @@ const admin_feedbacks_controller = {
                 console.error('Error deleting feedback:', error);
             else 
                 console.error('An error occurred.')
+
+            logger.error('Error when admin attempted to delete feedback', {
+                meta: {
+                    event: 'DELETE_FEEDBACK_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    productId: productId, 
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.status(500).json({ success: false });
         } finally {
             if (connection) {

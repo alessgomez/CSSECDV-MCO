@@ -40,6 +40,8 @@
     "nodemailer": "^6.9.13",
     "rate-limiter-flexible": "^5.0.3",
     "sharp": "^0.33.4",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "winston": "^3.13.1",
+    "winston-syslog": "^2.7.0"
   }
 }

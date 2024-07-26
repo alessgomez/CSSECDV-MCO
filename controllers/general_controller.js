@@ -4,6 +4,7 @@ const home_controller = require('./home_controller');
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
+const logger = require('../logger');
 
 async function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
@@ -250,8 +251,10 @@ const general_controller = {
         }
 
         let connection;
+        let sessionData;
         try {
             connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
              // Attempt to delete session data from the database
             await deleteSessionDataEntry(connection, req.session.id);
@@ -276,7 +279,20 @@ const general_controller = {
                     console.error('An error occurred.')
                 return res.redirect('/login'); 
             }
-            res.clearCookie('thehungrycookie'); 
+            res.clearCookie('thehungrycookie');
+            
+            logger.info('User successfully logged out', {
+                meta: {
+                  event: 'USER_LOGOUT_SUCCESS',
+                  method: req.method,
+                  url: req.originalUrl,
+                  accountId: sessionData.accountId, 
+                  sourceIp: req.ip,
+                  userAgent: req.headers['user-agent'],
+                  sessionId: sessionData.sessionId
+                }
+              });
+
             res.redirect('/login');
         });
     }

@@ -11,6 +11,8 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
+const logger = require('../logger');
+const { getSessionDataEntry } = require('./login_controller');
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
@@ -64,9 +66,11 @@ const edit_product_controller = {
     getEditProduct: async (req, res) => {
         const productId = req.params.id;
         let connection;
-
+        let sessionData;
         try {
             connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
             const isArchived = await isProductArchived(connection, productId);
 
             if (isArchived) {
@@ -118,6 +122,21 @@ const edit_product_controller = {
                 console.error('Error editing product:', error);
             else    
                 console.error('An error occurred');
+
+            logger.error('Error when admin attempted to view edit product page', {
+                meta: {
+                    event: 'VIEW_EDIT_PRODUCT_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    productId: productId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.status(500).send('Internal Server error');
         } finally {
             if (connection) {
@@ -130,13 +149,13 @@ const edit_product_controller = {
         upload(req, res, async (err) => {
             const productId = req.body.productId;
             let connection;
-    
+            let sessionData;
             try {
                 connection = await getConnectionFromPool();
+                sessionData = await getSessionDataEntry(connection, req.session.id)
     
                 if (err) {
-                    req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hyphen, underscore, or period.');
-                    return res.redirect('/editProductPage/' + productId);
+                    throw new Error("Error uploading the file. ", err);
                 }
     
                 const isArchived = await isProductArchived(connection, productId);
@@ -161,6 +180,19 @@ const edit_product_controller = {
                     if (result === null) {
                         throw new Error('Product not found');
                     } else {
+                        logger.info('Admin successfully updated product', {
+                            meta: {
+                              event: 'EDIT_PRODUCT_SUCCESS',
+                              method: req.method,
+                              url: req.originalUrl,
+                              accountId: sessionData.accountId, 
+                              productId: productId,
+                              sourceIp: req.ip,
+                              userAgent: req.headers['user-agent'],
+                              sessionId: req.session.id 
+                            }
+                          });
+
                         req.flash('success_msg', 'Product successfully updated.');
                     }
                     return res.redirect('/editProductPage/' + productId);
@@ -187,9 +219,23 @@ const edit_product_controller = {
                     updatedProduct.imageFilename = newFileName;
     
                     const result = await editProduct(connection, updatedProduct, true);
+                    
                     if (result === null) {
                         throw new Error('Product not found');
                     } else {
+                        logger.info('Admin successfully edited a product', {
+                            meta: {
+                              event: 'EDIT_PRODUCT_SUCCESS',
+                              method: req.method,
+                              url: req.originalUrl,
+                              accountId: sessionData.accountId, 
+                              productId: productId,
+                              sourceIp: req.ip,
+                              userAgent: req.headers['user-agent'],
+                              sessionId: req.session.id 
+                            }
+                          });
+
                         req.flash('success_msg', 'Product successfully updated.');
                     }
                     return res.redirect('/editProductPage/' + productId);
@@ -199,7 +245,27 @@ const edit_product_controller = {
                     console.error('Error updating product:', error);
                 else    
                     console.error('An error occurred.')
-                req.flash('error_msg','There was an error with updating the product. Please try again.');
+
+                logger.error('Error when admin attempted to edit a product', {
+                    meta: {
+                        event: 'EDIT_PRODUCT_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        productId: productId,
+                        error: error,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        sessionId: req.session.id 
+                    }
+                });
+
+                if (err) {
+                    req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hyphen, underscore, or period.');
+                } else {
+                    req.flash('error_msg', 'An error occurred when adding the product. Please try again.');
+                }
+
                 res.redirect('/editProductPage/' + productId);
             } finally {
                 if (connection) 
@@ -233,6 +299,21 @@ const edit_product_controller = {
                 console.error('Error retrieving product:', error);
             else        
                 console.error('An error occurred.')
+
+            logger.error('Error when attempting to retrieve product info for admin edit product page', {
+                meta: {
+                    event: 'GET_PRODUCT_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    productId: productId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.status(500).json({ success: false});
         } finally {
             if (connection) 

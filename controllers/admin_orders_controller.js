@@ -3,6 +3,7 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const fs = require('fs');
+const { getSessionDataEntry } = require('./login_controller');
 const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
@@ -15,8 +16,10 @@ const admin_orders_controller = {
         };
 
         let connection;
+        let sessionData;
         try {
             connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             const query = `
                 SELECT 
@@ -80,6 +83,21 @@ const admin_orders_controller = {
                 console.error('Error retrieving orders:', error);
             else 
                 console.error('An error occurred.')
+
+            logger.error('Error when admin attempted to view orders', {
+                meta: {
+                    event: 'VIEW_ORDERS_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    productId: productId, 
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.status(500).send('Internal Server Error');
         } finally {
             if (connection) {

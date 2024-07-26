@@ -11,6 +11,8 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
+const logger = require('../logger');
+const { getSessionDataEntry } = require('./login_controller.js');
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
@@ -107,15 +109,13 @@ const add_product_controller = {
     postAddProduct:  function (req, res) {
         upload(req, res, async (err) => {
             let connection;
+            let sessionData;
             try {
-                if (err) {
-                    if (debug)
-                        console.error('Error uploading the file: ', err);
-                    else    
-                        console.error('An error occurred.')
+                connection = await getConnectionFromPool();
+                sessionData = await getSessionDataEntry(connection, req.session.id)
 
-                    req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
-                    return res.redirect('/addProductPage');
+                if (err) {
+                    throw new Error("Error uploading the file. ", err);
                 }
 
                 if (!req.file) {
@@ -143,7 +143,6 @@ const add_product_controller = {
     
                 const sanitizedBuffer = await sanitizeImage(req.file.buffer);
     
-                connection = await getConnectionFromPool();
                 const fileExtension = fileMimeType.split("/")[1];
                 let newFileName;
                 let uuidExists = true;
@@ -162,6 +161,18 @@ const add_product_controller = {
                 if (result === null) {
                     req.flash('error_msg', 'Invalid details.');
                 } else {
+                    logger.info('Admin successfully added a new product', {
+                        meta: {
+                          event: 'ADD_PRODUCT_SUCCESS',
+                          method: req.method,
+                          url: req.originalUrl,
+                          accountId: sessionData.accountId, 
+                          productId: result,
+                          sourceIp: req.ip,
+                          userAgent: req.headers['user-agent'],
+                          sessionId: req.session.id 
+                        }
+                      });
                     req.flash('success_msg', 'Product successfully added.');
                 }
     
@@ -172,8 +183,27 @@ const add_product_controller = {
                     console.error('Error adding a product: ', error)
                 else    
                     console.error('An error occurred.')
+
+                logger.error('Error when admin attempted to add new product', {
+                    meta: {
+                        event: 'ADD_PRODUCT_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        productId: productId, 
+                        error: error,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        sessionId: req.session.id 
+                    }
+                });
                 
-                req.flash('error_msg', 'An error occurred when adding the product. Please try again.');
+                if (err) {
+                    req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hyphen, underscore, or period.');
+                } else {
+                    req.flash('error_msg', 'An error occurred when adding the product. Please try again.');
+                }
+                
                 return res.redirect('/addProductPage');
             } finally {
                 if (connection) 
