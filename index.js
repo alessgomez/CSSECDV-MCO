@@ -3,6 +3,7 @@ const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
 const fs = require("fs");
 const path = require("path");
+const logger = require('../logger');
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -65,9 +66,18 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
+console.log('port: ' + port)
+
 app.listen(port, function() {
     console.log(`Server is running on port ${port}`);
 }).on('error', (err) => {
+    logger.error('Error when starting app', {
+        meta: {
+            event: 'APP_START_ERROR',
+            error: err,
+        }
+      });
+
     console.error('Server error:', err);
 });
 
