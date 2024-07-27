@@ -171,9 +171,10 @@ const login_controller = {
     }
     
     let connection;
+    let email;
     try {
         const { 'g-recaptcha-response': recaptchaResponse } = req.body;
-        const email = req.body.email;
+        email = req.body.email;
         const pw = req.body.psw;
         const ip = req.ip;
         const ipRateLimitKey = `login_attempt_ip_${ip}`;
