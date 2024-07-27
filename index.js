@@ -1,32 +1,31 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
+const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 const session = require('express-session');
 const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const options = {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-	database: process.env.DB_NAME,
+    host: 'localhost',
+    port: 3306,
+    user:'root',
+    password: '',
+	database:'the_hungry_sibs',
     clearExpired: true,
     checkExpirationInterval: 1000 * 60 * 5, 
-    expiration: 1000 * 60 * 15,
-    connectTimeout: 10000,
-	...(process.env.NODE_ENV === 'production' && {
-        ssl: {
-            rejectUnauthorized: true,
-			ca: fs.readFileSync("./ca.pem").toString(),
-        }
-    })
+    expiration: 1000 * 60 * 15
 };
 const sessionStore = new MySQLStore(options);
+
+const key = fs.readFileSync(path.join(__dirname, 'key.pem'));
+const cert = fs.readFileSync(path.join(__dirname, 'cert.pem'));
+
+const server = https.createServer({ key: key, cert: cert }, app);
 
 app.set("view engine", "hbs");
 app.engine("hbs", exphbs.engine({extname: "hbs"}));
@@ -65,9 +64,6 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-app.listen(port, function() {
-    console.log(`Server is running on port ${port}`);
-}).on('error', (err) => {
-    console.error('Server error:', err);
+server.listen(port, function() {
+    console.log("Listening to port " + port);
 });
-
