@@ -3,7 +3,6 @@ const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
 const fs = require("fs");
 const path = require("path");
-const logger = require('../logger');
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -20,12 +19,6 @@ const options = {
     checkExpirationInterval: 1000 * 60 * 5, 
     expiration: 1000 * 60 * 15,
     connectTimeout: 10000,
-	...(process.env.NODE_ENV === 'production' && {
-        ssl: {
-            rejectUnauthorized: true,
-			ca: fs.readFileSync("./ca.pem").toString(),
-        }
-    })
 };
 const sessionStore = new MySQLStore(options);
 
