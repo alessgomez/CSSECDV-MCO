@@ -4,29 +4,21 @@ const routes = require("./routes/routes.js");
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
-require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 const session = require('express-session');
 const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const options = {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-	database: process.env.DB_NAME,
+    host: 'localhost',
+    port: 3306,
+    user:'root',
+    password: '',
+	database:'the_hungry_sibs',
     clearExpired: true,
     checkExpirationInterval: 1000 * 60 * 5, 
-    connectTimeout: 10000,
-    expiration: 1000 * 60 * 60,
-    ...(process.env.NODE_ENV === 'production' && {
-        ssl: {
-            rejectUnauthorized: true,
-            ca: fs.readFileSync("./ca.pem").toString(),
-        }
-    })
+    expiration: 1000 * 60 * 15
 };
 const sessionStore = new MySQLStore(options);
 
@@ -48,7 +40,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         secure: true, 
-        maxAge: 1000 * 60 * 60, 
+        maxAge: 1000 * 60 * 15, 
         httpOnly: true,
         sameSite: 'strict' // Cookies only included when navigating within the same site to mitigate CSRF attacks
     }
