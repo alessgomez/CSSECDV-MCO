@@ -1,33 +1,28 @@
 var mysql = require('mysql2');
-const fs = require("fs");
-require('dotenv').config();
 
 const pool = mysql.createPool({
 	connectionLimit: 100,
-	host: process.env.DB_HOST,
-	user: process.env.DB_USER,
-	port: process.env.DB_PORT,
-	password: process.env.DB_PASSWORD,
-	database: process.env.DB_NAME,
+	host:'localhost',
+	user:'root',
+	password: '',
+	database:'the_hungry_sibs'
   });
 
   async function getConnectionFromPool() {
 	return new Promise((resolve, reject) => {
 	  pool.getConnection((error, connection) => {
 		if (error) {
+		  // Enhanced error handling with more informative messages
 		  switch (error.code) {
 			case 'PROTOCOL_CONNECTION_LOST':
-				reject(new Error('Database connection was closed.'));
-				break;
+			  reject(new Error('Database connection was closed.'));
+			  break;
 			case 'ER_CON_COUNT_ERROR':
-				reject(new Error('Database has too many connections.'));
-				break;
+			  reject(new Error('Database has too many connections.'));
+			  break;
 			case 'ECONNREFUSED':
-				reject(new Error('Database connection was refused.'));
-				break;
-			case 'ETIMEDOUT':
-				reject(new Error('Database connection timed out.'));
-				break;
+			  reject(new Error('Database connection was refused.'));
+			  break;
 			default:
 			  reject(error);
 		  }
