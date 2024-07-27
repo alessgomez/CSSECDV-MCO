@@ -1,6 +1,7 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
+const https = require("https");
 const fs = require("fs");
 const path = require("path");
 require('dotenv').config();
@@ -28,6 +29,11 @@ const options = {
     })
 };
 const sessionStore = new MySQLStore(options);
+
+const key = fs.readFileSync(path.join(__dirname, 'key.pem'));
+const cert = fs.readFileSync(path.join(__dirname, 'cert.pem'));
+
+const server = https.createServer({ key: key, cert: cert }, app);
 
 app.set("view engine", "hbs");
 app.engine("hbs", exphbs.engine({extname: "hbs"}));
@@ -66,9 +72,6 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-app.listen(port, function() {
+server.listen(port, function() {
     console.log("Listening to port " + port);
 });
-
-module.exports = app;
-
