@@ -38,7 +38,7 @@ async function checkAccountRole(connection, accountId) {
 
 async function deleteSessionDataEntry(connection, sessionId) {
     return new Promise((resolve, reject) => {
-        const sql = 'DELETE FROM sessiondata WHERE sessionId = ?';
+        const sql = 'DELETE FROM sessionData WHERE sessionId = ?';
         connection.query(sql, [sessionId], (error, results) => {
             if (error) {
                 reject(error);
@@ -84,6 +84,19 @@ const verifyRole = (requiredRole) => { return async function(req, res, next) {
                 console.error('Error in verifyRole middleware:', error);
             else
                 console.error('An error occurred')
+
+            logger.error('Error in verifyRole middleware', {
+                meta: {
+                    event: 'VERIFY_ROLE_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             return res.redirect('/login'); 
         } finally {
             if (connection) {
@@ -123,6 +136,19 @@ const general_controller = {
                 console.error('Error in isPrivate middleware:', error);
             else
                 console.error('An error occurred.')
+
+            logger.error('Error in isPrivate middleware', {
+                meta: {
+                    event: 'IS_PRIVATE_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             return res.redirect('/login'); 
         } finally {
             if (connection) {
@@ -162,6 +188,19 @@ const general_controller = {
                 console.error('Error in isPrivate2FA middleware:', error);
             else    
                 console.error('An error occurred.')
+
+            logger.error('Error in isPrivate2FA middleware', {
+                meta: {
+                    event: 'IS_PRIVATE_2FA_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             return res.redirect('/login'); 
         } finally {
             if (connection) {
@@ -196,6 +235,19 @@ const general_controller = {
                 console.error('Error in isPublic middleware:', error);
             else
                 console.error('An error occurred.')
+
+            logger.error('Error in isPublic middleware', {
+                meta: {
+                    event: 'IS_PUBLIC_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             return next();
         } finally {
             if (connection) {
@@ -237,6 +289,19 @@ const general_controller = {
                 console.error('Error in getHome middleware:', error);
             else
                 console.error('An error occurred.')
+
+            logger.error('Error in getHome middleware', {
+                meta: {
+                    event: 'GET_HOME_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             return res.redirect('/login'); 
         } finally {
             if (connection) {
@@ -264,6 +329,19 @@ const general_controller = {
                 console.error('Error deleting session data:', error);
             else
                 console.error('An error occurred.')
+
+            logger.error('Error deleting session data', {
+                meta: {
+                    event: 'DELETE_SESSION_DATA_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
         } finally {
             if (connection) {
                 connection.release();

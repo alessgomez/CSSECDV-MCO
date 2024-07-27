@@ -12,15 +12,16 @@ DROP SCHEMA IF EXISTS `the_hungry_sibs` ;
 -- -----------------------------------------------------
 -- Schema the_hungry_sibs
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `the_hungry_sibs` DEFAULT CHARACTER SET utf8mb3 ;
+CREATE SCHEMA IF NOT EXISTS `the_hungry_sibs` DEFAULT CHARACTER SET utf8mb4 ;
 USE `the_hungry_sibs` ;
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Accounts`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Accounts` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`accounts` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Accounts` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`accounts` (
   `accountId` VARCHAR(36) NOT NULL,
   `firstName` VARCHAR(45) NOT NULL,
   `lastName` VARCHAR(45) NOT NULL,
@@ -37,15 +38,16 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Accounts` (
   PRIMARY KEY (`accountId`),
   UNIQUE INDEX `accountId_UNIQUE` (`accountId` ASC) VISIBLE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Bag`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Bag` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`bag` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Bag` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`bag` (
   `bagId` VARCHAR(36) NOT NULL,
   `accountId` VARCHAR(36) NOT NULL,
   `subtotal` DECIMAL(10,0) NOT NULL,
@@ -56,19 +58,20 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Bag` (
   INDEX `bag_accountId` (`accountId` ASC) VISIBLE,
   CONSTRAINT `bag_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    REFERENCES `the_hungry_sibs`.`accounts` (`accountId`)
     ON DELETE CASCADE
     ON UPDATE RESTRICT)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Products`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Products` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`products` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Products` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`products` (
   `productId` VARCHAR(36) NOT NULL,
   `name` VARCHAR(45) NOT NULL,
   `category` VARCHAR(45) NOT NULL,
@@ -79,15 +82,16 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Products` (
   PRIMARY KEY (`productId`),
   UNIQUE INDEX `productId_UNIQUE` (`productId` ASC) VISIBLE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`BagItems`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`BagItems` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`bagItems` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`BagItems` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`bagItems` (
   `bagItemId` VARCHAR(36) NOT NULL,
   `productId` VARCHAR(36) NOT NULL,
   `quantity` INT NOT NULL,
@@ -99,22 +103,23 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`BagItems` (
   INDEX `bagId_idx` (`bagId` ASC) VISIBLE,
   CONSTRAINT `bagItems_bagId`
     FOREIGN KEY (`bagId`)
-    REFERENCES `the_hungry_sibs`.`Bag` (`bagId`)
+    REFERENCES `the_hungry_sibs`.`bag` (`bagId`)
     ON DELETE CASCADE,
   CONSTRAINT `bagItems_productId`
     FOREIGN KEY (`productId`)
-    REFERENCES `the_hungry_sibs`.`Products` (`productId`)
+    REFERENCES `the_hungry_sibs`.`products` (`productId`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Orders`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Orders` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`orders` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Orders` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`orders` (
   `orderId` VARCHAR(36) NOT NULL,
   `accountId` VARCHAR(36) NOT NULL,
   `total` DECIMAL(10,0) NOT NULL,
@@ -129,18 +134,19 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Orders` (
   INDEX `accountId_idx` (`accountId` ASC) VISIBLE,
   CONSTRAINT `orders_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    REFERENCES `the_hungry_sibs`.`accounts` (`accountId`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`OrderItems`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`OrderItems` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`orderItems` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`OrderItems` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`orderItems` (
   `orderItemId` VARCHAR(36) NOT NULL,
   `productId` VARCHAR(36) NOT NULL,
   `quantity` INT NOT NULL,
@@ -152,36 +158,38 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`OrderItems` (
   INDEX `orderId_idx` (`orderId` ASC) VISIBLE,
   CONSTRAINT `orderItems_orderId`
     FOREIGN KEY (`orderId`)
-    REFERENCES `the_hungry_sibs`.`Orders` (`orderId`)
+    REFERENCES `the_hungry_sibs`.`orders` (`orderId`)
     ON DELETE CASCADE,
   CONSTRAINT `orderItems_productId`
     FOREIGN KEY (`productId`)
-    REFERENCES `the_hungry_sibs`.`Products` (`productId`)
+    REFERENCES `the_hungry_sibs`.`products` (`productId`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Sessions`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Sessions` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`sessions` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Sessions` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`sessions` (
   `session_id` VARCHAR(128) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
   `expires` INT UNSIGNED NOT NULL,
   `data` MEDIUMTEXT CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NULL DEFAULT NULL,
   PRIMARY KEY (`session_id`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`SessionData`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`SessionData` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`sessionData` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`SessionData` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`sessionData` (
   `sessionId` VARCHAR(128) CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_bin' NOT NULL,
   `accountId` VARCHAR(36) NOT NULL,
   `verified` TINYINT(1) NOT NULL,
@@ -193,22 +201,23 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`SessionData` (
   UNIQUE INDEX `sessionId_UNIQUE` (`sessionId` ASC) VISIBLE,
   CONSTRAINT `sessionData_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    REFERENCES `the_hungry_sibs`.`accounts` (`accountId`)
     ON DELETE CASCADE,
   CONSTRAINT `sessionData_sessionId`
     FOREIGN KEY (`sessionId`)
-    REFERENCES `the_hungry_sibs`.`Sessions` (`session_id`)
+    REFERENCES `the_hungry_sibs`.`sessions` (`session_id`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
 -- Table `the_hungry_sibs`.`Feedbacks`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `the_hungry_sibs`.`Feedbacks` ;
+DROP TABLE IF EXISTS `the_hungry_sibs`.`feedbacks` ;
 
-CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Feedbacks` (
+CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`feedbacks` (
   `feedbackId` VARCHAR(36) NOT NULL,
   `accountId` VARCHAR(36) NOT NULL,
   `subject` VARCHAR(45) NOT NULL,
@@ -218,7 +227,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`Feedbacks` (
   UNIQUE INDEX `feedbackId_UNIQUE` (`feedbackId` ASC) VISIBLE,
   CONSTRAINT `feedbacks_accountId`
     FOREIGN KEY (`accountId`)
-    REFERENCES `the_hungry_sibs`.`Accounts` (`accountId`)
+    REFERENCES `the_hungry_sibs`.`accounts` (`accountId`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

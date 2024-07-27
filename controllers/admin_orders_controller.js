@@ -29,15 +29,15 @@ const admin_orders_controller = {
                 orders.deliveryFee AS deliveryFee, 
                 orders.dateOrdered AS dateOrdered, 
                 orders.notes AS notes, 
-                orderitems.quantity AS quantity, 
-                orderitems.totalPrice AS orderItemTotal,
+                orderItems.quantity AS quantity, 
+                orderItems.totalPrice AS orderItemTotal,
                 products.name AS productName, 
                 products.price AS productPrice, 
                 accounts.address AS address, 
                 accounts.phoneNumber AS phoneNumber
                 FROM orders 
-                INNER JOIN orderitems ON orders.orderId = orderitems.orderId 
-                INNER JOIN products ON orderitems.productId = products.productId 
+                INNER JOIN orderItems ON orders.orderId = orderItems.orderId 
+                INNER JOIN products ON orderItems.productId = products.productId 
                 INNER JOIN accounts ON orders.accountId = accounts.accountId
                 ORDER BY orders.dateOrdered DESC, orders.orderId
             `;

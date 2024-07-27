@@ -66,7 +66,7 @@ async function getEmail(connection, accountId) {
 
 async function createSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp, verified) {
   return new Promise((resolve, reject) => {
-    const sql = 'INSERT INTO sessiondata (sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp) VALUES (?, ?, ?, ?, ?)';
+    const sql = 'INSERT INTO sessionData (sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp) VALUES (?, ?, ?, ?, ?)';
     const values = [sessionId, accountId, verified, pendingOTC, pendingOTCTimestamp];
       connection.query(sql, values, async (error, results) => {
           if (error) {
@@ -80,7 +80,7 @@ async function createSessionDataEntry(connection, sessionId, accountId, pendingO
 
 async function updateSessionDataEntry(connection, sessionId, accountId, pendingOTC, pendingOTCTimestamp, verified) {
   return new Promise((resolve, reject) => {
-    const sql = 'UPDATE sessiondata SET accountId = ?, pendingOTC = ?, pendingOTCTimestamp = ?, verified = ? WHERE sessionId = ?';
+    const sql = 'UPDATE sessionData SET accountId = ?, pendingOTC = ?, pendingOTCTimestamp = ?, verified = ? WHERE sessionId = ?';
     const values = [accountId, pendingOTC, pendingOTCTimestamp, verified, sessionId];
     connection.query(sql, values, async (error, results) => {
       if (error) {
@@ -95,7 +95,7 @@ async function updateSessionDataEntry(connection, sessionId, accountId, pendingO
 
 async function getSessionDataEntry(connection, sessionId) {
   return new Promise((resolve, reject) => {
-    const sql = 'SELECT * FROM sessiondata WHERE sessionId = ?'; 
+    const sql = 'SELECT * FROM sessionData WHERE sessionId = ?'; 
     connection.query(sql, [sessionId], async (error, results) => {
       if (error) {
         reject(error);
@@ -112,7 +112,7 @@ async function getSessionDataEntry(connection, sessionId) {
 
 async function updateSessionDataOTC(connection, sessionId, newPendingOTC, newPendingOTCTimestamp) {
   return new Promise((resolve, reject) => {
-    const sql = 'UPDATE sessiondata SET pendingOTC = ?, pendingOTCTimestamp = ? WHERE sessionId = ?';
+    const sql = 'UPDATE sessionData SET pendingOTC = ?, pendingOTCTimestamp = ? WHERE sessionId = ?';
     const values = [newPendingOTC, newPendingOTCTimestamp, sessionId];
     connection.query(sql, values, async (error, results) => {
       if (error) {
