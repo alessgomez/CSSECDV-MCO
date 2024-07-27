@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const port = process.env.PORT || 10000;
+const port = process.env.PORT || 3000;
 const session = require('express-session');
 const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
