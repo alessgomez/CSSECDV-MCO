@@ -66,9 +66,8 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-app.listen(port, function() {
-    console.log("Listening to port " + port);
-});
+const server = app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-module.exports = app;
+server.keepAliveTimeout = 120 * 1000;
+server.headersTimeout = 120 * 1000;
 
