@@ -247,6 +247,19 @@ const registration_controller = {
                                 throw new Error('Account with the given email already has a bag.');
                             else {
                                 connection.release();
+
+                                logger.info('User successfully registered account', {
+                                    meta: {
+                                      event: 'REGISTER_ACCOUNT_SUCCESS',
+                                      method: req.method,
+                                      url: req.originalUrl,
+                                      accountId: account[1], 
+                                      sourceIp: req.ip,
+                                      userAgent: req.headers['user-agent'],
+                                      sessionId: req.session.sessionId
+                                    }
+                                });
+
                                 req.flash('success_msg', 'Account successfully registered. You may log in.');
                                 return res.redirect('/login');
                             }
@@ -260,6 +273,18 @@ const registration_controller = {
                     console.error('Error registering account:', error);
                 else
                     console.error('An error occurred during registration.');
+
+                logger.error('Error when user attempted to register account', {
+                    meta: {
+                        event: 'REGISTER_ACCOUNT_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        error: error,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        sessionId: req.session.id 
+                    }
+                });
     
                 req.flash('error_msg', 'An error occurred during registration. Please try again.');
                 return res.redirect('/register');

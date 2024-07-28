@@ -20,8 +20,7 @@ const logger = winston.createLogger({
       host: 'logs4.papertrailapp.com', // Replace with your syslog server address
       port: 49996, // Default syslog port
       protocol: 'tls4',
-      eol: '\n',
-
+      eol: '\n'
     })
   ],
   exceptionHandlers: [
@@ -30,7 +29,7 @@ const logger = winston.createLogger({
       host: 'logs4.papertrailapp.com',
       port: 49996,
       protocol: 'tls4',
-      eol: '\n',
+      eol: '\n'
     })
   ]
 });

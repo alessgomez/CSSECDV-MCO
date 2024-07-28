@@ -94,10 +94,12 @@ const profile_controller = {
             accountDetails: {}
         }
 
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 connection.query('SELECT firstName, lastName, email, address, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?', [sessionData.accountId], function(error, results) {
@@ -116,6 +118,19 @@ const profile_controller = {
             else
                 console.error('An error occurred when loading profile page.');
 
+            logger.error('Error when user attempted to view profile', {
+                meta: {
+                    event: 'VIEW_PROFILE_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.redirect('/');
         } finally {
             if (connection)
@@ -130,10 +145,12 @@ const profile_controller = {
             partialName: ["changepw"]
         }
 
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 res.render("account", changePwPageData);
@@ -145,6 +162,19 @@ const profile_controller = {
             else
                 console.error('An error occurred when loading change password page.');
 
+            logger.error('Error when user attempted to view change password page', {
+                meta: {
+                    event: 'VIEW_CHANGE_PASSWORD_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             res.redirect('/profile');
         } finally {
             if (connection)
@@ -153,10 +183,12 @@ const profile_controller = {
     },
 
     postUpdateAccount: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
             
             if (sessionData) {
                 upload(req, res, async (err) => {
@@ -170,16 +202,6 @@ const profile_controller = {
                         if (currentDetails) {
                             // START OF RESPONSE VALIDATION
                             if (validateDetails(newDetails)) {
-                                if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
-                                    newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
-                                    const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
-                                    connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
-                                        if (error) {
-                                            throw error;
-                                        }
-                                    });
-                                }
-            
                                 if (newDetails.email !== currentDetails.email) {
                                     const emailExists = await checkEmailExists(connection, newDetails.email);
             
@@ -194,10 +216,7 @@ const profile_controller = {
                                     }
                                 }
 
-                                if (!req.file) {
-                                    req.flash('success_msg', 'Account details successfully updated.');
-                                    res.redirect("/profile");
-                                } else if (req.file) {
+                                if (req.file) {
                                     // 1. File signature 
                                     signature = req.file.buffer.toString('hex').toUpperCase();
                                     fileMimeType = getMimeType(signature);
@@ -226,12 +245,34 @@ const profile_controller = {
                                                 }
                                             });
                                         }
-                
-                                        req.flash('success_msg', 'Account details successfully updated.');
-                                        res.redirect("/profile");
                                     } else
                                         throw new Error('Invalid file.');
                                 }
+
+                                if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
+                                    newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
+                                    const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
+                                    connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
+                                        if (error) {
+                                            throw error;
+                                        }
+                                    });
+                                }
+
+                                logger.info('User successfully updated account details', {
+                                    meta: {
+                                      event: 'UPDATE_ACCOUNT_SUCCESS',
+                                      method: req.method,
+                                      url: req.originalUrl,
+                                      accountId: sessionData.accountId,
+                                      sourceIp: req.ip,
+                                      userAgent: req.headers['user-agent'],
+                                      sessionId: req.session.id 
+                                    }
+                                });
+
+                                req.flash('success_msg', 'Account details successfully updated.');
+                                res.redirect('/profile');
                             } else
                                 throw new Error('Invalid new account details.');
                         } else
@@ -241,6 +282,19 @@ const profile_controller = {
                             console.error('Error updating account details:', error);
                         else
                             console.error('An error occurred during profile update.');
+
+                        logger.error('Error when user attempted to update account details', {
+                            meta: {
+                                event: 'UPDATE_ACCOUNT_ERROR',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId,
+                                error: error,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent'],
+                                sessionId: req.session.id 
+                            }
+                        });
         
                         req.flash('error_msg', 'An error occurred during profile update. Please try again.');
                         return res.redirect('/profile');
@@ -257,6 +311,19 @@ const profile_controller = {
             else
                 console.error('An error occurred during profile update.');
 
+            logger.error('Error when user attempted to update account details', {
+                meta: {
+                    event: 'UPDATE_ACCOUNT_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+
             req.flash('error_msg', 'An error occurred during profile update. Please try again.');
             return res.redirect('/profile');
         } finally {
@@ -266,10 +333,12 @@ const profile_controller = {
     },
 
     postUpdatePassword: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 const passwordDetails = req.body;
@@ -284,6 +353,18 @@ const profile_controller = {
                                 connection.query('UPDATE accounts SET password = ?, dateEdited = ? WHERE accountId = ?', [hashedPassword, new Date(), sessionData.accountId], function(error, results) {
                                     if (error) {
                                         throw error;
+                                    }
+                                });
+
+                                logger.info('User successfully updated password', {
+                                    meta: {
+                                      event: 'UPDATE_PASSWORD_SUCCESS',
+                                      method: req.method,
+                                      url: req.originalUrl,
+                                      accountId: sessionData.accountId,
+                                      sourceIp: req.ip,
+                                      userAgent: req.headers['user-agent'],
+                                      sessionId: req.session.id 
                                     }
                                 });
 
@@ -309,7 +390,7 @@ const profile_controller = {
                                           userAgent: req.headers['user-agent'],
                                           sessionId: sessionData.sessionId
                                         }
-                                      });
+                                    });
                         
                                     res.redirect('/login');
                                 });
@@ -329,6 +410,19 @@ const profile_controller = {
             else
                 console.error('An error occurred during password update.');
 
+            logger.error('Error when user attempted to update password', {
+                meta: {
+                    event: 'UPDATE_PASSWORD_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
+            
             req.flash('error_msg', 'An error occurred during password update. Please try again.');
             return res.redirect('/changePassword');
         } finally {
@@ -338,15 +432,29 @@ const profile_controller = {
     },
 
     getDeleteAccount: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 connection.query('UPDATE accounts SET isArchived = ?, dateArchived = ? WHERE accountId = ?', [true, new Date(), sessionData.accountId], function(error, results) {
                     if (error) {
                         throw error;
+                    }
+                });
+
+                logger.info('User successfully deleted account', {
+                    meta: {
+                      event: 'DELETE_ACCOUNT_SUCCESS',
+                      method: req.method,
+                      url: req.originalUrl,
+                      accountId: sessionData.accountId, 
+                      sourceIp: req.ip,
+                      userAgent: req.headers['user-agent'],
+                      sessionId: sessionData.sessionId
                     }
                 });
 
@@ -372,7 +480,7 @@ const profile_controller = {
                           userAgent: req.headers['user-agent'],
                           sessionId: sessionData.sessionId
                         }
-                      });
+                    });
         
                     res.redirect('/login');
                 });
@@ -383,6 +491,19 @@ const profile_controller = {
                 console.error('Error deleting account:', error);
             else
                 console.error('An error occurred during account deletion.');
+
+            logger.error('Error when user attempted to delete account', {
+                meta: {
+                    event: 'DELETE_ACCOUNT_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    sessionId: req.session.id 
+                }
+            });
 
             req.flash('error_msg', 'An error occurred during account deletion. Please try again.');
             return res.redirect('/profile');

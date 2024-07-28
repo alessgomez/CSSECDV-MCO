@@ -32,7 +32,7 @@
 - bcrypt
 - sharp
 - multer
-- winston
+- winston / winston-syslog
 
 ## Dummy Credentials
 ### Admin Account
