@@ -17,15 +17,6 @@ const checkout_controller = require('../controllers/checkout_controller.js');
 
 const app = express();
 
-/* NOTE [TO REMOVE]:
-In order to include role checking before accessing private pages, make sure to call the respective
-general_controller function after calling isPrivate.
-
-Example:
-app.get('/profile', general_controller.isPrivate, verifyRole('USER'), profile_controller.getProfile);
-app.get('/adminpage', general_controller.isPrivate, verifyRole('ADMIN'), admin_controller.getAdminPage);
-*/
-
 // GETs
 app.get('/register', general_controller.isPublic, registration_controller.getRegister);
 app.get('/login', general_controller.isPublic, login_controller.getLogin);

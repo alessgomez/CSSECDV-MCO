@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const fs = require('fs');
 const axios = require('axios');
 const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
+const logger = require('../logger');
 
 const sharp = require('sharp');
 const multer = require('multer');
@@ -171,7 +173,6 @@ async function sanitizeImage(inputBuffer) {
         const sanitizedBuffer = sanitizedImage = await image.toBuffer();
         return sanitizedBuffer;
     } catch(error) {
-        console.error('Error during image sanitization: ', error);
         throw error;
     }
 }
@@ -182,105 +183,89 @@ const registration_controller = {
         res.render("register", { siteKey: config.RECAPTCHA_SITE_KEY });
     },
 
-    postAddAccount:  function (req, res) {
+    postAddAccount: function (req, res) {
         upload(req, res, async (err) => {
-            if (err) {
-                console.error(err);
-                req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
-                return res.redirect('/register');
-            }
-            if (!req.file) {
-                req.flash('error_msg', 'Please upload a file.');
-                return res.redirect('/register');
-            }
-     
-            var newAccount = {
-                first: req.body.firstname,
-                last: req.body.lastname,
-                email: req.body.email,
-                pw: req.body.psw,
-                address: req.body.address,
-                number: req.body.contactno
-            };
-
             try {
+                if (err)
+                    throw error;
+
+                if (!req.file)
+                    throw new Error('No file uploaded.');
+
+                var newAccount = {
+                    first: req.body.firstname,
+                    last: req.body.lastname,
+                    email: req.body.email,
+                    pw: req.body.psw,
+                    address: req.body.address,
+                    number: req.body.contactno
+                };
+
                 const { 'g-recaptcha-response': recaptchaResponse } = req.body;
             
-                if (!recaptchaResponse) {
-                    req.flash('error_msg', 'Invalid registration attempt. Please try again.');
-                    return res.redirect('/register');
-                }
+                if (!recaptchaResponse)
+                    throw new Error('No Recaptcha response.');
             
                 const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
                 const response = await axios.post(verificationUrl);
                 const { success } = response.data;
             
-                if (!success) {
-                    req.flash('error_msg', 'Invalid registration attempt. Please try again.');
-                    return res.redirect('/register');
-                }
+                if (!success)
+                    throw new Error('Recaptcha verification failed.');
 
                 // START OF RESPONSE VALIDATION
                 if (validateDetails(newAccount)) {
                     // 1. File signature 
                     signature = req.file.buffer.toString('hex').toUpperCase();
                     fileMimeType = getMimeType(signature);
-                    if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
-                        // 2. Image rewriting 
-                        sanitizeImage(req.file.buffer)
-                            .then(async sanitizedBuffer => {
-                                // 3. save to folder - filename!
-                                let connection = await getConnectionFromPool();
-                                let newFileName;
-                                let uuidExists = true;
-                                filePath = './public/uploads/';
-                                fileExtension = fileMimeType.split("/")[1];
+                    if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png') {
+                        // 2. Image rewriting
+                        let sanitizedBuffer = await sanitizeImage(req.file.buffer);
 
-                                while (uuidExists) {
-                                    newFileName = uuidv4() + "." + fileExtension;
-                                    uuidExists = await checkUuidExists(connection, "accounts", newFileName, "profilePicFilename");
-                                }
-                                fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
-                                newAccount['profilePicFilename'] = newFileName;
+                        // 3. save to folder - filename!
+                        let connection = await getConnectionFromPool();
+                        let newFileName;
+                        let uuidExists = true;
+                        filePath = './public/uploads/';
+                        fileExtension = fileMimeType.split("/")[1];
+
+                        while (uuidExists) {
+                            newFileName = uuidv4() + "." + fileExtension;
+                            uuidExists = await checkUuidExists(connection, "accounts", newFileName, "profilePicFilename");
+                        }
+                        fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
+                        newAccount['profilePicFilename'] = newFileName;
+
+                        // 4. save to DB.
+                        const account = await registerAccount(connection, newAccount);
     
-                                // 4. save to DB.
-                                const account = await registerAccount(connection, newAccount);
-            
-                                if (account === null) {
-                                    req.flash('error_msg', 'Invalid details.');
-                                    return res.redirect('/register');
-                                } else {
-                                    const bag = await createBag(connection, account[1]);
-                                    if (bag === null) {
-                                        req.flash('error_msg', 'Invalid details.'); //TODO: DOUBLE CHECK IF CORRECT
-                                        return res.redirect('/register');
-                                    } else {
-                                        req.flash('success_msg', 'Account successfully registered. You may log in.');
-                                        return res.redirect('/login');
-                                    }
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Image sanitization failed: ', error);
-                                throw new Error("ERROR: Image sanitization failed.");
-                            })
-                    }
-                    else {
-                        throw new Error("ERROR: Invalid file.")
-                    }
-                }
-                else {
-                    throw new Error("ERROR: Invalid registration details.");
-                }
+                        if (account === null)
+                            throw new Error('Account with the given email already exists.');
+                        else {
+                            const bag = await createBag(connection, account[1]);
+                            if (bag === null)
+                                throw new Error('Account with the given email already has a bag.');
+                            else {
+                                connection.release();
+                                req.flash('success_msg', 'Account successfully registered. You may log in.');
+                                return res.redirect('/login');
+                            }
+                        }
+                    } else
+                        throw new Error('Invalid file.');
+                } else
+                    throw new Error('Invalid registration details.');
             } catch (error) {
+                if (debug)
+                    console.error('Error registering account:', error);
+                else
+                    console.error('An error occurred during registration.');
+    
                 req.flash('error_msg', 'An error occurred during registration. Please try again.');
-                console.log(error);
-                return res.redirect('/login');
+                return res.redirect('/register');
             }
         })
-
     }
-
 }
 
 module.exports = {

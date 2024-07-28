@@ -33,15 +33,15 @@ async function verifyLogin(connection, email, password) {
 
         if (results.length === 0) {
           resolve(null); // account not found
-        } 
-
-        const account = results[0];
-        const passwordMatch = await bcrypt.compare(password, account.password);
-
-        if (passwordMatch) {
-          resolve(account.accountId); // Passwords match, return account data
         } else {
-          resolve(null); // Passwords do not match
+          const account = results[0];
+          const passwordMatch = await bcrypt.compare(password, account.password);
+
+          if (passwordMatch) {
+            resolve(account.accountId); // Passwords match, return account data
+          } else {
+            resolve(null); // Passwords do not match
+          }
         }
       }
     });

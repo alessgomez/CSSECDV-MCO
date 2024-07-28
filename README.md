@@ -20,7 +20,7 @@
 ### NPM
 - express
 - hbs
-- mysql
+- mysql2
 - express-handlebars
 - express-session
 - express-mysql-session
@@ -32,6 +32,7 @@
 - bcrypt
 - sharp
 - multer
+- winston
 
 ## Dummy Credentials
 ### Admin Account
