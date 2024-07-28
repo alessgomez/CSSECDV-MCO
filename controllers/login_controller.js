@@ -3,10 +3,9 @@ const bcrypt = require("bcrypt");
 const fs = require('fs');
 const axios = require('axios');
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const config = JSON.parse(fs.readFileSync('config.json'));
 const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
-const debug = config.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 
 // Rate limiter for IP addresses
@@ -132,13 +131,13 @@ async function sendOneTimeCode(email, code) {
     secure: false,//true
     port: 587,//465
     auth: {
-        user: config.user, 
-        pass: config.pass 
+        user: process.env.OTC_USER, 
+        pass: process.env.OTC_PASS 
     }
   });
 
   const mailOptions = {
-      from: config.user,
+      from: process.env.OTC_USER,
       to: email,
       subject: 'One-Time Code for Login',
       text: `Your one-time code for login is: ${code}`
@@ -155,7 +154,7 @@ function generateOneTimeCode() {
 const login_controller = {
 
   getLogin: function (req, res) {
-      res.render("login", { siteKey: config.RECAPTCHA_SITE_KEY });
+      res.render("login", { siteKey: process.env.RECAPTCHA_SITE_KEY });
   },
 
   postVerifyAccount: async (req, res) => {
@@ -244,7 +243,7 @@ const login_controller = {
           return res.redirect('/login');
         }
 
-        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
         const response = await axios.post(verificationUrl);
         const { success } = response.data;
 

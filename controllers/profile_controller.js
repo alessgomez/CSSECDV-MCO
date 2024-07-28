@@ -7,7 +7,6 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('config.json'));
 
 const checkUuidExists = (connection, newId) => {
     return new Promise((resolve, reject) => {
@@ -266,7 +265,7 @@ const profile_controller = {
                     if (await bcrypt.compare(passwordDetails.oldPsw, currentAccount.password)) {
                         if (validatePassword(passwordDetails.newPsw)) {
                             if (!await bcrypt.compare(passwordDetails.newPsw, currentAccount.password)) {
-                                const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, config.saltRounds);
+                                const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, process.env.SALT_ROUNDS);
 
                                 connection.query('UPDATE accounts SET password = ?, dateEdited = ? WHERE accountId = ?', [hashedPassword, new Date(), sessionData.accountId], function(error, results) {
                                     if (error) {

@@ -2,8 +2,6 @@ const { getConnectionFromPool } = require('../db');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
 const axios = require('axios');
-const config = JSON.parse(fs.readFileSync('config.json'));
-
 const sharp = require('sharp');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
@@ -67,7 +65,7 @@ async function registerAccount(connection, newAccount) {
                         uuidExists = await checkUuidExists(connection, "accounts", newId, "accountId");
                     }
 
-                    error, newAccount.pw = await bcrypt.hash(newAccount.pw, config.saltRounds);
+                    error, newAccount.pw = await bcrypt.hash(newAccount.pw, process.env.SALT_ROUNDS);
 
                     if (error) {
                         reject(error);
@@ -179,7 +177,7 @@ async function sanitizeImage(inputBuffer) {
 const registration_controller = {
     
     getRegister: function (req, res) {
-        res.render("register", { siteKey: config.RECAPTCHA_SITE_KEY });
+        res.render("register", { siteKey: process.env.RECAPTCHA_SITE_KEY });
     },
 
     postAddAccount:  function (req, res) {
@@ -211,7 +209,7 @@ const registration_controller = {
                     return res.redirect('/register');
                 }
             
-                const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${config.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
+                const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaResponse}`;
                 const response = await axios.post(verificationUrl);
                 const { success } = response.data;
             

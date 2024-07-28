@@ -1,36 +1,32 @@
 const express = require("express");
 const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
-const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 10000;
 const session = require('express-session');
 const flash = require('connect-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const options = {
-    host: 'localhost',
-    port: 3306,
-    user:'root',
-    password: '',
-	database:'the_hungry_sibs',
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
     clearExpired: true,
     checkExpirationInterval: 1000 * 60 * 5, 
-    expiration: 1000 * 60 * 15
+    expiration: 1000 * 60 * 15,
+    connectTimeout: 10000,
 };
 const sessionStore = new MySQLStore(options);
-
-const key = fs.readFileSync(path.join(__dirname, 'key.pem'));
-const cert = fs.readFileSync(path.join(__dirname, 'cert.pem'));
-
-const server = https.createServer({ key: key, cert: cert }, app);
 
 app.set("view engine", "hbs");
 app.engine("hbs", exphbs.engine({extname: "hbs"}));
 app.use(express.urlencoded({extended: true}));
 app.use(express.static("public"));
+app.enable('trust proxy');
 
 app.use(session({
     key: 'thehungrycookie',
@@ -38,11 +34,12 @@ app.use(session({
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
         secure: true, 
         maxAge: 1000 * 60 * 15, 
         httpOnly: true,
-        sameSite: 'strict' // Cookies only included when navigating within the same site to mitigate CSRF attacks
+        sameSite: 'none'
     }
 }));
 
@@ -64,6 +61,18 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-server.listen(port, function() {
-    console.log("Listening to port " + port);
+console.log('port: ' + port)
+
+app.listen(port, function() {
+    console.log(`Server is running on port ${port}`);
+}).on('error', (err) => {
+    logger.error('Error when starting app', {
+        meta: {
+            event: 'APP_START_ERROR',
+            error: err,
+        }
+      });
+
+    console.error('Server error:', err);
 });
+

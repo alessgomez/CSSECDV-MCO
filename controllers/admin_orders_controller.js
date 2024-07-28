@@ -5,8 +5,7 @@ const window = new JSDOM('').window;
 const fs = require('fs');
 const { getSessionDataEntry } = require('./login_controller');
 const DOMPurify = createDOMPurify(window);
-const config = JSON.parse(fs.readFileSync('config.json'));
-const debug = config.DEBUG;
+const debug = process.env.DEBUG === 'true';
 
 const admin_orders_controller = {
     getViewOrders: async (req, res) => {
