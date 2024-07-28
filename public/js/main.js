@@ -13,17 +13,17 @@ $(document).ready(function(){
         bag.classList.toggle("hide");
     })
 
-    /*$("#searchbar-input").keyup(function(){
+    $("#searchbar-input").keyup(function(){
         var keyupTimer;
         clearTimeout(keyupTimer);
         keyupTimer = setTimeout(function(){
             var q = $("#searchbar-input").val();
 
             if (q == "")
-                window.location.href = "http://localhost:3000/menu";  
+                window.location.href = "https://localhost:3000/menu";  
 
             else
-                window.location.href = "http://localhost:3000/search?q=" + q;
+                window.location.href = "https://localhost:3000/search?q=" + q;
         }, 1500);
-    })*/
+    })
 });

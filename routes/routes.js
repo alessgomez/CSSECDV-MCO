@@ -14,6 +14,7 @@ const { edit_product_controller } = require('../controllers/edit_product_control
 const admin_feedbacks_controller = require('../controllers/admin_feedbacks_controller.js');
 const {bag_controller} = require('../controllers/bag_controller.js');
 const checkout_controller = require('../controllers/checkout_controller.js');
+const search_controller = require('../controllers/search_controller.js');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.get('/viewOrdersPage', general_controller.isPrivate, verifyRole('ADMIN'), ad
 app.get('/viewFeedbacksPage', general_controller.isPrivate, verifyRole('ADMIN'), admin_feedbacks_controller.getViewFeedbacks)
 app.get('/getItemQuantity', bag_controller.getItemQuantity);
 app.get('/checkout', checkout_controller.getCheckout);
+app.get('/search', general_controller.isPrivate, verifyRole('USER'), search_controller.getSearchPage);
 
 
 // POSTs
