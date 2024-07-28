@@ -3,6 +3,7 @@ const exphbs = require("express-handlebars");
 const routes = require("./routes/routes.js");
 const fs = require("fs");
 const path = require("path");
+const https = require("https");
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -61,9 +62,13 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-console.log('port: ' + port)
+const server = https.createServer(app);
 
-app.listen(port, function() {
+// Set serverTimeout and headersTimeout
+server.keepAliveTimeout = 2 * 60 * 1000; // 2 minutes
+server.headersTimeout = 2 * 60 * 1000; // 2 minutes
+
+server.listen(port, function() {
     console.log(`Server is running on port ${port}`);
 }).on('error', (err) => {
     logger.error('Error when starting app', {
@@ -71,8 +76,7 @@ app.listen(port, function() {
             event: 'APP_START_ERROR',
             error: err,
         }
-      });
+    });
 
     console.error('Server error:', err);
 });
-
