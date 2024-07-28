@@ -61,8 +61,6 @@ app.use((req, res, next) => {
 
 app.use("/", routes);
 
-console.log('port: ' + port)
-
 app.listen(port, function() {
     console.log(`Server is running on port ${port}`);
 }).on('error', (err) => {
