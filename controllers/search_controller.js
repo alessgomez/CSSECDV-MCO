@@ -23,11 +23,14 @@ const search_controller = {
         try {
             const sql = "SELECT productId, name, price, imageFilename FROM products WHERE isArchived = 0 AND name = ? ORDER BY category ASC"
             values = [req.query.q];
-            console.log("WENT INTO TRY")
             connection.query(sql, values, async (error, results) => {
                 if(error) {
                     throw error;
                 } else {
+                    searchPageData.nResults = results.length;
+
+                    console.log(results.length);
+                    
                     searchPageData.q = req.query.q;
 
                     searchPageData.results = results.map(result => {
@@ -43,9 +46,6 @@ const search_controller = {
                         };
                         
                     });
-
-                    //Check Number of Results that output.
-                    //searchPageData.nResults = searchPageData.result.
 
                     res.render('search', searchPageData);
                 }
