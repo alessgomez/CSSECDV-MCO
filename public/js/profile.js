@@ -183,7 +183,7 @@ $(document).ready(function() {
                         input.type = "text";
 
                     input.name = fieldVal.id;
-                    input.classList.add(fieldVal.classList, "inputDetails");
+                    input.classList.add(...fieldVal.classList, "inputDetails");
                     input.value = fieldText;
                     child.replaceChild(input, fieldVal);
                     currentValues[fieldVal.id] = fieldText;
