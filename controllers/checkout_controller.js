@@ -298,13 +298,17 @@ const checkout_controller = {
                 deliveryFee: null,
                 ETAMin: null,
                 ETAMax: null,
-                notes: DOMPurify.sanitize(req.body.notes),
-                changeFor: DOMPurify.sanitize(req.body.changeFor)
+                notes: req.body.notes,
+                changeFor: req.body.changeFor
             }
         
             if (!validateDetails(newOrder)) {
                 throw new Error("Invalid order details.");
             }
+
+            //sanitize input 
+            newOrder.notes = DOMPurify.sanitize(newOrder.notes);
+            newOrder.changeFor = DOMPurify.sanitize(newOrder.changeFor);
 
             // add order
             connection.beginTransaction(async(err) => {
