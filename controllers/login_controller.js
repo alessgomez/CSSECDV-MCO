@@ -159,10 +159,16 @@ const login_controller = {
   },
 
   postVerifyAccount: async (req, res) => {
+    function getByteLengthBlob(string, encoding = 'utf-8') {
+      const blob = new Blob([string], { type: `text/plain;charset=${encoding}` });
+      return blob.size;
+    }
 
     function validateEmail(email){
         const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
-        return emailRegex.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255
+        const emailLocalLength = getByteLengthBlob(newAccount.email.substr(0, newAccount.email.indexOf('@')));
+        const emailDomainLength = getByteLengthBlob(newAccount.email.substr(newAccount.email.indexOf('@')));
+        return emailRegex.test(newAccount.email) && emailLocalLength <= 64 && emailDomainLength <= 255;
     }
 
     function validatePW (pw) {
@@ -289,7 +295,6 @@ const login_controller = {
 
         if (accountId) {
             const oneTimeCode = generateOneTimeCode();
-            console.log(oneTimeCode);
             const sessionDataEntry = await getSessionDataEntry(connection, req.session.id)
 
             if (!sessionDataEntry) {

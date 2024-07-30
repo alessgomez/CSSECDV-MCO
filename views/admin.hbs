@@ -23,20 +23,23 @@
                     <td>{{this.phoneNumber}}</td>
                     <td>{{this.dateCreated}}</td>
 
-                    {{#if this.dateEdited}}
-                        {{this.dateEdited}}
-                    {{else}}
-                        <td>—</td>
-                    {{/if}}
+                    <td>
+                        {{#if this.dateEdited}}
+                            {{this.dateEdited}}
+                        {{else}}
+                            —
+                        {{/if}}
+                    </td>
 
-                    {{#if this.dateDeleted}}
-                        {{this.dateDeleted}}
-                    {{else}}
-                        <td>—</td>
-                    {{/if}}
+                    <td>
+                        {{#if this.dateArchived}}
+                            {{this.dateArchived}}
+                        {{else}}
+                            —
+                        {{/if}}
+                    </td>
                 </tr>
             {{/each}}
         </table>
-
     </div>
 </div>

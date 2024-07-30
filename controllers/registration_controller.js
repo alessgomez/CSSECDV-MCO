@@ -140,13 +140,20 @@ function getMimeType(signature) {
     }
 }
 
+function getByteLengthBlob(string, encoding = 'utf-8') {
+    const blob = new Blob([string], { type: `text/plain;charset=${encoding}` });
+    return blob.size;
+}
+
 function validateDetails(newAccount) {
     const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/;
     const nameValid = nameRegex.test(newAccount.first) && nameRegex.test(newAccount.last);
 
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
-    const emailValid = emailRegex.test(newAccount.email) && newAccount.email.substr(0, newAccount.email.indexOf('@')).length <= 64 && newAccount.email.substr(newAccount.email.indexOf('@')).length <= 255
-    
+    const emailLocalLength = getByteLengthBlob(newAccount.email.substr(0, newAccount.email.indexOf('@')));
+    const emailDomainLength = getByteLengthBlob(newAccount.email.substr(newAccount.email.indexOf('@')));
+    const emailValid = emailRegex.test(newAccount.email) && emailLocalLength <= 64 && emailDomainLength <= 255;
+
     const addressRegex = /^([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9a-zA-Z ,.#-]+),\s*([0-9]{4})$/;
     const addressValid = addressRegex.test(newAccount.address) && newAccount.address.length <= 160;
 
