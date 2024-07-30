@@ -6,16 +6,20 @@
         </div>
             <table class= "userTable">
             <tr>
-                <th>Feedback No.</th>
+                <th>#</th>
+                <th>Feedback ID</th>
                 <th>Subject</th>
                 <th>Message</th>
+                <th>Date Submitted</th>
                 <th></th>
             </tr>
             {{#each feedbacks}}
                 <tr>
+                    <td>{{this.incrementedIndex}}</td>
                     <td>{{this.feedbackId}}</td>
                     <td>{{this.subject}}</td>
                     <td>{{this.message}}</td>
+                    <td>{{this.dateSubmitted}}</td>
 
                     <td class="deleteBtnCell" ><button class="deleteBtn" id = "delete" data-id="{{this.feedbackId}}">Delete</button></td>
                 </tr>
