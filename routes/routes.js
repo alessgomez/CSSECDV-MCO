@@ -44,8 +44,8 @@ app.get('/contact', general_controller.isPrivate, verifyRole('USER'), bag_contro
 app.get('/getItemQuantity', general_controller.isPrivate, verifyRole('USER'), bag_controller.getItemQuantity);
 app.get('/getBagTotal', general_controller.isPrivate, verifyRole('USER'), bag_controller.getBagTotal);
 app.get('/confirmation/:id', general_controller.isPrivate, verifyRole('USER'), bag_controller.getBag, confirmation_controller.getConfirmation);
-app.get('/orderhistory', general_controller.isPrivate, verifyRole('USER'), order_history_controller.getOrderHistory);
-app.get('/orderhistory/:index', general_controller.isPrivate, verifyRole('USER'), order_history_controller.getOrderDetails);
+app.get('/orderhistory', general_controller.isPrivate, verifyRole('USER'), bag_controller.getBag, order_history_controller.getOrderHistory);
+app.get('/orderhistory/:index', general_controller.isPrivate, verifyRole('USER'), bag_controller.getBag, order_history_controller.getOrderDetails);
 
 
 // POSTs
