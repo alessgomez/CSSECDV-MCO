@@ -13,6 +13,7 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
 const { getSessionDataEntry } = require('./login_controller.js');
+const geoip = require('geoip-lite');
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
