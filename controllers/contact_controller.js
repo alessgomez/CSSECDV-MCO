@@ -44,11 +44,13 @@ function whiteListValidation(text) { // TODO: double check if correct
                 break;
             }
         }
-
         if (!isValid) {
             return false;
         }
     }
+
+    console.log("DOMPurify.sanitized text")
+    console.log(text)
     return true;
 }
 
@@ -95,14 +97,16 @@ const contact_controller = {
             const newFeedback = {
                 feedbackId: null,
                 accountId: null,
-                subject: DOMPurify.sanitize(req.body.subject),
-                message: DOMPurify.sanitize(req.body.message),
+                subject: req.body.subject,
+                message: req.body.message,
                 dateSubmitted: null
             }
 
             if (!validateDetails(newFeedback)) {
                 throw new Error("Invalid feedback details.");
             }
+            newFeedback.subject = DOMPurify.sanitize(newFeedback.subject);
+            newFeedback.message = DOMPurify.sanitize(newFeedback.message);
 
             let newId;
             let uuidExists = true;
