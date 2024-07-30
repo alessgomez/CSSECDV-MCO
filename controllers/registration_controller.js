@@ -2,8 +2,7 @@ const { getConnectionFromPool } = require('../db');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
 const axios = require('axios');
-const config = JSON.parse(fs.readFileSync('config.json'));
-const debug = config.DEBUG;
+const debug = process.env.DEBUG;
 const logger = require('../logger');
 
 const sharp = require('sharp');

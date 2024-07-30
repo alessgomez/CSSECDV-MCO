@@ -9,8 +9,7 @@ const DOMPurify = createDOMPurify(window);
 const { v4: uuidv4 } = require('uuid');
 
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('config.json'));
-const debug = config.DEBUG;
+const debug = process.env.DEBUG;
 const logger = require('../logger');
 
 const MAX_LENGTH = 50; 

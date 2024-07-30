@@ -5,8 +5,7 @@ const fs = require('fs');
 const { JSDOM } = require('jsdom');
 const session = require('express-session');
 const window = new JSDOM('').window;
-const config = JSON.parse(fs.readFileSync('config.json'));
-const debug = config.DEBUG;
+const debug = process.env.DEBUG;
 
 function getOrderId (connection, accountId, index){
     return new Promise((resolve, reject) => {

@@ -5,8 +5,7 @@ const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('config.json'));
-const debug = config.DEBUG;
+const debug = process.env.DEBUG;
 const logger = require('../logger');
 
 const menu_controller = {
