@@ -255,8 +255,7 @@ const registration_controller = {
                                       url: req.originalUrl,
                                       accountId: account[1], 
                                       sourceIp: req.ip,
-                                      userAgent: req.headers['user-agent'],
-                                      sessionId: req.session.sessionId
+                                      userAgent: req.headers['user-agent']
                                     }
                                 });
 
@@ -281,8 +280,7 @@ const registration_controller = {
                         url: req.originalUrl,
                         error: error,
                         sourceIp: req.ip,
-                        userAgent: req.headers['user-agent'],
-                        sessionId: req.session.id 
+                        userAgent: req.headers['user-agent']
                     }
                 });
     

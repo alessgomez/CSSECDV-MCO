@@ -126,11 +126,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    userAgent: req.headers['user-agent']
                 }
             });
 
+            req.flash('error_msg', 'An error occurred. Please try again.');
             res.redirect('/');
         } finally {
             if (connection)
@@ -170,11 +170,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    userAgent: req.headers['user-agent']
                 }
             });
 
+            req.flash('error_msg', 'An error occurred. Please try again.');
             res.redirect('/profile');
         } finally {
             if (connection)
@@ -266,8 +266,7 @@ const profile_controller = {
                                       url: req.originalUrl,
                                       accountId: sessionData.accountId,
                                       sourceIp: req.ip,
-                                      userAgent: req.headers['user-agent'],
-                                      sessionId: req.session.id 
+                                      userAgent: req.headers['user-agent']
                                     }
                                 });
 
@@ -291,8 +290,7 @@ const profile_controller = {
                                 accountId: sessionData.accountId,
                                 error: error,
                                 sourceIp: req.ip,
-                                userAgent: req.headers['user-agent'],
-                                sessionId: req.session.id 
+                                userAgent: req.headers['user-agent']
                             }
                         });
         
@@ -319,8 +317,7 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    userAgent: req.headers['user-agent'] 
                 }
             });
 
@@ -363,8 +360,7 @@ const profile_controller = {
                                       url: req.originalUrl,
                                       accountId: sessionData.accountId,
                                       sourceIp: req.ip,
-                                      userAgent: req.headers['user-agent'],
-                                      sessionId: req.session.id 
+                                      userAgent: req.headers['user-agent']
                                     }
                                 });
 
@@ -387,8 +383,7 @@ const profile_controller = {
                                           url: req.originalUrl,
                                           accountId: sessionData.accountId, 
                                           sourceIp: req.ip,
-                                          userAgent: req.headers['user-agent'],
-                                          sessionId: sessionData.sessionId
+                                          userAgent: req.headers['user-agent']
                                         }
                                     });
                         
@@ -418,8 +413,7 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    userAgent: req.headers['user-agent']
                 }
             });
             
@@ -453,8 +447,7 @@ const profile_controller = {
                       url: req.originalUrl,
                       accountId: sessionData.accountId, 
                       sourceIp: req.ip,
-                      userAgent: req.headers['user-agent'],
-                      sessionId: sessionData.sessionId
+                      userAgent: req.headers['user-agent']
                     }
                 });
 
@@ -477,8 +470,7 @@ const profile_controller = {
                           url: req.originalUrl,
                           accountId: sessionData.accountId, 
                           sourceIp: req.ip,
-                          userAgent: req.headers['user-agent'],
-                          sessionId: sessionData.sessionId
+                          userAgent: req.headers['user-agent']
                         }
                     });
         
@@ -500,8 +492,7 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    userAgent: req.headers['user-agent']
                 }
             });
 

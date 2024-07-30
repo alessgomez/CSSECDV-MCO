@@ -12,6 +12,7 @@
 *.vsix
 
 .env
+logs
 
 # Node.js
 node_modules/
