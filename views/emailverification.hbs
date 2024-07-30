@@ -1,0 +1,45 @@
+<html>
+    <head>
+		<title>The Hungry Sibs</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="all" href="css/forms.css"/>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script type="text/javascript" src="js/login.js"></script>
+    </head>
+
+    <body>
+        <div class="split left">
+            <div class="centered">
+              <img src="images/logo.png">
+              <h1 id="welcome">Welcome Aboard!</h1>
+              <p id="description">Fill in your account details to begin your Hungry Sibs journey.</p>
+            </div>
+          </div>
+          
+          <div class="split right">
+              <div class="container">
+                <h1 id="header">Email Verification</h1>
+                <form action="/verifyEmail" method="post">
+                    <label for="otc"><b>One-Time Code</b></label><br>
+                    <input type="text" id="otc" placeholder="Enter OTC" name="otc" required><br>
+
+                    <div class="break"></div>
+
+                    <p id="error">{{error_msg}}</p>
+                    <p id="success">{{success_msg}}</p>
+
+                    <button type="submit" id="signin-submit"><strong>Submit</strong></button>
+                   
+                </form>
+
+                <div class="resend-container">
+                    <form action="/resendOTC" method="post">
+                        <button type="submit" id="resend-code"><strong>Resend Code</strong></button>
+                    </form>
+                </div>
+
+            </div>
+          </div>
+    </body>
+</html>
