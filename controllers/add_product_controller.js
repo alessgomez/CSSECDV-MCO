@@ -193,7 +193,6 @@ const add_product_controller = {
                         method: req.method,
                         url: req.originalUrl,
                         accountId: sessionData.accountId,
-                        productId: productId, 
                         error: error,
                         sourceIp: req.ip,
                         userAgent: req.headers['user-agent'],
