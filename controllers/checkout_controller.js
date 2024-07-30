@@ -95,7 +95,7 @@ async function removeBagItems(connection, bagId) {
     })
 }
 
-async function addOrder(connection, newOrder, bagId) {
+async function addOrder(connection, newOrder, bag) {
     try {
         let newId;
         let uuidExists = true;
@@ -104,11 +104,6 @@ async function addOrder(connection, newOrder, bagId) {
             newId = uuidv4();
             uuidExists = await checkOrderUuidExists(connection, newId);
         }
-        
-        const bag = await getBag(connection, bagId);
-
-        if (!bag)
-            throw new Error('Bag not found');
 
         let currentDate = new Date();
         let datePlus20 = new Date();
@@ -310,12 +305,20 @@ const checkout_controller = {
             newOrder.notes = DOMPurify.sanitize(newOrder.notes);
             newOrder.changeFor = DOMPurify.sanitize(newOrder.changeFor);
 
+            const bag = await getBag(connection, bagId);
+
+            if (!bag)
+                throw new Error('Bag not found');
+
+            if (newOrder.changeFor < parseFloat(DOMPurify.sanitize(bag.total)))
+                throw new Error('Invalid order details');
+
             // add order
             connection.beginTransaction(async(err) => {
                 if (err) throw err;
 
                 try {
-                    const orderId = await addOrder(connection, newOrder, bagId);
+                    const orderId = await addOrder(connection, newOrder, bag);
             
                     // add orderitems 
                     if (!orderId) {
