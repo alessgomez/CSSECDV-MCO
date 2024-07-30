@@ -24,13 +24,15 @@ const admin_feedbacks_controller = {
             connection = await getConnectionFromPool();
             sessionData = await getSessionDataEntry(connection, req.session.id);
             
-            const sql = "SELECT feedbackId, subject, message FROM feedbacks";
+            const sql = "SELECT feedbackId, subject, message, dateSubmitted FROM feedbacks ORDER BY dateSubmitted DESC;";
             const [results] = await connection.promise().query(sql);
             
-            data.feedbacks = results.map(feedback => {
+            data.feedbacks = results.map((feedback, index) => {
+                feedback.incrementedIndex = parseInt(index + 1);
                 feedback.feedbackId = DOMPurify.sanitize(feedback.feedbackId);
                 feedback.subject = DOMPurify.sanitize(feedback.subject);
                 feedback.message = DOMPurify.sanitize(feedback.message);
+                feedback.dateSubmitted = DOMPurify.sanitize(feedback.dateSubmitted);
                 return feedback;
             });
     
