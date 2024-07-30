@@ -12,6 +12,7 @@ const DOMPurify = createDOMPurify(window);
 const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 const { getSessionDataEntry } = require('./login_controller.js');
+const geoip = require('geoip-lite');
 
 // Initialize upload middleware and add file size limit
 const upload = multer({

@@ -249,12 +249,16 @@ const registration_controller = {
 
                                 logger.info('User successfully registered account', {
                                     meta: {
-                                      event: 'REGISTER_ACCOUNT_SUCCESS',
-                                      method: req.method,
-                                      url: req.originalUrl,
-                                      accountId: account[1], 
-                                      sourceIp: req.ip,
-                                      userAgent: req.headers['user-agent']
+                                        event: 'REGISTER_ACCOUNT_SUCCESS',
+                                        method: req.method,
+                                        url: req.originalUrl,
+                                        accountId: account[1], 
+                                        sourceIp: req.ip,
+                                        userAgent: req.headers['user-agent'],
+                                        hostname: req.hostname,
+                                        protocol: req.protocol,
+                                        port: req.socket.localPort,
+                                        geo:geoip.lookup(req.ip)
                                     }
                                 });
 
@@ -279,7 +283,11 @@ const registration_controller = {
                         url: req.originalUrl,
                         error: error,
                         sourceIp: req.ip,
-                        userAgent: req.headers['user-agent']
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 });
     

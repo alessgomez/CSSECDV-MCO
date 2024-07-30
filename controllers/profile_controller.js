@@ -138,7 +138,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -183,7 +187,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -274,12 +282,16 @@ const profile_controller = {
 
                                 logger.info('User successfully updated account details', {
                                     meta: {
-                                      event: 'UPDATE_ACCOUNT_SUCCESS',
-                                      method: req.method,
-                                      url: req.originalUrl,
-                                      accountId: sessionData.accountId,
-                                      sourceIp: req.ip,
-                                      userAgent: req.headers['user-agent']
+                                        event: 'UPDATE_ACCOUNT_SUCCESS',
+                                        method: req.method,
+                                        url: req.originalUrl,
+                                        accountId: sessionData.accountId,
+                                        sourceIp: req.ip,
+                                        userAgent: req.headers['user-agent'],
+                                        hostname: req.hostname,
+                                        protocol: req.protocol,
+                                        port: req.socket.localPort,
+                                        geo:geoip.lookup(req.ip)
                                     }
                                 });
 
@@ -303,7 +315,11 @@ const profile_controller = {
                                 accountId: sessionData.accountId,
                                 error: error,
                                 sourceIp: req.ip,
-                                userAgent: req.headers['user-agent']
+                                userAgent: req.headers['user-agent'],
+                                hostname: req.hostname,
+                                protocol: req.protocol,
+                                port: req.socket.localPort,
+                                geo:geoip.lookup(req.ip)
                             }
                         });
         
@@ -330,7 +346,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'] 
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -368,12 +388,16 @@ const profile_controller = {
 
                                 logger.info('User successfully updated password', {
                                     meta: {
-                                      event: 'UPDATE_PASSWORD_SUCCESS',
-                                      method: req.method,
-                                      url: req.originalUrl,
-                                      accountId: sessionData.accountId,
-                                      sourceIp: req.ip,
-                                      userAgent: req.headers['user-agent']
+                                        event: 'UPDATE_PASSWORD_SUCCESS',
+                                        method: req.method,
+                                        url: req.originalUrl,
+                                        accountId: sessionData.accountId,
+                                        sourceIp: req.ip,
+                                        userAgent: req.headers['user-agent'],
+                                        hostname: req.hostname,
+                                        protocol: req.protocol,
+                                        port: req.socket.localPort,
+                                        geo:geoip.lookup(req.ip)
                                     }
                                 });
 
@@ -391,12 +415,16 @@ const profile_controller = {
                                     
                                     logger.info('User successfully logged out', {
                                         meta: {
-                                          event: 'USER_LOGOUT_SUCCESS',
-                                          method: req.method,
-                                          url: req.originalUrl,
-                                          accountId: sessionData.accountId, 
-                                          sourceIp: req.ip,
-                                          userAgent: req.headers['user-agent']
+                                            event: 'USER_LOGOUT_SUCCESS',
+                                            method: req.method,
+                                            url: req.originalUrl,
+                                            accountId: sessionData.accountId, 
+                                            sourceIp: req.ip,
+                                            userAgent: req.headers['user-agent'],
+                                            hostname: req.hostname,
+                                            protocol: req.protocol,
+                                            port: req.socket.localPort,
+                                            geo:geoip.lookup(req.ip)
                                         }
                                     });
                         
@@ -426,7 +454,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
             
@@ -455,12 +487,16 @@ const profile_controller = {
 
                 logger.info('User successfully deleted account', {
                     meta: {
-                      event: 'DELETE_ACCOUNT_SUCCESS',
-                      method: req.method,
-                      url: req.originalUrl,
-                      accountId: sessionData.accountId, 
-                      sourceIp: req.ip,
-                      userAgent: req.headers['user-agent']
+                        event: 'DELETE_ACCOUNT_SUCCESS',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId, 
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 });
 
@@ -478,12 +514,16 @@ const profile_controller = {
                     
                     logger.info('User successfully logged out', {
                         meta: {
-                          event: 'USER_LOGOUT_SUCCESS',
-                          method: req.method,
-                          url: req.originalUrl,
-                          accountId: sessionData.accountId, 
-                          sourceIp: req.ip,
-                          userAgent: req.headers['user-agent']
+                            event: 'USER_LOGOUT_SUCCESS',
+                            method: req.method,
+                            url: req.originalUrl,
+                            accountId: sessionData.accountId, 
+                            sourceIp: req.ip,
+                            userAgent: req.headers['user-agent'],
+                            hostname: req.hostname,
+                            protocol: req.protocol,
+                            port: req.socket.localPort,
+                            geo:geoip.lookup(req.ip)
                         }
                     });
         
@@ -505,7 +545,11 @@ const profile_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 

@@ -30,7 +30,8 @@ const order_history_controller = {
         const orderHistoryPageData = {
             style: ["navbar", "index", "orderhistory"],
             orders: [],
-            partialName: []
+            partialName: [],
+            bag: req.bag
         }
         let connection = await getConnectionFromPool();
         let sessionData = await getSessionDataEntry(connection, req.session.id);
@@ -77,6 +78,7 @@ const order_history_controller = {
             currOrder: [],
             date: [],
             particulars: [],
+            bag: req.bag
         }
 
         let connection = await getConnectionFromPool();
