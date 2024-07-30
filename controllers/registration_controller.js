@@ -2,7 +2,7 @@ const { getConnectionFromPool } = require('../db');
 const bcrypt = require("bcrypt");
 const fs = require('fs');
 const axios = require('axios');
-const debug = process.env.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 const geoip = require('geoip-lite');
 
@@ -69,7 +69,7 @@ async function registerAccount(connection, newAccount) {
                         uuidExists = await checkUuidExists(connection, "accounts", newId, "accountId");
                     }
 
-                    error, newAccount.pw = await bcrypt.hash(newAccount.pw, process.env.SALT_ROUNDS);
+                    error, newAccount.pw = await bcrypt.hash(newAccount.pw, parseInt(process.env.SALT_ROUNDS));
 
                     if (error) {
                         reject(error);

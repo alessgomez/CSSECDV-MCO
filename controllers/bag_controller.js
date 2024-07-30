@@ -7,7 +7,7 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
 const fs = require('fs');
-const debug = process.env.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 
 const checkUuidExists = (connection, newId, field) => {

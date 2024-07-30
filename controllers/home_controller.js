@@ -5,7 +5,7 @@ const fs = require('fs');
 const { getSessionDataEntry } = require('./login_controller');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
-const debug = process.env.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const geoip = require('geoip-lite');
 
 const home_controller = {

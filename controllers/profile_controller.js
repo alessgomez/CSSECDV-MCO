@@ -7,7 +7,7 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
-const debug = process.env.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
@@ -383,7 +383,7 @@ const profile_controller = {
                     if (await bcrypt.compare(passwordDetails.oldPsw, currentAccount.password)) {
                         if (validatePassword(passwordDetails.newPsw)) {
                             if (!await bcrypt.compare(passwordDetails.newPsw, currentAccount.password)) {
-                                const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, process.env.SALT_ROUNDS);
+                                const hashedPassword = await bcrypt.hash(passwordDetails.newPsw, parseInt(process.env.SALT_ROUNDS));
 
                                 connection.query('UPDATE accounts SET password = ?, dateEdited = ? WHERE accountId = ?', [hashedPassword, new Date(), sessionData.accountId], function(error, results) {
                                     if (error) {

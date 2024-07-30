@@ -6,7 +6,7 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
-const debug = process.env.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 
 const MAX_LENGTH_SUBJECT = 50; 

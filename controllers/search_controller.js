@@ -8,7 +8,7 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
-const debug = process.env.DEBUG;
+const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
 const { getSessionDataEntry } = require('./login_controller.js');
 const geoip = require('geoip-lite');
