@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var update = document.getElementById("update");
     var save = document.getElementById("save");
-    var change = document.getElementById("changepw");
+    var cancel = document.getElementById("cancel");
     var profilePicInput = document.getElementById("inputFile");
     var error_msg = document.getElementById("error");
     var inputFields;
@@ -195,6 +195,7 @@ $(document).ready(function() {
         }
 
         save.classList.remove("hide");
+        cancel.classList.remove("hide");
         update.classList.add("hide");
         inputFields = document.getElementsByClassName("inputDetails");
 
@@ -206,7 +207,7 @@ $(document).ready(function() {
         }
     }
 
-    change.onclick = function () {
-        window.location.assign('/changePassword');
+    cancel.onclick = function () {
+        window.location.assign('/profile');
     }
 });

@@ -10,6 +10,10 @@ const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 const checkUuidExists = (connection, newId) => {
     return new Promise((resolve, reject) => {
@@ -106,7 +110,15 @@ const profile_controller = {
                     if (error) {
                         throw error;
                     } else {
-                        profilePageData.accountDetails = results[0];
+                        const accountDetails = results[0];
+                        accountDetails.firstName = DOMPurify.sanitize(accountDetails.firstName);
+                        accountDetails.lastName = DOMPurify.sanitize(accountDetails.lastName);
+                        accountDetails.email = DOMPurify.sanitize(accountDetails.email);
+                        accountDetails.address = DOMPurify.sanitize(accountDetails.address);
+                        accountDetails.phoneNumber = DOMPurify.sanitize(accountDetails.phoneNumber);
+                        accountDetails.profilePicFilename = DOMPurify.sanitize(accountDetails.profilePicFilename);
+
+                        profilePageData.accountDetails = accountDetails;
                         res.render("account", profilePageData);
                     }
                 });
