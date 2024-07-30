@@ -157,7 +157,8 @@ const contact_controller = {
                     method: req.method,
                     url: req.originalUrl,
                     accountId: sessionData.accountId,
-                    error: error,
+                    errorMessage: error.message, 
+                    errorStack: error.stack, 
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent']
                 }

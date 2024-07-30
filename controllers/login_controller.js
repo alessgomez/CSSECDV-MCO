@@ -160,10 +160,16 @@ const login_controller = {
   },
 
   postVerifyAccount: async (req, res) => {
+    function getByteLengthBlob(string, encoding = 'utf-8') {
+      const blob = new Blob([string], { type: `text/plain;charset=${encoding}` });
+      return blob.size;
+    }
 
     function validateEmail(email){
         const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
-        return emailRegex.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255
+        const emailLocalLength = getByteLengthBlob(email.substr(0, email.indexOf('@')));
+        const emailDomainLength = getByteLengthBlob(email.substr(email.indexOf('@')));
+        return emailRegex.test(email) && emailLocalLength <= 64 && emailDomainLength <= 255;
     }
 
     function validatePW (pw) {
@@ -354,7 +360,8 @@ const login_controller = {
               method: req.method,
               url: req.originalUrl,
               email: email,
-              error: error,
+              errorMessage: error.message, 
+              errorStack: error.stack, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
               hostname: req.hostname,
@@ -496,7 +503,8 @@ const login_controller = {
               method: req.method,
               url: req.originalUrl,
               accountId: sessionData.accountId,
-              error: error,
+              errorMessage: error.message, 
+              errorStack: error.stack, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
               hostname: req.hostname,
@@ -587,7 +595,8 @@ const login_controller = {
               method: req.method,
               url: req.originalUrl,
               accountId: sessionData.accountId,
-              error: error,
+              errorMessage: error.message, 
+              errorStack: error.stack, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
               hostname: req.hostname,
