@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 // Rate limiter for IP addresses
 const ipRateLimiter = new RateLimiterMemory({
@@ -32,15 +33,15 @@ async function verifyLogin(connection, email, password) {
 
         if (results.length === 0) {
           resolve(null); // account not found
-        } 
-
-        const account = results[0];
-        const passwordMatch = await bcrypt.compare(password, account.password);
-
-        if (passwordMatch) {
-          resolve(account.accountId); // Passwords match, return account data
         } else {
-          resolve(null); // Passwords do not match
+          const account = results[0];
+          const passwordMatch = await bcrypt.compare(password, account.password);
+
+          if (passwordMatch) {
+            resolve(account.accountId); // Passwords match, return account data
+          } else {
+            resolve(null); // Passwords do not match
+          }
         }
       }
     });
@@ -182,7 +183,7 @@ const login_controller = {
         // Check if the IP has exceeded the maximum number of failed login attempts
         const ipRateLimitStatus = await ipRateLimiter.get(ipRateLimitKey);
         if (ipRateLimitStatus && ipRateLimitStatus.consumedPoints >= ipRateLimiter.points) {
-          logger.info('Failedd login attempt due to blocked IP', {
+          logger.warn('Failed login attempt due to blocked IP', {
             meta: {
               event: 'LOGIN_PHASE_1_FAILURE',
               method: req.method,
@@ -190,7 +191,10 @@ const login_controller = {
               email: email,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip) 
             }
           });
 
@@ -202,7 +206,7 @@ const login_controller = {
         // Check if the email has exceeded the maximum number of failed login attempts
         const emailRateLimitStatus = await emailRateLimiter.get(emailRateLimitKey);
         if (emailRateLimitStatus && emailRateLimitStatus.consumedPoints >= emailRateLimiter.points) {
-          logger.info('Failed login attempt due to blocked email', {
+          logger.warn('Failed login attempt due to blocked email', {
             meta: {
               event: 'LOGIN_PHASE_1_FAILURE',
               method: req.method,
@@ -210,7 +214,10 @@ const login_controller = {
               email: email,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
             }
           });
             // Consume points from IP rate limiter even if email rate limit is reached
@@ -221,7 +228,7 @@ const login_controller = {
         }
 
         if (!recaptchaResponse) {
-          logger.info('Failed login attempt due to missing CAPTCHA', {
+          logger.warn('Failed login attempt due to missing CAPTCHA', {
             meta: {
               event: 'LOGIN_PHASE_1_FAILURE',
               method: req.method,
@@ -229,7 +236,10 @@ const login_controller = {
               email: email,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
             }
           });
 
@@ -248,7 +258,7 @@ const login_controller = {
         const { success } = response.data;
 
         if (!success || !validateEmail(email) | !validatePW(pw)) {
-          logger.info('Failed login attempt due to invalid login credentials or failed CAPTCHA', {
+          logger.warn('Failed login attempt due to invalid login credentials or failed CAPTCHA', {
             meta: {
               event: 'LOGIN_PHASE_1_FAILURE',
               method: req.method,
@@ -256,7 +266,10 @@ const login_controller = {
               email: email,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
             }
           });
 
@@ -276,6 +289,7 @@ const login_controller = {
 
         if (accountId) {
             const oneTimeCode = generateOneTimeCode();
+            console.log(oneTimeCode);
             const sessionDataEntry = await getSessionDataEntry(connection, req.session.id)
 
             if (!sessionDataEntry) {
@@ -295,22 +309,28 @@ const login_controller = {
                 email: email,
                 sourceIp: req.ip,
                 userAgent: req.headers['user-agent'],
-                sessionId: req.session.id 
+                hostname: req.hostname,
+                protocol: req.protocol,
+                port: req.socket.localPort,
+                geo:geoip.lookup(req.ip)
               }
             });
 
             return res.redirect('/2FA');
         }
         else {     
-          logger.info('Failed login attempt due to incorrect login credentials', {
+          logger.warn('Failed login attempt due to incorrect login credentials', {
             meta: {
               event: 'LOGIN_PHASE_1_FAILURE',
               method: req.method,
               url: req.originalUrl,
               email: email,
               sourceIp: req.ip,
-              userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              userAgent: req.headers['user-agent'], 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
             }
           });
 
@@ -337,7 +357,10 @@ const login_controller = {
               error: error,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
           }
         });
 
@@ -375,7 +398,7 @@ const login_controller = {
       const now = Date.now();
       const otcExpiry = 2 * 60 * 1000; // 2 minutes
       if (now - pendingOTCTimestamp > otcExpiry) {
-        logger.info('Failed 2FA verification attempt due to expired OTC', {
+        logger.warn('Failed 2FA verification attempt due to expired OTC', {
           meta: {
             event: 'LOGIN_PHASE_2_FAILURE',
             method: req.method,
@@ -383,8 +406,11 @@ const login_controller = {
             accountId: accountId,
             sourceIp: req.ip,
             userAgent: req.headers['user-agent'],
-            sessionId: req.session.id 
-          }
+            hostname: req.hostname,
+            protocol: req.protocol,
+            port: req.socket.localPort,
+            geo:geoip.lookup(req.ip)
+        }
         });
 
         req.flash('error_msg', 'Invalid one-time code. Please try again or request a new code.');
@@ -392,7 +418,7 @@ const login_controller = {
       }
 
       if (otc !== pendingOTC) {
-        logger.info('Failed 2FA verification attempt due to incorrect OTC', {
+        logger.warn('Failed 2FA verification attempt due to incorrect OTC', {
           meta: {
             event: 'LOGIN_PHASE_2_FAILURE',
             method: req.method,
@@ -400,7 +426,10 @@ const login_controller = {
             accountId: accountId,
             sourceIp: req.ip,
             userAgent: req.headers['user-agent'],
-            sessionId: req.session.id 
+            hostname: req.hostname,
+            protocol: req.protocol,
+            port: req.socket.localPort,
+            geo:geoip.lookup(req.ip)
           }
         });
 
@@ -446,7 +475,10 @@ const login_controller = {
           accountId: accountId, 
           sourceIp: req.ip,
           userAgent: req.headers['user-agent'],
-          sessionId: req.session.id 
+          hostname: req.hostname,
+          protocol: req.protocol,
+          port: req.socket.localPort,
+          geo:geoip.lookup(req.ip)
         }
       });
       
@@ -467,7 +499,10 @@ const login_controller = {
               error: error,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
           }
         });
 
@@ -499,7 +534,7 @@ const login_controller = {
         const resendCooldown = 2 * 60 * 1000; // 2 minutes
 
         if (pendingOTCTimestamp && now - pendingOTCTimestamp < resendCooldown) {
-          logger.info('OTC resend request failed due to unfinished cooldown period', {
+          logger.warn('OTC resend request failed due to unfinished cooldown period', {
             meta: {
               event: 'OTC_RESEND_FAILURE',
               method: req.method,
@@ -507,7 +542,10 @@ const login_controller = {
               accountId: accountId, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
             }
           });
 
@@ -528,7 +566,10 @@ const login_controller = {
             accountId: accountId, 
             sourceIp: req.ip,
             userAgent: req.headers['user-agent'],
-            sessionId: req.session.id 
+            hostname: req.hostname,
+            protocol: req.protocol,
+            port: req.socket.localPort,
+            geo:geoip.lookup(req.ip)
           }
         });
 
@@ -549,7 +590,10 @@ const login_controller = {
               error: error,
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
-              sessionId: req.session.id 
+              hostname: req.hostname,
+              protocol: req.protocol,
+              port: req.socket.localPort,
+              geo:geoip.lookup(req.ip)
           }
         });
 

@@ -5,7 +5,9 @@ const window = new JSDOM('').window;
 const fs = require('fs');
 const { getSessionDataEntry } = require('./login_controller');
 const DOMPurify = createDOMPurify(window);
-const debug = process.env.DEBUG === 'true';
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
+const geoip = require('geoip-lite');
 
 const admin_orders_controller = {
     getViewOrders: async (req, res) => {
@@ -93,7 +95,10 @@ const admin_orders_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 

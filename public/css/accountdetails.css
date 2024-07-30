@@ -79,6 +79,7 @@
 
 .details-content {
     min-width: 50%;
+    max-width: 50%;
     min-height: 292px;
     padding-bottom: 30px;
     background-color: #ffc700;
@@ -119,13 +120,17 @@
     display: flex;
     background-color: #f4f2f2;
     flex-grow: 1;
-    height: 52px;
+    height: min-content;
     font-family: poppins;
     font-size: 20px;
     border-radius: 6px;
     align-items: center;
+    min-width: 70%;
+    padding: 15px;
+}
+
+.profile {
     max-width: 70%;
-    padding: 25px;
 }
 
 button:hover {

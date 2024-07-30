@@ -1,4 +1,4 @@
-const { getConnectionFromPool, logPoolStats } = require('./db');
+const { getConnectionFromPool } = require('./db');
 const { v4: uuidv4 } = require('uuid');
 const ids = []
 
@@ -95,15 +95,19 @@ async function populateDb() {
     products.push([generateUUIDs(), mango, drink, 60, 'mango.png']);
     products.push([generateUUIDs(), fourSeasons, drink, 60, 'four-seasons.png']);
     
-    connection.query(sql, [products], async(error, results) => {
-        if (error) {
-            reject(error);
-        } 
-        else {
-            resolve(results);
-        }
-    });
+    await new Promise ((resolve, reject) => {
+        connection.query(sql, [products], async(error, results) => {
+            if (error) {
+                reject(error);
+            } 
+            else {
+                resolve(results);
+            }
+        });
+    })
+    connection.release();
+    console.log('Successfully populated database.');
+    process.exit(0);
 }
 
 populateDb();
-

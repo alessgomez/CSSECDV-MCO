@@ -50,12 +50,6 @@
   color: rgb(112, 108, 108);
 }
 
-.cardInput:disabled,
-#codInput:disabled   {
-  opacity: 0.3;
- 
-}
-
 #searchbar-input{
   font-family: arial;
   font-size: 0.82rem;
@@ -77,4 +71,8 @@
 .info-box .value {
   color: black;
   font-size: 16px; /* Larger font size for value */
+}
+
+#error {
+  color: #c93020;
 }

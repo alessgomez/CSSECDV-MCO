@@ -1,7 +1,7 @@
 .results-container{
     background-color: white;
     position: relative;
-    padding-top: 20px;
+    padding-top: 56px;
     display: flex;
     flex-direction: column;  
     min-height: 85vh;             

@@ -1,54 +1,92 @@
-const { getConnectionFromPool, logPoolStats } = require('../db');
+const { getConnectionFromPool } = require('../db');
+const { getSessionDataEntry } = require('./login_controller');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
+const logger = require('../logger');
 
 const menu_controller = {
     getMenu: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        const main = {
+            id: 'main',
+            category: 'MAIN DISHES',
+            products: []
+        }
+
+        const snack = {
+            id: 'snack',
+            category: 'SNACKS',
+            products: []
+        }
+
+        const dnd = {
+            id: 'dnd',
+            category: 'DESSERTS & DRINKS',
+            products: []
+        }
+    
+        const data = {
+            style: ["navbar", "menu"],
+            topbar: true,
+            category: [main, snack, dnd], 
+            bag: req.bag
+        }
+
+        let connection;
+        let sessionData;
 
         try {
-            var main = {
-                id: 'main',
-                category: 'MAIN DISHES',
-                products: []
-            }
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
-            var snack = {
-                id: 'snack',
-                category: 'SNACKS',
-                products: []
-            }
+            const query = "SELECT * FROM products WHERE isArchived = 0 ORDER BY price";
 
-            var dnd = {
-                id: 'dnd',
-                category: 'DESSERTS & DRINKS',
-                products: []
-            }
-            
-            const sql = "SELECT * FROM products ORDER BY price";
-            connection.query(sql, async (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    for (i = 0; i < results.length; i++) {
-                        if(results[i].category == 'main') 
-                            main.products.push(results[i]);
-                        else if(results[i].category == 'snack') 
-                            snack.products.push(results[i]);
-                        else if(results[i].category == 'drink' || results[i].category == 'dessert')
-                            dnd.products.push(results[i]);
-                    }
+            const [results] = await connection.promise().query(query);
 
-                    const menuPageData = {
-                        style: ["navbar", "menu"],
-                        topbar: true,
-                        category: [main, snack, dnd], 
-                        bag: req.bag
-                    }
-            
-                    res.render("menu", menuPageData);
+            if (results.length === 0) 
+                throw new Error('No products found');
+
+            results.forEach(product => {
+                const sanitizedProduct = {
+                    productId: DOMPurify.sanitize(product.productId),
+                    name: DOMPurify.sanitize(product.name),
+                    imageFilename: DOMPurify.sanitize(product.imageFilename),
+                    price: DOMPurify.sanitize(product.price)
                 }
+
+                const category = DOMPurify.sanitize(product.category)
+
+                if (category == "main")
+                    main.products.push(sanitizedProduct);
+                else if (category == "snack")
+                    snack.products.push(sanitizedProduct);
+                else if (category == "drink" || category == "dessert")
+                    dnd.products.push(sanitizedProduct);
             })
+            res.render("menu", data);
         } catch (error) {
-            console.log(error);
+            if (debug) 
+                console.error('Error loading menu: ', error);
+            else 
+                console.error('An error occurred.');
+
+            logger.error('Error when user attempted to view menu', {
+                meta: {
+                    event: 'VIEW_MENU_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip, 
+                    userAgent: req.headers['user-agent']
+                }
+            });
+            req.flash('error_msg', 'An error occurred. Please try again later.');
+            res.redirect('/');
         } finally {
             if (connection)
                 connection.release();

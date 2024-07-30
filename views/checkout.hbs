@@ -27,7 +27,7 @@
                             <div class="col-md mt-5">
                                 <div class="info-box">
                                     <div style="color: #676e75;" class="label">Contact Number</div>
-                                    <div class="value">{{this.accountDetails.contactNumber}}</div>
+                                    <div class="value">{{this.accountDetails.phoneNumber}}</div>
                                 </div>
                             </div>
                             
@@ -49,6 +49,15 @@
                                 </div>
                             </div>
                         </div> 
+
+                        <div class="row g-2 mt-4">
+                            <div class="col-md">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" placeholder="Leave a comment here" id="floatingTextarea2" name="notes" style="height: 4rem" maxlength="50"></input>
+                                    <label style="color: #6c757d;" for="floatingTextarea2">Special Requests / Notes to Rider</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -143,7 +152,8 @@
                 </div>
                 <div class="row mt-4" style="width: 33.3rem;">
                     <div class="col text-center">
-                        <input type="submit" value="Place Order" class="btn btn-danger mt-1 mb-2 fw-bold rounded-pill" id="placeorder"></input>
+                        <p id="error">{{error_msg}}</p>
+                        <input type="submit" value="Place Order" class="btn btn-danger mt-1 mb-2 fw-bold rounded-pill" id="placeorder" disabled></input>
                     </div>
                 </div>
                 

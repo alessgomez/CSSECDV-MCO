@@ -7,6 +7,13 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
+const logger = require('../logger');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 
 const checkUuidExists = (connection, newId) => {
     return new Promise((resolve, reject) => {
@@ -88,29 +95,56 @@ const profile_controller = {
             style: ["navbar", "accountdetails", "profile"],
             script: ["profile"],
             partialName: ["profile"],
-            accountDetails: {}
+            accountDetails: {},
+            bag: req.bag
         }
 
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 connection.query('SELECT firstName, lastName, email, address, phoneNumber, profilePicFilename FROM accounts WHERE accountId = ?', [sessionData.accountId], function(error, results) {
                     if (error) {
                         throw error;
                     } else {
-                        profilePageData.accountDetails = results[0];
+                        const accountDetails = results[0];
+                        accountDetails.firstName = DOMPurify.sanitize(accountDetails.firstName);
+                        accountDetails.lastName = DOMPurify.sanitize(accountDetails.lastName);
+                        accountDetails.email = DOMPurify.sanitize(accountDetails.email);
+                        accountDetails.address = DOMPurify.sanitize(accountDetails.address);
+                        accountDetails.phoneNumber = DOMPurify.sanitize(accountDetails.phoneNumber);
+                        accountDetails.profilePicFilename = DOMPurify.sanitize(accountDetails.profilePicFilename);
+
+                        profilePageData.accountDetails = accountDetails;
                         res.render("account", profilePageData);
                     }
                 });
-            } else {
-                res.redirect("/login");
-            }
+            } else
+                throw new Error('Session data not found.');
         } catch (error) {
-            console.log("Error loading profile page");
-            console.log(error);
+            if (debug)
+                console.error('Error loading profile page:', error);
+            else
+                console.error('An error occurred when loading profile page.');
+
+            logger.error('Error when user attempted to view profile', {
+                meta: {
+                    event: 'VIEW_PROFILE_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            });
+
+            req.flash('error_msg', 'An error occurred. Please try again.');
+            res.redirect('/');
         } finally {
             if (connection)
                 connection.release();
@@ -121,22 +155,41 @@ const profile_controller = {
         const changePwPageData = {
             style: ["navbar", "accountdetails", "profile"],
             script: ["changepw"],
-            partialName: ["changepw"]
+            partialName: ["changepw"],
+            bag: req.bag
         }
 
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 res.render("account", changePwPageData);
-            } else {
-                res.redirect("/login");
-            }
+            } else
+                throw new Error('Session data not found.');
         } catch (error) {
-            console.log("Error loading change password page.");
-            console.log(error);
+            if (debug)
+                console.error('Error loading change password page:', error);
+            else
+                console.error('An error occurred when loading change password page.');
+
+            logger.error('Error when user attempted to view change password page', {
+                meta: {
+                    event: 'VIEW_CHANGE_PASSWORD_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            });
+
+            req.flash('error_msg', 'An error occurred. Please try again.');
+            res.redirect('/profile');
         } finally {
             if (connection)
                 connection.release();
@@ -144,107 +197,146 @@ const profile_controller = {
     },
 
     postUpdateAccount: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
             
             if (sessionData) {
                 upload(req, res, async (err) => {
-                    if (err) {
-                        console.error(err);
-                        req.flash('error_msg', 'Invalid file name. File name can only contain alphanumeric characters, hypen, underscore, or period.');
-                        return res.redirect('/profile');
-                    }
-                    
-                    const newDetails = req.body;
-                    const currentDetails = await checkAccountDetails(connection, sessionData.accountId);
+                    try {
+                        if (err)
+                            throw error;
+                        
+                        const newDetails = req.body;
+                        const currentDetails = await checkAccountDetails(connection, sessionData.accountId);
 
-                    if (currentDetails) {
-                        // START OF RESPONSE VALIDATION
-                        if (validateDetails(newDetails)) {
-                            if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
-                                newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
-                                const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
-                                connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
-                                    if (error) {
-                                        throw error;
+                        if (currentDetails) {
+                            // START OF RESPONSE VALIDATION
+                            if (validateDetails(newDetails)) {
+                                if (newDetails.email !== currentDetails.email) {
+                                    const emailExists = await checkEmailExists(connection, newDetails.email);
+            
+                                    if (emailExists) {
+                                        throw new Error('Email already exists.');
+                                    } else {
+                                        connection.query('UPDATE accounts SET email = ?, dateEdited = ? WHERE accountId = ?', [newDetails.email, new Date(), sessionData.accountId], function(error, results) {
+                                            if (error) {
+                                                throw error;
+                                            }
+                                        });
                                     }
-                                });
-                            }
-        
-                            if (newDetails.email !== currentDetails.email) {
-                                const emailExists = await checkEmailExists(connection, newDetails.email);
-        
-                                if (emailExists) {
-                                    req.flash('error_msg', 'Invalid email.');
-                                    return res.redirect('/profile');
-                                } else {
-                                    connection.query('UPDATE accounts SET email = ?, dateEdited = ? WHERE accountId = ?', [newDetails.email, new Date(), sessionData.accountId], function(error, results) {
+                                }
+
+                                if (req.file) {
+                                    // 1. File signature 
+                                    signature = req.file.buffer.toString('hex').toUpperCase();
+                                    fileMimeType = getMimeType(signature);
+                                    if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
+                                        // 2. Image rewriting 
+                                        let sanitizedBuffer = await sanitizeImage(req.file.buffer);
+                                        
+                                        // 3. save to folder - filename!
+                                        let newFileName;
+                                        let uuidExists = true;
+                                        filePath = './public/uploads/';
+                                        fileExtension = fileMimeType.split("/")[1];
+
+                                        while (uuidExists) {
+                                            newFileName = uuidv4() + "." + fileExtension;
+                                            uuidExists = await checkUuidExists(connection, newFileName);
+                                        }
+                                        fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
+                                        newDetails['profilePicFilename'] = newFileName;
+            
+                                        // 4. update profile picture in DB.
+                                        if (newDetails.profilePicFilename !== currentDetails.profilePicFilename) {
+                                            connection.query('UPDATE accounts SET profilePicFilename = ?, dateEdited = ? WHERE accountId = ?', [newDetails.profilePicFilename, new Date(), sessionData.accountId], function(error, results) {
+                                                if (error) {
+                                                    throw error;
+                                                }
+                                            });
+                                        }
+                                    } else
+                                        throw new Error('Invalid file.');
+                                }
+
+                                if (newDetails.firstName !== currentDetails.firstName || newDetails.lastName !== currentDetails.lastName || 
+                                    newDetails.address !== currentDetails.address || newDetails.phoneNumber !== currentDetails.phoneNumber) {
+                                    const sql = 'UPDATE accounts SET firstName = ?, lastName = ?, address = ?, phoneNumber = ?, dateEdited = ? WHERE accountId = ?';
+                                    connection.query(sql, [newDetails.firstName, newDetails.lastName, newDetails.address, newDetails.phoneNumber, new Date (), sessionData.accountId], function(error, results) {
                                         if (error) {
                                             throw error;
                                         }
                                     });
                                 }
-                            }
 
-                            if (!req.file) {
+                                logger.info('User successfully updated account details', {
+                                    meta: {
+                                      event: 'UPDATE_ACCOUNT_SUCCESS',
+                                      method: req.method,
+                                      url: req.originalUrl,
+                                      accountId: sessionData.accountId,
+                                      sourceIp: req.ip,
+                                      userAgent: req.headers['user-agent']
+                                    }
+                                });
+
                                 req.flash('success_msg', 'Account details successfully updated.');
-                                res.redirect("/profile");
-                            } else if (req.file) {
-                                // 1. File signature 
-                                signature = req.file.buffer.toString('hex').toUpperCase();
-                                fileMimeType = getMimeType(signature);
-                                if (fileMimeType == 'image/jpeg' || fileMimeType == 'image/png'){
-                                    // 2. Image rewriting 
-                                    sanitizeImage(req.file.buffer)
-                                        .then(async sanitizedBuffer => {
-                                            // 3. save to folder - filename!
-                                            let newFileName;
-                                            let uuidExists = true;
-                                            filePath = './public/uploads/';
-                                            fileExtension = fileMimeType.split("/")[1];
+                                res.redirect('/profile');
+                            } else
+                                throw new Error('Invalid new account details.');
+                        } else
+                            throw new Error('Current account details not found.');
+                    } catch (error) {
+                        if (debug)
+                            console.error('Error updating account details:', error);
+                        else
+                            console.error('An error occurred during profile update.');
 
-                                            while (uuidExists) {
-                                                newFileName = uuidv4() + "." + fileExtension;
-                                                uuidExists = await checkUuidExists(connection, newFileName);
-                                            }
-                                            fs.writeFileSync(filePath + newFileName, sanitizedBuffer);
-                                            newDetails['profilePicFilename'] = newFileName;
-                
-                                            // 4. update profile picture in DB.
-                                            if (newDetails.profilePicFilename !== currentDetails.profilePicFilename) {
-                                                connection.query('UPDATE accounts SET profilePicFilename = ?, dateEdited = ? WHERE accountId = ?', [newDetails.profilePicFilename, new Date(), sessionData.accountId], function(error, results) {
-                                                    if (error) {
-                                                        throw error;
-                                                    }
-                                                });
-                                            }
-                    
-                                            req.flash('success_msg', 'Account details successfully updated.');
-                                            res.redirect("/profile");
-                                        })
-                                        .catch(error => {
-                                            console.error('Image sanitization failed: ', error);
-                                            throw new Error("ERROR: Image sanitization failed.");
-                                        })
-                                }
-                                else {
-                                    throw new Error("ERROR: Invalid file.")
-                                }
+                        logger.error('Error when user attempted to update account details', {
+                            meta: {
+                                event: 'UPDATE_ACCOUNT_ERROR',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId,
+                                error: error,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent']
                             }
-                        } else {
-                            req.flash('error_msg', 'Invalid new details.');
-                            return res.redirect('/profile');
-                        }
-                    } else
-                        res.redirect("/login");
+                        });
+        
+                        req.flash('error_msg', 'An error occurred during profile update. Please try again.');
+                        return res.redirect('/profile');
+                    } finally {
+                        if (connection)
+                            connection.release();
+                    }
                 })
-            }
+            } else
+                throw new Error('Session data not found.');
         } catch (error) {
-            req.flash('error_msg', 'An error occurred during profile update. Please relogin and try again.');
-            await deleteSessionDataEntry(connection, req.session.sessionId);
-            return res.redirect('/login');
+            if (debug)
+                console.error('Error updating account details:', error);
+            else
+                console.error('An error occurred during profile update.');
+
+            logger.error('Error when user attempted to update account details', {
+                meta: {
+                    event: 'UPDATE_ACCOUNT_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'] 
+                }
+            });
+
+            req.flash('error_msg', 'An error occurred during profile update. Please try again.');
+            return res.redirect('/profile');
         } finally {
             if (connection)
                 connection.release();
@@ -252,10 +344,12 @@ const profile_controller = {
     },
 
     postUpdatePassword: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 const passwordDetails = req.body;
@@ -273,32 +367,70 @@ const profile_controller = {
                                     }
                                 });
 
+                                logger.info('User successfully updated password', {
+                                    meta: {
+                                      event: 'UPDATE_PASSWORD_SUCCESS',
+                                      method: req.method,
+                                      url: req.originalUrl,
+                                      accountId: sessionData.accountId,
+                                      sourceIp: req.ip,
+                                      userAgent: req.headers['user-agent']
+                                    }
+                                });
+
                                 await deleteSessionDataEntry(connection, sessionData.sessionId);
 
-                                req.session.destroy(() => {
-                                    res.clearCookie('thehungrycookie'); 
-                                    console.log("Session successfully destroyed.");
+                                req.session.destroy(err => {
+                                    if (err) {
+                                        if (debug)
+                                            console.error('Error destroying session:', err);
+                                        else 
+                                            console.error('An error occurred.')
+                                        return res.redirect('/login'); 
+                                    }
+                                    res.clearCookie('thehungrycookie');
+                                    
+                                    logger.info('User successfully logged out', {
+                                        meta: {
+                                          event: 'USER_LOGOUT_SUCCESS',
+                                          method: req.method,
+                                          url: req.originalUrl,
+                                          accountId: sessionData.accountId, 
+                                          sourceIp: req.ip,
+                                          userAgent: req.headers['user-agent']
+                                        }
+                                    });
+                        
                                     res.redirect('/login');
                                 });
-                            } else {
-                                req.flash('error_msg', 'New password cannot be the same as the old password.');
-                                return res.redirect('/changePassword');
-                            }
-                        } else {
-                            req.flash('error_msg', 'Invalid new password.');
-                            return res.redirect('/changePassword');
-                        }
-                    } else {
-                        req.flash('error_msg', 'Incorrect current password. Please try again.');
-                        return res.redirect('/changePassword');
-                    }
+                            } else
+                                throw new Error('New password is the same as the old password.');
+                        } else
+                            throw new Error('Invalid new password.');
+                    } else
+                        throw new Error('Incorrect current password.');
                 } else
-                    res.redirect("/login");
-            } else {
-                res.redirect("/login");
-            }
+                    throw new Error('Current account details not found.');
+            } else
+                throw new Error('Session data not found.');
         } catch (error) {
-            console.log(error);
+            if (debug)
+                console.error('Error updating password:', error);
+            else
+                console.error('An error occurred during password update.');
+
+            logger.error('Error when user attempted to update password', {
+                meta: {
+                    event: 'UPDATE_PASSWORD_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            });
+            
             req.flash('error_msg', 'An error occurred during password update. Please try again.');
             return res.redirect('/changePassword');
         } finally {
@@ -308,10 +440,12 @@ const profile_controller = {
     },
 
     getDeleteAccount: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
 
         try {
-            const sessionData = await getSessionDataEntry(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
 
             if (sessionData) {
                 connection.query('UPDATE accounts SET isArchived = ?, dateArchived = ? WHERE accountId = ?', [true, new Date(), sessionData.accountId], function(error, results) {
@@ -320,18 +454,62 @@ const profile_controller = {
                     }
                 });
 
+                logger.info('User successfully deleted account', {
+                    meta: {
+                      event: 'DELETE_ACCOUNT_SUCCESS',
+                      method: req.method,
+                      url: req.originalUrl,
+                      accountId: sessionData.accountId, 
+                      sourceIp: req.ip,
+                      userAgent: req.headers['user-agent']
+                    }
+                });
+
                 await deleteSessionDataEntry(connection, sessionData.sessionId);
                 
-                req.session.destroy(() => {
-                    res.clearCookie('thehungrycookie'); 
-                    console.log("Session successfully destroyed.");
+                req.session.destroy(err => {
+                    if (err) {
+                        if (debug)
+                            console.error('Error destroying session:', err);
+                        else 
+                            console.error('An error occurred.')
+                        return res.redirect('/login'); 
+                    }
+                    res.clearCookie('thehungrycookie');
+                    
+                    logger.info('User successfully logged out', {
+                        meta: {
+                          event: 'USER_LOGOUT_SUCCESS',
+                          method: req.method,
+                          url: req.originalUrl,
+                          accountId: sessionData.accountId, 
+                          sourceIp: req.ip,
+                          userAgent: req.headers['user-agent']
+                        }
+                    });
+        
                     res.redirect('/login');
                 });
-            } else {
-                res.redirect("/login");
-            }
+            } else
+                throw new Error('Session data not found.');
         } catch (error) {
-            console.log(error);
+            if (debug)
+                console.error('Error deleting account:', error);
+            else
+                console.error('An error occurred during account deletion.');
+
+            logger.error('Error when user attempted to delete account', {
+                meta: {
+                    event: 'DELETE_ACCOUNT_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            });
+
             req.flash('error_msg', 'An error occurred during account deletion. Please try again.');
             return res.redirect('/profile');
         } finally {

@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`orders` (
   `ETAMin` DATETIME NOT NULL,
   `ETAMax` DATETIME NOT NULL,
   `notes` VARCHAR(45) NOT NULL,
+  `changeFor` DECIMAL(10,0) NOT NULL,
   PRIMARY KEY (`orderId`),
   UNIQUE INDEX `orderId_UNIQUE` (`orderId` ASC) VISIBLE,
   INDEX `accountId_idx` (`accountId` ASC) VISIBLE,
@@ -222,6 +223,7 @@ CREATE TABLE IF NOT EXISTS `the_hungry_sibs`.`feedbacks` (
   `accountId` VARCHAR(36) NOT NULL,
   `subject` VARCHAR(45) NOT NULL,
   `message` VARCHAR(200) NOT NULL,
+  `dateSubmitted` DATETIME NOT NULL,
   PRIMARY KEY (`feedbackId`),
   INDEX `feedbacks_accountId_idx` (`accountId` ASC) VISIBLE,
   UNIQUE INDEX `feedbackId_UNIQUE` (`feedbackId` ASC) VISIBLE,
@@ -238,23 +240,28 @@ ENGINE = InnoDB;
 -- PASSWORD: JohnD0e!
 -- -----------------------------------------------------
 INSERT INTO `the_hungry_sibs`.`accounts` (`accountId`, `firstName`, `lastName`, `email`, `password`, `address`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES (UUID(), 'John', 'Doe', 'hannah.regine.fong@gmail.com', '$2b$12$BEhAs9dJtfNoYJLwePb8S.lOuJBCqCEBjIWRETY/OS6plDcTp9lQq', '123 Address', '09123456789', '3ea79cc4-71fc-4052-b0bb-237e2c8449f0.png', 'ADMIN', CURRENT_TIMESTAMP);
+VALUES (UUID(), 'John', 'Doe', 'hannah.regine.fong@gmail.com', '$2b$12$BEhAs9dJtfNoYJLwePb8S.lOuJBCqCEBjIWRETY/OS6plDcTp9lQq', '123 Street, Barangay, Municipality, 1111', '09123456789', '3ea79cc4-71fc-4052-b0bb-237e2c8449f0.png', 'ADMIN', CURRENT_TIMESTAMP);
 
 -- -----------------------------------------------------
 -- Inserts initial user accounts
 -- PASSWORD FOR ALL: C4sh4y1!
 -- -----------------------------------------------------
-INSERT INTO `the_hungry_sibs`.`accounts` (`accountId`, `firstName`, `lastName`, `email`, `password`, `address`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES (UUID(), 'Hannah', 'Fong', 'hannah_regine_fong@dlsu.edu.ph', '$2a$12$rq19f3gn/UobANhyxRZpmurOK8GDI.MMPs/uWXVBoip4BwMreN6My', '123 Address', '09234567891', '05bc9c24-1d60-4a04-881b-7dca5f93cffb.jpg', 'USER', CURRENT_TIMESTAMP);
+SET @hannahId = UUID();
+SET @alessandraId = UUID();
+SET @ibrahimId = UUID();
+SET @shaunId = UUID();
 
 INSERT INTO `the_hungry_sibs`.`accounts` (`accountId`, `firstName`, `lastName`, `email`, `password`, `address`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES (UUID(), 'Alessandra', 'Gomez', 'alessandra_gomez@dlsu.edu.ph', '$2a$12$245HIwNTy7p1nt45fe8PnOZA5xr8g6StXQ7llwtlJq8eiCSD3p4xK', '123 Address', '09345678912', 'e3b21581-b4b4-43e4-9b42-312780b36f1e.jpg', 'USER', CURRENT_TIMESTAMP);
+VALUES (@hannahId, 'Hannah', 'Fong', 'hannah_regine_fong@dlsu.edu.ph', '$2a$12$rq19f3gn/UobANhyxRZpmurOK8GDI.MMPs/uWXVBoip4BwMreN6My', '123 Street, Barangay, Municipality, 1111', '09234567891', '05bc9c24-1d60-4a04-881b-7dca5f93cffb.jpg', 'USER', CURRENT_TIMESTAMP),
+        (@alessandraId, 'Alessandra', 'Gomez', 'alessandra_gomez@dlsu.edu.ph', '$2a$12$245HIwNTy7p1nt45fe8PnOZA5xr8g6StXQ7llwtlJq8eiCSD3p4xK', '123 Street, Barangay, Municipality, 1111', '09345678912', 'e3b21581-b4b4-43e4-9b42-312780b36f1e.jpg', 'USER', CURRENT_TIMESTAMP),
+        (@ibrahimId, 'Ibrahim', 'Kahil', 'ibrahim_kahil@dlsu.edu.ph', '$2a$12$lxHdnhHgyjNlFXyU7P7H7.aVvY4gL.wqe2yHT1pdzOgPWG26geNIO', '123 Street, Barangay, Municipality, 1111', '09456789123', 'bd987281-29a2-11ef-8527-d8bbc1ac6888.jpg', 'USER', CURRENT_TIMESTAMP),
+        (@shaunId, 'Shaun', 'Ong', 'shaun_ong@dlsu.edu.ph', '$2a$12$rk86H2l9/Algk4bTM1eYOOTlKrScFrZPDZBI4ntQ8yKpl8SDzRYd.', '123 Street, Barangay, Municipality, 1111', '09567891234', 'cc1658c1-29a2-11ef-8527-d8bbc1ac6888.jpg', 'USER', CURRENT_TIMESTAMP);
 
-INSERT INTO `the_hungry_sibs`.`accounts` (`accountId`, `firstName`, `lastName`, `email`, `password`, `address`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES (UUID(), 'Ibrahim', 'Kahil', 'ibrahim_kahil@dlsu.edu.ph', '$2a$12$lxHdnhHgyjNlFXyU7P7H7.aVvY4gL.wqe2yHT1pdzOgPWG26geNIO', '123 Address', '09456789123', 'bd987281-29a2-11ef-8527-d8bbc1ac6888.jpg', 'USER', CURRENT_TIMESTAMP);
-
-INSERT INTO `the_hungry_sibs`.`accounts` (`accountId`, `firstName`, `lastName`, `email`, `password`, `address`, `phoneNumber`, `profilePicFilename`, `role`, `dateCreated`)
-VALUES (UUID(), 'Shaun', 'Ong', 'shaun_ong@dlsu.edu.ph', '$2a$12$rk86H2l9/Algk4bTM1eYOOTlKrScFrZPDZBI4ntQ8yKpl8SDzRYd.', '123 Address', '09567891234', 'cc1658c1-29a2-11ef-8527-d8bbc1ac6888.jpg', 'USER', CURRENT_TIMESTAMP);
+INSERT INTO bag (`bagId`, `accountId`, `subtotal`, `deliveryFee`, `total`)
+VALUES (UUID(), @hannahId, 0, 0, 0),
+       (UUID(), @alessandraId, 0, 0, 0),
+       (UUID(), @ibrahimId, 0, 0, 0),
+       (UUID(), @shaunId, 0, 0, 0);
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

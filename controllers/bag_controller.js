@@ -1,6 +1,15 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
 const { v4: uuidv4 } = require('uuid');
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('config.json'));
+const debug = config.DEBUG;
+const logger = require('../logger');
 
 const checkUuidExists = (connection, newId, field) => {
     return new Promise((resolve, reject) => {
@@ -15,45 +24,27 @@ const checkUuidExists = (connection, newId, field) => {
     });
 }
 
-async function getBagId(connection, sessionId) {
-    try {
-        console.log("HI 1");
-        const sessionData = await getSessionDataEntry(connection, sessionId);
-        console.log("HI 4");
-        if (sessionData) {
-            console.log("HI 5");
-            return new Promise((resolve, reject) => {
-                console.log("HI 6");
-                const sql = 'SELECT * FROM bag WHERE accountId = ?';
-                console.log("HI 7");
-                connection.query(sql, [sessionData.accountId], async(error, results) => {
-                    console.log("HI 8");
-                    if (error) {
-                        reject(error);
-                    } else {
-                        console.log("HI 9");
-                        if (results.length === 0) {
-                            resolve(null);
-                        } else {
-                            console.log("HI 10");
-                            const bag = results[0];
-                            resolve(bag.bagId);
-                        }
-                    }
-                })
-            })
-        } else {
-            // TODO: HANDLE ERROR
-        }
-    } catch (error) {
-        console.log(error);
-    }
+async function getBagId(connection, accountId) {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT bagId FROM bag WHERE accountId = ?';
+        connection.query(sql, [accountId], async(error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                if (results.length === 0) {
+                    resolve(null);
+                } else {
+                    const bagId = results[0].bagId;
+                    resolve(DOMPurify.sanitize(bagId));
+                }
+            }
+        })
+    })
 }
 
-async function getBagItems(connection, sessionId) {
+async function getBagItems(connection, accountId) {
     try {
-        var bagId = await getBagId(connection, sessionId);
-
+        var bagId = await getBagId(connection, accountId);
         return new Promise((resolve, reject) => {
             const sql = 'SELECT * FROM bag INNER JOIN bagItems ON bag.bagId = bagItems.bagId INNER JOIN products ON bagItems.productId = products.productId WHERE bag.bagId = ?;';
             connection.query(sql, [bagId], async(error, results) => {
@@ -65,17 +56,14 @@ async function getBagItems(connection, sessionId) {
             })
         })
     } catch (error) {
-        console.log(error);
+        throw error;
     }
 }
 
-async function updateBag(connection, sessionId) {
+async function updateBag(connection, accountId) {
     try {
-        var bagId = await getBagId(connection, sessionId);
-        var bagItems = await getBagItems(connection, sessionId);
-
-        console.log("NAKO NAKO NAKO");
-        console.log(bagItems);
+        var bagId = await getBagId(connection, accountId);
+        var bagItems = await getBagItems(connection, accountId);
         
         return new Promise((resolve, reject) => {
             var subtotal = 0;
@@ -85,7 +73,7 @@ async function updateBag(connection, sessionId) {
             if (bagItems.length > 0) {
                 deliveryFee = 50;
                 for (var i = 0; i < bagItems.length; i++) {
-                    subtotal += bagItems[i].totalPrice;
+                    subtotal += parseFloat(DOMPurify.sanitize(bagItems[i].totalPrice));
                 }
                 total = subtotal + deliveryFee;
             }
@@ -102,44 +90,116 @@ async function updateBag(connection, sessionId) {
             })
         })
     } catch (error) {
-        console.log(error);
+        throw error;
     }
+}
+
+function validateUuid(str) {
+    let regexUuidv4 = new RegExp(/^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/);
+    return regexUuidv4.test(str);
+}
+
+async function getProduct(connection, productId) {
+    return new Promise((resolve, reject) => {
+        const sql = 'SELECT * FROM products WHERE productId = ?';
+        connection.query(sql, [productId], async(error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                if (results.length === 0) {
+                    resolve(null);
+                } else {
+                    resolve(results[0]);
+                }
+            }
+        });
+    });
+}
+
+
+async function validateAndCompleteDetails(newBagItem, connection) {
+
+    try {
+        newBagItem.quantity = parseInt(newBagItem.quantity);
+
+        const isQuantityValid = !isNaN(newBagItem.quantity) && newBagItem.quantity > 0;
+        const isProductIdValid = validateUuid(newBagItem.productId);
+    
+        if (isQuantityValid && isProductIdValid) {
+            const product = await getProduct(connection, newBagItem.productId);
+
+            if (!product) 
+                throw new Error('Product not found');
+
+            newBagItem.totalPrice = newBagItem.quantity * parseFloat(DOMPurify.sanitize(product.price));
+            return true;
+
+        } else {
+            return false;
+        }
+
+    } catch(error) {
+        throw error;
+    }
+
 }
 
 const bag_controller = {
     getBag: async (req, res, next) => {
-        let connection = await getConnectionFromPool();
-
+        let connection;
+        let sessionData;
         try {
-            var bagItems = await getBagItems(connection, req.session.id);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            var bagItems = await getBagItems(connection, sessionData.accountId);
             bag = {
                 bagItems: [],
                 subtotal: parseFloat(0).toFixed(2),
                 deliveryFee: parseFloat(0).toFixed(2),
                 total: parseFloat(0).toFixed(2)
-            }                    
+            }
+
             if (bagItems.length > 0) {
-                bag.subtotal = parseFloat(bagItems[0].subtotal).toFixed(2);
-                bag.deliveryFee = parseFloat(bagItems[0].deliveryFee).toFixed(2);
-                bag.total = parseFloat(bagItems[0].total).toFixed(2);
+                bag.subtotal = parseFloat(DOMPurify.sanitize(bagItems[0].subtotal)).toFixed(2);
+                bag.deliveryFee = parseFloat(DOMPurify.sanitize(bagItems[0].deliveryFee)).toFixed(2);
+                bag.total = parseFloat(DOMPurify.sanitize(bagItems[0].total)).toFixed(2);
 
                 for (var i = 0; i < bagItems.length; i++) {
                     var bagItem = {
-                        bagItemId: bagItems[i].bagItemId,
-                        quantity: bagItems[i].quantity,
-                        totalPrice: parseFloat(bagItems[i].totalPrice).toFixed(2),
+                        bagItemId: DOMPurify.sanitize(bagItems[i].bagItemId),
+                        quantity: parseInt(DOMPurify.sanitize(bagItems[i].quantity)),
+                        totalPrice: parseFloat(DOMPurify.sanitize(bagItems[i].totalPrice)).toFixed(2),
                         product: {
-                            productId: bagItems[i].productId,
-                            name: bagItems[i].name
+                            productId: DOMPurify.sanitize(bagItems[i].productId),
+                            name: DOMPurify.sanitize(bagItems[i].name)
                         }
                     }
                     bag.bagItems.push(bagItem);
                 }
             }
+
             req.bag = bag;
             return next();
         } catch(error) {
-            console.error(error);
+            if (debug)
+                console.error('Error loading bag: ', error);
+            else 
+                console.error('An error occurred.');
+
+            logger.error('Error when loading bag', {
+                meta: {
+                    event: 'GET_BAG_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            })
+
+            res.status(500).send('Internal Server Error');
         } finally {
             if (connection)
                 connection.release();
@@ -147,16 +207,30 @@ const bag_controller = {
     },
 
     postAddBagItem: async (req,res) => {
-        let connection = await getConnectionFromPool();
-
+        let connection;
+        let sessionData;
         try {
-            var bagItem = {
-                productId: req.body.productId,
-                quantity: req.body.quantity,
-                totalPrice: req.body.totalPrice,
-                bagId: await getBagId(connection, req.session.id)
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+            const bagId = await getBagId(connection, sessionData.accountId);
+
+            if (!bagId)
+                throw new Error('Bag not found');
+
+            const newBagItem = {
+                bagItemId: null,
+                productId: DOMPurify.sanitize(req.body.productId),
+                quantity: DOMPurify.sanitize(req.body.quantity),
+                totalPrice: null,
+                bagId: bagId
             }
-            
+
+            const newBagItemValid = await validateAndCompleteDetails(newBagItem, connection);
+
+            if (!newBagItemValid) {
+                throw new Error("Invalid bag item details.");
+            } 
+
             let newId;
             let uuidExists = true;
 
@@ -165,19 +239,101 @@ const bag_controller = {
                 uuidExists = await checkUuidExists(connection, newId, 'bagItemId');
             }
 
-            const sql = 'INSERT INTO bagItems (bagItemId, productId, quantity, totalPrice, bagId) VALUES (?,?,?,?,?)';
-            const values = [newId, bagItem.productId, bagItem.quantity, bagItem.totalPrice, bagItem.bagId]
-            
-            connection.query(sql, values, async(error, results) => {
-                if (error) {
-                    throw error;
-                } else {
-                    await updateBag(connection, req.session.id);
-                    res.send(results);
+            connection.beginTransaction(async(err) => {
+                if (err) throw err;
+
+                try {
+                    const sql = 'INSERT INTO bagItems (bagItemId, productId, quantity, totalPrice, bagId) VALUES (?,?,?,?,?)';
+                    const values = [newId, newBagItem.productId, newBagItem.quantity, newBagItem.totalPrice, newBagItem.bagId];
+
+                    connection.query(sql, values, async(error, results) => {
+                        if (error) {
+                            throw error;
+                        } else {
+                            await updateBag(connection, sessionData.accountId);
+                            connection.commit((err) => {
+                                if (err) {
+                                    return connection.rollback(() => {
+                                        throw err;
+                                    })
+                                }
+                                logger.info('User successfully added a bag item', {
+                                    event: 'ADD_BAG_ITEM_SUCCESS',
+                                    method: req.method,
+                                    url: req.originalUrl,
+                                    accountId: sessionData.accountId,
+                                    bagItemId: newId,
+                                    sourceIp: req.ip,
+                                    userAgent: req.headers['user-agent']
+                                })
+                                res.json({success:true});
+                            })
+                        }
+                    })
+                } catch (error) {
+                    if (connection) {
+                        connection.rollback(() => {
+                            if (debug)
+                                console.error('Error adding bag item: ', error);
+                            else 
+                                console.error('An error occurred.');
+    
+                            logger.error('Error when user attempted to add a bag item', {
+                                meta: {
+                                    event: 'ADD_BAG_ITEM_ERROR',
+                                    method: req.method,
+                                    url: req.originalUrl,
+                                    accountId: sessionData.accountId,
+                                    error: error,
+                                    sourceIp: req.ip,
+                                    userAgent: req.headers['user-agent']
+                                }
+                            })
+                            return res.json({success:false});
+                        })
+                    } else {
+                        if (debug)
+                            console.error('Error adding bag item: ', error);
+                        else 
+                            console.error('An error occurred.');
+
+                        logger.error('Error when user attempted to add a bag item', {
+                            meta: {
+                                event: 'ADD_BAG_ITEM_ERROR',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId,
+                                error: error,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent']
+                            }
+                        })
+                        return res.json({success:false});
+                    }
+                } finally{
+                    if (connection)
+                        connection.release();
                 }
+
             })
         } catch(error) {
-            console.error(error);
+            if (debug)
+                console.error('Error starting the add to bag transaction: ', error);
+            else 
+                console.error('An error occurred.');
+
+            logger.error('Error when starting an add to bag transaction', {
+                meta: {
+                    event: 'ADD_BAG_ITEM_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            })
+            return res.json({success:false});
         } finally {
             if (connection)
                 connection.release();
@@ -185,21 +341,49 @@ const bag_controller = {
     },
 
     getItemQuantity: async (req, res) => {
-        let connection = await getConnectionFromPool();
-
+        let connection;
+        let sessionData;
         try {
-            var bagId = await getBagId(connection, req.session.id);
-            const sql = 'SELECT * FROM bag INNER JOIN bagItems ON bag.bagId = bagItems.bagId WHERE bag.bagId = ?;';
-            connection.query(sql, [bagId], async(error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    res.send([results.length]);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            if (sessionData) {
+                var bagId = await getBagId(connection, sessionData.accountId);
+
+                const sql = 'SELECT * FROM bag INNER JOIN bagItems ON bag.bagId = bagItems.bagId WHERE bag.bagId = ?;';
+                
+                connection.query(sql, [DOMPurify.sanitize(bagId)], async(error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        res.send([results.length]);
+                    }
+                })
+            }
+            else {
+                res.send([0]);
+            }   
+        } catch(error) {
+            if (debug) 
+                console.error('Error retrieving number of bag items: ', error);
+            else
+                console.error('An error occurred.');
+            
+            if (sessionData)
+                var accountId = sessionData.accountId;
+
+            logger.error('Error when attempting to retrieve number of bag items', {
+                meta: {
+                    event: 'GET_ITEM_QUANTITY_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
                 }
             })
-
-        } catch(error) {
-            console.error(error);
+            res.send([0]); //send 0 length by default to disable proceed button
         } finally {
             if (connection)
                 connection.release();
@@ -207,42 +391,136 @@ const bag_controller = {
     },
 
     postAddQuantity: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
+        const bagItemId = DOMPurify.sanitize(req.body.bagItemId);
+
         try {
-            var bagId = await getBagId(connection, req.session.id);
-            const sql = 'SELECT * FROM bagItems INNER JOIN products ON bagItems.productId = products.productId WHERE bagItemId = ?;';
-            connection.query(sql, [req.body.bagItemId], async(error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    newQuantity = results[0].quantity + 1;
-                    newTotalPrice = results[0].price * newQuantity;
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+            const bagId = await getBagId(connection, sessionData.accountId);
 
-                    const sql = 'UPDATE bagItems SET quantity = ?, totalPrice = ? WHERE bagItemId = ?;';
-                    const values = [newQuantity, newTotalPrice, req.body.bagItemId];
+            if (!bagId)
+                throw new Error('Bag not found');
 
-                    connection.query(sql, values, async (error, results) => {
-                        if (error) {
-                            throw error;
-                        } else {
-                            const bagDetails = await updateBag(connection, req.session.id);
+            if (!validateUuid(bagItemId))
+                throw new Error('Invalid bag item');
 
-                            var updatedBag = {
-                                newQuantity: newQuantity,
-                                newTotalPrice: newTotalPrice,
-                                newSubtotal: bagDetails[0],
-                                deliveryFee: bagDetails[1],
-                                newTotal: bagDetails[2]
-                            }
+            const query = 'SELECT * FROM bagItems INNER JOIN products ON bagItems.productId = products.productId WHERE bagItemId = ?;';
 
-                            res.send(updatedBag);
+            const [results] = await connection.promise().query(query, [bagItemId]);
+
+            if (results.length === 0)
+                throw new Error('Bag item not found');
+
+            newQuantity = parseInt(DOMPurify.sanitize(results[0].quantity)) + 1;
+            newTotalPrice = parseFloat(DOMPurify.sanitize(results[0].price)) * newQuantity;
+            
+            connection.beginTransaction(async(err) => {
+                if (err) throw err;
+
+                try {
+                    const query = 'UPDATE bagItems SET quantity = ?, totalPrice = ? WHERE bagItemId = ?;';
+                    const values = [newQuantity, newTotalPrice, bagItemId];
+
+                    const[results] = await connection.promise().query(query, values);
+
+                    const bagDetails = await updateBag(connection, sessionData.accountId);
+
+                    connection.commit((err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                throw err;
+                            })
                         }
+
+                        logger.info('User successfully added quantity of a bag item', {
+                            meta: {
+                                event: 'ADD_QUANTITY_SUCCESS',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId,
+                                bagItemId: bagItemId,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent']
+                            }
+                        });
+
+                        var updatedBag = {
+                            newQuantity: newQuantity,
+                            newTotalPrice: newTotalPrice,
+                            newSubtotal: bagDetails[0],
+                            deliveryFee: bagDetails[1],
+                            newTotal: bagDetails[2]
+                        }
+
+                        res.json({success: true, updatedBag:updatedBag});
                     })
+                } catch (error) {
+                    connection.rollback(() => {
+                        if (debug)
+                            console.error('Error adding quantity to bag item: ', error);
+                        else 
+                            console.error('An error occurred.');
+
+                        logger.error('Error when user attempted to add quantity to bag item', {
+                            meta: {
+                                event: 'ADD_QUANTITY_ERROR',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId,
+                                bagItemId: bagItemId,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent']
+                            }
+                        })
+                        res.json({success:false})
+                    })
+                } finally {
+                    if (connection)
+                        connection.release();
                 }
             })
-
         } catch(error) {
-            console.error(error);
+            if (connection) {
+                connection.rollback(() => {
+                    if (debug)
+                        console.error('Error starting the add quantity transaction: ', error);
+                    else 
+                        console.error('An error occurred.');
+    
+                    logger.error('Error when starting an add quantity transaction', {
+                        meta: {
+                            event: 'ADD_QUANTITY_ERROR',
+                            method: req.method,
+                            url: req.originalUrl,
+                            accountId: sessionData.accountId,
+                            bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
+                            sourceIp: req.ip,
+                            userAgent: req.headers['user-agent']
+                        }
+                    })
+                    res.json({success:false})
+                })
+            } else {
+                if (debug)
+                    console.error('Error starting the add quantity transaction: ', error);
+                else 
+                    console.error('An error occurred.');
+
+                logger.error('Error when starting an add quantity transaction', {
+                    meta: {
+                        event: 'ADD_QUANTITY_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent']
+                    }
+                })
+                res.json({success:false})
+            }
         } finally {
             if (connection)
                 connection.release();
@@ -250,46 +528,139 @@ const bag_controller = {
     },
 
     postSubtractQuantity: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
+        const bagItemId = DOMPurify.sanitize(req.body.bagItemId);
+        
         try {
-            var bagId = await getBagId(connection, req.session.id);
-            const sql = 'SELECT * FROM bagItems INNER JOIN products ON bagItems.productId = products.productId WHERE bagItemId = ?;';
-            connection.query(sql, [req.body.bagItemId], async(error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (results[0].quantity - 1 > 0) {
-                        newQuantity = results[0].quantity - 1;
-                        newTotalPrice = results[0].price * newQuantity;
-    
-                        const sql = 'UPDATE bagItems SET quantity = ?, totalPrice = ? WHERE bagItemId = ?;';
-                        const values = [newQuantity, newTotalPrice, req.body.bagItemId];
-    
-                        connection.query(sql, values, async (error, results) => {
-                            if (error) {
-                                throw error;
-                            } else {
-                                const bagDetails = await updateBag(connection, req.session.id);
-    
-                                var newBag = {
-                                    newQuantity: newQuantity,
-                                    newTotalPrice: newTotalPrice,
-                                    newSubtotal: bagDetails[0],
-                                    deliveryFee: bagDetails[1],
-                                    newTotal: bagDetails[2]
-                                }
-    
-                                res.send(newBag);
-                            }
-                        })
-                    } else { //subtracting results in 0 or less quantity 
-                        res.send(false);                    
-                    }
-                }
-            })
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+            const bagId = await getBagId(connection, sessionData.accountId);
 
+            if (!bagId) 
+                throw new Error('Bag not found');
+
+            if (!validateUuid(bagItemId))
+                throw new Error('Invalid bag item');
+
+            const query = 'SELECT * FROM bagItems INNER JOIN products ON bagItems.productId = products.productId WHERE bagItemId = ?;';
+            const [results] = await connection.promise().query(query, [bagItemId]);
+
+            if (results.length === 0) 
+                throw new Error('Bag item not found');
+
+            if (parseInt(DOMPurify.sanitize(results[0].quantity)) - 1 > 0) {
+                newQuantity = parseInt(DOMPurify.sanitize(results[0].quantity)) - 1;
+                newTotalPrice = parseFloat(DOMPurify.sanitize(results[0].price)) * newQuantity;
+    
+                connection.beginTransaction(async(err) => {
+                    if (err) throw err;
+    
+                    try {
+                        const query = 'UPDATE bagItems SET quantity = ?, totalPrice = ? WHERE bagItemId = ?;';
+                        const values = [newQuantity, newTotalPrice, bagItemId];
+    
+                        const[results] = await connection.promise().query(query, values);
+    
+                        const bagDetails = await updateBag(connection, sessionData.accountId);
+    
+                        connection.commit((err) => {
+                            if (err) {
+                                return connection.rollback(() => {
+                                    throw err;
+                                })
+                            }
+    
+                            logger.info('User successfully subtracted quantity of a bag item', {
+                                meta: {
+                                    event: 'SUBTRACT_QUANTITY_SUCCESS',
+                                    method: req.method,
+                                    url: req.originalUrl,
+                                    accountId: sessionData.accountId,
+                                    bagItemId: bagItemId,
+                                    sourceIp: req.ip,
+                                    userAgent: req.headers['user-agent']
+                                }
+                            });
+    
+                            var updatedBag = {
+                                newQuantity: newQuantity,
+                                newTotalPrice: newTotalPrice,
+                                newSubtotal: bagDetails[0],
+                                deliveryFee: bagDetails[1],
+                                newTotal: bagDetails[2]
+                            }
+    
+                            res.json({success: true, updatedBag:updatedBag});
+                        })
+                    } catch (error) {
+                        connection.rollback(() => {
+                            if (debug)
+                                console.error('Error subtracting quantity from bag item: ', error);
+                            else 
+                                console.error('An error occurred.');
+    
+                            logger.error('Error when user attempted to subtract quantity from bag item', {
+                                meta: {
+                                    event: 'SUBCTRACT_QUANTITY_ERROR',
+                                    method: req.method,
+                                    url: req.originalUrl,
+                                    accountId: sessionData.accountId,
+                                    bagItemId: bagItemId,
+                                    sourceIp: req.ip,
+                                    userAgent: req.headers['user-agent']
+                                }
+                            })
+                            res.json({success:false})
+                        })
+                    } finally {
+                        if (connection)
+                            connection.release();
+                    }
+                })
+            } else {
+                res.json({success:false})
+            }
         } catch(error) {
-            console.error(error);
+            if(connection) {
+                connection.rollback(() => {
+                    if (debug)
+                        console.error('Error starting the subtract quantity transaction: ', error);
+                    else 
+                        console.error('An error occurred.');
+    
+                    logger.error('Error when starting an subtract quantity transaction', {
+                        meta: {
+                            event: 'SUBTRACT_QUANTITY_ERROR',
+                            method: req.method,
+                            url: req.originalUrl,
+                            accountId: sessionData.accountId,
+                            bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
+                            sourceIp: req.ip,
+                            userAgent: req.headers['user-agent']
+                        }
+                    })
+                    res.json({success:false})
+                })
+            } else {
+                if (debug)
+                    console.error('Error starting the subtract quantity transaction: ', error);
+                else 
+                    console.error('An error occurred.');
+
+                logger.error('Error when starting an subtract quantity transaction', {
+                    meta: {
+                        event: 'SUBTRACT_QUANTITY_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent']
+                    }
+                })
+                res.json({success:false})
+            }
         } finally {
             if (connection)
                 connection.release();
@@ -297,37 +668,175 @@ const bag_controller = {
     },
 
     postDeleteBagItem: async (req, res) => {
-        let connection = await getConnectionFromPool();
+        let connection;
+        let sessionData;
+        const bagItemId = DOMPurify.sanitize(req.body.bagItemId);
 
         try {
-            var bagId = await getBagId(connection, req.session.id);
-            const sql = 'SELECT * FROM bagItems WHERE bagItemId = ?;';
-            connection.query(sql, [req.body.bagItemId], async(error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    if (results.length === 1) { // if bagitem is found 
-                        const sql = 'DELETE FROM bagItems WHERE bagItemId = ?;';
-                        connection.query(sql, [req.body.bagItemId], async(error, results) => {
-                            if (error) {
-                                throw error;
-                            } else {
-                                const bagDetails = await updateBag(connection, req.session.id);
-    
-                                var newBag = {
-                                    subtotal: bagDetails[0],
-                                    deliveryFee: bagDetails[1],
-                                    total: bagDetails[2]
-                                }
-    
-                                res.send(newBag);
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+            const bagId = await getBagId(connection, sessionData.accountId);
+            
+            if (!bagId)
+                throw new Error('Bag not found');
+
+            if (!validateUuid(bagItemId))
+                throw new Error('Invalid bag item');
+
+            const query = 'SELECT * FROM bagItems WHERE bagItemId = ?;';
+            const [results] = await connection.promise().query(query, [bagItemId]);
+
+            if (results.length === 0) 
+                throw new Error('Bag item not found');
+
+            connection.beginTransaction(async(err) => {
+                if (err) throw err;
+
+                try {
+                    const query = 'DELETE FROM bagItems WHERE bagItemId = ?;';
+
+                    const [results] = await connection.promise().query(query, [bagItemId]);
+
+                    const bagDetails = await updateBag(connection, sessionData.accountId);
+                    
+                    connection.commit((err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                throw err;
+                            }) 
+                        }
+                    })
+
+                    logger.info('User successfully deleted a bag item', {
+                        meta: {
+                            event: 'DELETE_BAG_ITEM_SUCCESS',
+                            method: req.method,
+                            url: req.originalUrl,
+                            accountId: sessionData.accountId,
+                            bagItemId: bagItemId,
+                            sourceIp: req.ip,
+                            userAgent: req.headers['user-agent']
+                        }
+                    });
+
+                    var newBag = {
+                        subtotal: bagDetails[0],
+                        deliveryFee: bagDetails[1],
+                        total: bagDetails[2]
+                    }
+                    res.json({success: true, newBag:newBag});
+                } catch (error) {
+                    connection.rollback(() => {
+                        if (debug)
+                            console.error('Error deleteing bag item: ', error);
+                        else 
+                            console.error('An error occurred.');
+
+                        logger.error('Error when user attempted to delete a bag item', {
+                            meta: {
+                                event: 'DELETE_BAG_ITEM_ERROR',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId,
+                                bagItemId: bagItemId,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent']
                             }
                         })
-                    }
+                        res.json({success:false})
+                    })
+                } finally {
+                    if (connection)
+                        connection.release();
                 }
             })
         } catch(error) {
-            console.log(error);
+            if (connection) {
+                connection.rollback(() => {
+                if (debug)
+                    console.error('Error starting the delete bag item transaction: ', error);
+                else 
+                    console.error('An error occurred.');
+
+                logger.error('Error when starting a delete bag item transaction', {
+                    meta: {
+                        event: 'DELETE_BAG_ITEM_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent']
+                    }
+                })
+                res.json({success:false})
+            })
+            }
+
+            else {
+                if (debug)
+                    console.error('Error starting the delete bag item transaction: ', error);
+                else 
+                    console.error('An error occurred.');
+
+                logger.error('Error when starting a delete bag item transaction', {
+                    meta: {
+                        event: 'DELETE_BAG_ITEM_ERROR',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent']
+                    }
+                })
+                res.json({success:false}) 
+            }
+        } finally {
+            if (connection)
+                connection.release();
+        }
+    },
+    
+    getBagTotal: async (req, res) => {
+        let connection;
+        let sessionData;
+
+        try {
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            const bagId = await getBagId(connection, sessionData.accountId);
+
+            const query = 'SELECT total FROM bag WHERE bagId = ?;';
+            const [results] = await connection.promise().query(query, [bagId])
+
+            if (results.length === 0)
+                throw new Error('Bag not found');
+
+            const total = results[0];
+            res.json({success: true, total: total});
+        } catch(error) {
+            if (debug) 
+                console.error('Error retrieving bag total price: ', error);
+            else
+                console.error('An error occurred.');
+            
+            if (sessionData)
+                var accountId = sessionData.accountId;
+
+            logger.error('Error when attempting to retrieve bag total price', {
+                meta: {
+                    event: 'GET_BAG_TOTAL',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            })
+            res.json({ success: false }); 
         } finally {
             if (connection)
                 connection.release();

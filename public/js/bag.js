@@ -33,17 +33,19 @@ $(document).ready(function(){
 
         if (isBagItemIdValid) {
             $.post("/addQuantity", {bagItemId: bagItemId}, function(result){
-                var newQuantity = result.newQuantity;
-                var newTotalPrice = parseFloat(result.newTotalPrice).toFixed(2);
-                var newSubtotal =  parseFloat(result.newSubtotal).toFixed(2);
-                var newTotal = parseFloat(result.newTotal).toFixed(2);   
-                var deliveryFee = parseFloat(result.deliveryFee).toFixed(2);
-                
-                $(clickedBtn).siblings(".quantity").text(newQuantity);
-                $(clickedBtn).parent().siblings(".price-container").text("₱ " + newTotalPrice);
-                $(clickedBtn).parent().parent().parent().parent().siblings(".payment-container").find(".subtotal").text("₱ " + newSubtotal);
-                $(clickedBtn).parent().parent().parent().parent().siblings(".payment-container").find(".deliveryFee").text("₱ " + deliveryFee);
-                $(clickedBtn).parent().parent().parent().parent().siblings(".payment-container").find(".overallTotal").text("₱ " + newTotal);          
+                if (result.success) {
+                    var newQuantity = result.updatedBag.newQuantity;
+                    var newTotalPrice = parseFloat(result.updatedBag.newTotalPrice).toFixed(2);
+                    var newSubtotal =  parseFloat(result.updatedBag.newSubtotal).toFixed(2);
+                    var newTotal = parseFloat(result.updatedBag.newTotal).toFixed(2);   
+                    var deliveryFee = parseFloat(result.updatedBag.deliveryFee).toFixed(2);
+                    
+                    $(clickedBtn).siblings(".quantity").text(newQuantity);
+                    $(clickedBtn).parent().siblings(".price-container").text("₱ " + newTotalPrice);
+                    $(clickedBtn).parent().parent().parent().parent().siblings(".payment-container").find(".subtotal").text("₱ " + newSubtotal);
+                    $(clickedBtn).parent().parent().parent().parent().siblings(".payment-container").find(".deliveryFee").text("₱ " + deliveryFee);
+                    $(clickedBtn).parent().parent().parent().parent().siblings(".payment-container").find(".overallTotal").text("₱ " + newTotal);  
+                }        
             })
         } else {
             window.location.assign('/'); 
@@ -60,13 +62,13 @@ $(document).ready(function(){
 
         if (isBagItemIdValid) {
             $.post("/subtractQuantity", {bagItemId: bagItemId}, function(result){
-                if (result)
+                if (result.success)
                 {
-                    var newQuantity = result.newQuantity;
-                    var newTotalPrice = parseFloat(result.newTotalPrice).toFixed(2);
-                    var newSubtotal =  parseFloat(result.newSubtotal).toFixed(2);
-                    var newTotal = parseFloat(result.newTotal).toFixed(2);   
-                    var deliveryFee = parseFloat(result.deliveryFee).toFixed(2);
+                    var newQuantity = result.updatedBag.newQuantity;
+                    var newTotalPrice = parseFloat(result.updatedBag.newTotalPrice).toFixed(2);
+                    var newSubtotal =  parseFloat(result.updatedBag.newSubtotal).toFixed(2);
+                    var newTotal = parseFloat(result.updatedBag.newTotal).toFixed(2);   
+                    var deliveryFee = parseFloat(result.updatedBag.deliveryFee).toFixed(2);
     
                     $(clickedBtn).siblings(".quantity").text(newQuantity);
                     $(clickedBtn).parent().siblings(".price-container").text("₱ " + newTotalPrice);
@@ -89,15 +91,16 @@ $(document).ready(function(){
 
         if (isBagItemIdValid) {
             $.post("/deleteBagItem", {bagItemId: bagItemId}, function(result){
-
-                $(orderContainer).parent().parent().siblings(".payment-container").find(".subtotal").text("₱ " + parseFloat(result.subtotal).toFixed(2));
-                $(orderContainer).parent().parent().siblings(".payment-container").find(".deliveryFee").text("₱ " + parseFloat(result.deliveryFee).toFixed(2));
-                $(orderContainer).parent().parent().siblings(".payment-container").find(".overallTotal").text("₱ " + parseFloat(result.total).toFixed(2)); 
-            
-                $(orderContainer).remove();  
-    
-                if (result.total == 0)
-                    disableProceed();        
+                if (result.success) {
+                    $(orderContainer).parent().parent().siblings(".payment-container").find(".subtotal").text("₱ " + parseFloat(result.newBag.subtotal).toFixed(2));
+                    $(orderContainer).parent().parent().siblings(".payment-container").find(".deliveryFee").text("₱ " + parseFloat(result.newBag.deliveryFee).toFixed(2));
+                    $(orderContainer).parent().parent().siblings(".payment-container").find(".overallTotal").text("₱ " + parseFloat(result.newBag.total).toFixed(2)); 
+                
+                    $(orderContainer).remove();  
+        
+                    if (result.newBag.total == 0)
+                        disableProceed();  
+                }      
             });
         } else {
             window.location.assign('/'); 

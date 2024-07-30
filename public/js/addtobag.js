@@ -1,4 +1,5 @@
 $(document).ready(function(){
+    var error_msg = document.getElementById("error");
     function validateUuid(str) {
         let regexUuidv4 = new RegExp(/^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/);
         return regexUuidv4.test(str);
@@ -207,7 +208,13 @@ $(document).ready(function(){
             }
 
             $.post('/addBagItem', query, function(results) {
-              window.location.assign('/menu');  
+              if (results.success) {
+                error_msg.innerHTML = "";
+                error_msg.style.display = "none";
+                window.location.assign('/menu'); 
+              }
+              else
+                error_msg.innerHTML = "An error occured.";    
             })
         } else {
           window.location.assign('/menu'); 
