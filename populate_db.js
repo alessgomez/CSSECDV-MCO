@@ -1,4 +1,4 @@
-const { getConnectionFromPool, logPoolStats } = require('./db');
+const { getConnectionFromPool } = require('./db');
 const { v4: uuidv4 } = require('uuid');
 const ids = []
 
@@ -104,8 +104,10 @@ async function populateDb() {
                 resolve(results);
             }
         });
-    }) 
+    })
+    connection.release();
+    console.log('Successfully populated database.');
+    process.exit(0);
 }
 
 populateDb();
-
