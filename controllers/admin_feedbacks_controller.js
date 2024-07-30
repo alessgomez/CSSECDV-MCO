@@ -8,6 +8,7 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
 const { getSessionDataEntry } = require('./login_controller');
+const geoip = require('geoip-lite');
 
 const admin_feedbacks_controller = {
     getViewFeedbacks: async (req, res) => {
@@ -50,7 +51,10 @@ const admin_feedbacks_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
             
@@ -78,14 +82,17 @@ const admin_feedbacks_controller = {
             } else {
                 logger.info('Admin successfully deleted feedback', {
                     meta: {
-                      event: 'DELETE_FEEDBACK_SUCCESS',
-                      method: req.method,
-                      url: req.originalUrl,
-                      accountId: sessionData.accountId,
-                      feedbackId: feedbackId, 
-                      sourceIp: req.ip,
-                      userAgent: req.headers['user-agent'],
-                      sessionId: req.session.id 
+                        event: 'DELETE_FEEDBACK_SUCCESS',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        feedbackId: feedbackId, 
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 });
 
@@ -107,7 +114,10 @@ const admin_feedbacks_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 

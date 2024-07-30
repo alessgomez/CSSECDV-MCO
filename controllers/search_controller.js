@@ -37,9 +37,9 @@ const search_controller = {
                         console.log(result.name);
                         console.log(result.price);
                         console.log(result.productId);
-                        console.log(result.imageFileName);
+                        console.log(result.imageFilename);
                         return {
-                            image: "/images/products/" + result.imageFileName,
+                            image: "/images/products/" + result.imageFilename,
                             name: result.name,
                             price: result.price,
                             id: result.productId,

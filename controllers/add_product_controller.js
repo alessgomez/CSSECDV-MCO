@@ -163,14 +163,17 @@ const add_product_controller = {
                 } else {
                     logger.info('Admin successfully added a new product', {
                         meta: {
-                          event: 'ADD_PRODUCT_SUCCESS',
-                          method: req.method,
-                          url: req.originalUrl,
-                          accountId: sessionData.accountId, 
-                          productId: result,
-                          sourceIp: req.ip,
-                          userAgent: req.headers['user-agent'],
-                          sessionId: req.session.id 
+                            event: 'ADD_PRODUCT_SUCCESS',
+                            method: req.method,
+                            url: req.originalUrl,
+                            accountId: sessionData.accountId, 
+                            productId: result,
+                            sourceIp: req.ip,
+                            userAgent: req.headers['user-agent'],
+                            hostname: req.hostname,
+                            protocol: req.protocol,
+                            port: req.socket.localPort,
+                            geo:geoip.lookup(req.ip)
                         }
                       });
                     req.flash('success_msg', 'Product successfully added.');
@@ -190,11 +193,13 @@ const add_product_controller = {
                         method: req.method,
                         url: req.originalUrl,
                         accountId: sessionData.accountId,
-                        productId: productId, 
                         error: error,
                         sourceIp: req.ip,
                         userAgent: req.headers['user-agent'],
-                        sessionId: req.session.id 
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 });
                 

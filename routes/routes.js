@@ -16,6 +16,7 @@ const {bag_controller} = require('../controllers/bag_controller.js');
 const checkout_controller = require('../controllers/checkout_controller.js');
 const search_controller = require('../controllers/search_controller.js');
 const confirmation_controller = require('../controllers/confirmation_controller.js');
+const order_history_controller = require('../controllers/order_history_controller.js');
 
 const app = express();
 
@@ -43,6 +44,9 @@ app.get('/contact', general_controller.isPrivate, verifyRole('USER'), bag_contro
 app.get('/getItemQuantity', general_controller.isPrivate, verifyRole('USER'), bag_controller.getItemQuantity);
 app.get('/getBagTotal', general_controller.isPrivate, verifyRole('USER'), bag_controller.getBagTotal);
 app.get('/confirmation/:id', general_controller.isPrivate, verifyRole('USER'), bag_controller.getBag, confirmation_controller.getConfirmation);
+app.get('/orderhistory', general_controller.isPrivate, verifyRole('USER'), order_history_controller.getOrderHistory);
+app.get('/orderhistory/:index', general_controller.isPrivate, verifyRole('USER'), order_history_controller.getOrderDetails);
+
 
 // POSTs
 app.post('/verifyAccount', login_controller.postVerifyAccount);

@@ -6,6 +6,7 @@ const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 async function checkAccountIdExists(connection, accountId) {
     return new Promise((resolve, reject) => {
@@ -94,7 +95,10 @@ const verifyRole = (requiredRole) => { return async function(req, res, next) {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -146,7 +150,10 @@ const general_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -198,7 +205,10 @@ const general_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -245,7 +255,10 @@ const general_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -299,7 +312,10 @@ const general_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -340,7 +356,10 @@ const general_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
         } finally {
@@ -362,13 +381,16 @@ const general_controller = {
             
             logger.info('User successfully logged out', {
                 meta: {
-                  event: 'USER_LOGOUT_SUCCESS',
-                  method: req.method,
-                  url: req.originalUrl,
-                  accountId: sessionData.accountId, 
-                  sourceIp: req.ip,
-                  userAgent: req.headers['user-agent'],
-                  sessionId: sessionData.sessionId
+                    event: 'USER_LOGOUT_SUCCESS',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId, 
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
               });
 

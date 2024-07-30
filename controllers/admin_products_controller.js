@@ -11,6 +11,7 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
 const { getSessionDataEntry } = require('./login_controller');
+const geoip = require('geoip-lite');
 
 const admin_products_controller = {
     getViewProducts: async (req, res) => {
@@ -56,7 +57,10 @@ const admin_products_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -85,14 +89,17 @@ const admin_products_controller = {
             else {
                 logger.info('Admin successfully archived product', {
                     meta: {
-                      event: 'ARCHIVE_PRODUCT_SUCCESS',
-                      method: req.method,
-                      url: req.originalUrl,
-                      accountId: sessionData.accountId,
-                      productId: productId, 
-                      sourceIp: req.ip,
-                      userAgent: req.headers['user-agent'],
-                      sessionId: req.session.id 
+                        event: 'ARCHIVE_PRODUCT_SUCCESS',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        productId: productId, 
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                   });
 
@@ -115,7 +122,10 @@ const admin_products_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -143,14 +153,17 @@ const admin_products_controller = {
             else {
                 logger.info('Admin successfully unarchived product', {
                     meta: {
-                      event: 'UNARCHIVE_PRODUCT_SUCCESS',
-                      method: req.method,
-                      url: req.originalUrl,
-                      accountId: sessionData.accountId, 
-                      productId: productId,
-                      sourceIp: req.ip,
-                      userAgent: req.headers['user-agent'],
-                      sessionId: req.session.id 
+                        event: 'UNARCHIVE_PRODUCT_SUCCESS',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId, 
+                        productId: productId,
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                   });
 
@@ -173,7 +186,10 @@ const admin_products_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -206,14 +222,17 @@ const admin_products_controller = {
             else {
                 logger.info('Admin successfully added product to bestsellers', {
                     meta: {
-                      event: 'ADD_BESTSELLER_SUCCESS',
-                      method: req.method,
-                      url: req.originalUrl,
-                      accountId: sessionData.accountId,
-                      productId: productId, 
-                      sourceIp: req.ip,
-                      userAgent: req.headers['user-agent'],
-                      sessionId: req.session.id 
+                        event: 'ADD_BESTSELLER_SUCCESS',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        productId: productId, 
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                   });
 
@@ -237,7 +256,10 @@ const admin_products_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -266,14 +288,17 @@ const admin_products_controller = {
             else {
                 logger.info('Admin successfully removed product from bestsellers', {
                     meta: {
-                      event: 'REMOVE_BESTESELLER_SUCCESS',
-                      method: req.method,
-                      url: req.originalUrl,
-                      accountId: sessionData.accountId,
-                      productId: productId, 
-                      sourceIp: req.ip,
-                      userAgent: req.headers['user-agent'],
-                      sessionId: req.session.id 
+                        event: 'REMOVE_BESTESELLER_SUCCESS',
+                        method: req.method,
+                        url: req.originalUrl,
+                        accountId: sessionData.accountId,
+                        productId: productId, 
+                        sourceIp: req.ip,
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                   });
 
@@ -297,7 +322,10 @@ const admin_products_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
