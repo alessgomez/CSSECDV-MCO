@@ -37,7 +37,7 @@ const admin_products_controller = {
                 category: DOMPurify.sanitize(product.category),
                 price: parseFloat(product.price).toFixed(2),
                 imageFilename: DOMPurify.sanitize(product.imageFilename),
-                isBestSeller: parseInt(product.isBestSeller, 10),
+                isBestseller: parseInt(product.isBestseller, 10),
                 isArchived: parseInt(product.isArchived, 10)
             }));
             
