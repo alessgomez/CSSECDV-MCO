@@ -76,11 +76,18 @@ $(document).ready(function(){
         }
     }
 
+    function getByteLengthBlob(string, encoding = 'utf-8') {
+        const blob = new Blob([string], { type: `text/plain;charset=${encoding}` });
+        return blob.size;
+    }
+
     emailInput.onkeyup = function() {
         var email = emailInput.value
         let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/)
+        const emailLocalLength = getByteLengthBlob(email.substr(0, email.indexOf('@')));
+        const emailDomainLength = getByteLengthBlob(email.substr(email.indexOf('@')));
 
-        emailValid = email != null && regexEmail.test(email) && email.substr(0, email.indexOf('@')).length <= 64 && email.substr(email.indexOf('@')).length <= 255;
+        emailValid = email != null && regexEmail.test(email) && emailLocalLength <= 64 && emailDomainLength <= 255;
 
         validateFields();
     }
