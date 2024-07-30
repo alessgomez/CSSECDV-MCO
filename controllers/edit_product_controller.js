@@ -13,6 +13,7 @@ const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
 const { getSessionDataEntry } = require('./login_controller');
+const geoip = require('geoip-lite');
 
 // Initialize upload middleware and add file size limit
 const upload = multer({
@@ -132,8 +133,11 @@ const edit_product_controller = {
                     productId: productId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    userAgent: req.headers['user-agent'], 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
@@ -182,15 +186,18 @@ const edit_product_controller = {
                     } else {
                         logger.info('Admin successfully updated product', {
                             meta: {
-                              event: 'EDIT_PRODUCT_SUCCESS',
-                              method: req.method,
-                              url: req.originalUrl,
-                              accountId: sessionData.accountId, 
-                              productId: productId,
-                              sourceIp: req.ip,
-                              userAgent: req.headers['user-agent'],
-                              sessionId: req.session.id 
-                            }
+                                event: 'EDIT_PRODUCT_SUCCESS',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId, 
+                                productId: productId,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent'],
+                                hostname: req.hostname,
+                                protocol: req.protocol,
+                                port: req.socket.localPort,
+                                geo:geoip.lookup(req.ip)
+                                }
                           });
 
                         req.flash('success_msg', 'Product successfully updated.');
@@ -225,14 +232,17 @@ const edit_product_controller = {
                     } else {
                         logger.info('Admin successfully edited a product', {
                             meta: {
-                              event: 'EDIT_PRODUCT_SUCCESS',
-                              method: req.method,
-                              url: req.originalUrl,
-                              accountId: sessionData.accountId, 
-                              productId: productId,
-                              sourceIp: req.ip,
-                              userAgent: req.headers['user-agent'],
-                              sessionId: req.session.id 
+                                event: 'EDIT_PRODUCT_SUCCESS',
+                                method: req.method,
+                                url: req.originalUrl,
+                                accountId: sessionData.accountId, 
+                                productId: productId,
+                                sourceIp: req.ip,
+                                userAgent: req.headers['user-agent'],
+                                hostname: req.hostname,
+                                protocol: req.protocol,
+                                port: req.socket.localPort,
+                                geo:geoip.lookup(req.ip)
                             }
                           });
 
@@ -256,7 +266,10 @@ const edit_product_controller = {
                         error: error,
                         sourceIp: req.ip,
                         userAgent: req.headers['user-agent'],
-                        sessionId: req.session.id 
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 });
 
@@ -310,7 +323,10 @@ const edit_product_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 

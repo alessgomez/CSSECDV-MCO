@@ -7,6 +7,7 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
+const geoip = require('geoip-lite');
 
 const home_controller = {
 
@@ -60,7 +61,11 @@ const home_controller = {
                     accountId: sessionData.accountId,
                     error: error,
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
             res.status(500).send('Internal Server Error');
@@ -127,7 +132,10 @@ const home_controller = {
                     error: error,
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent'],
-                    sessionId: req.session.id 
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
 
