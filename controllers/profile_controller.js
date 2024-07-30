@@ -14,6 +14,7 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
+const geoip = require('geoip-lite');
 
 const checkUuidExists = (connection, newId) => {
     return new Promise((resolve, reject) => {
