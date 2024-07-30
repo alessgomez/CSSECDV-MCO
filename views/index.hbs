@@ -43,11 +43,6 @@
                 <a href="/menu#dnd"><img src="images/dnd.png" width="150" height="150"></a>
                 <div class="label">Desserts & Drinks</div>
             </div>
-
-            <div class="icon">
-                <a href="/menu#bundle"><img src="images/bundle.png" width="150" height="150"></a>
-                <div class="label">Bundle Meals</div>
-            </div>
         </div>
     </div>
 
@@ -90,8 +85,8 @@
 
         <div class="content-container">
             {{#each bestSellers}}
-                <a class="best" href="/addtobag/{{this.id}}">
-                    <img src={{this.image}} width="230" height="200">
+                <a class="best" href="/addtobag/{{this.productId}}">
+                    <img src=/images/products/{{this.imageFilename}} width="230" height="200">
                     <div class="name">{{this.name}}</div>
                     <div class="price">₱ {{this.price}}</div>
                 </a>
@@ -99,3 +94,9 @@
         </div>
     </div>  
 </div>
+
+{{#if error_msg}}
+<script type="text/javascript">
+    alert("{{error_msg}}");
+</script>
+{{/if}}

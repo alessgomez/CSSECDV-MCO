@@ -95,14 +95,16 @@ async function populateDb() {
     products.push([generateUUIDs(), mango, drink, 60, 'mango.png']);
     products.push([generateUUIDs(), fourSeasons, drink, 60, 'four-seasons.png']);
     
-    connection.query(sql, [products], async(error, results) => {
-        if (error) {
-            reject(error);
-        } 
-        else {
-            resolve(results);
-        }
-    });
+    await new Promise ((resolve, reject) => {
+        connection.query(sql, [products], async(error, results) => {
+            if (error) {
+                reject(error);
+            } 
+            else {
+                resolve(results);
+            }
+        });
+    }) 
 }
 
 populateDb();

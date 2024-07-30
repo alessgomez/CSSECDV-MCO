@@ -15,10 +15,59 @@ const home_controller = {
             style: ["navbar", "index"],
             script: ["index"], 
             bestSellers: [],
-            bag: {}
+            bag: req.bag
         }
         
-        res.render("index", userPageData);
+        let connection;
+        let sessionData;
+
+        try  {
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
+            const query = "SELECT * FROM products WHERE isBestSeller = 1;";
+
+            const results = await new Promise ((resolve, reject) => {
+                connection.query(query, async(error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        for(let i = 0; i < results.length; i++) {
+                            userPageData.bestSellers.push({
+                                productId: DOMPurify.sanitize(results[i].productId),
+                                imageFilename: DOMPurify.sanitize(results[i].imageFilename),
+                                name: DOMPurify.sanitize(results[i].name),
+                                price: parseFloat(DOMPurify.sanitize(results[i].price))
+                            })
+                        }
+
+                        resolve(results);
+                    }
+                })
+            })
+            res.render("index", userPageData);
+        } catch(error) {
+            if (debug)
+                console.error('Error fetching user home data:', error);
+            else 
+                console.error('An error occurred.')
+
+            logger.error('Error when user attempted to view home', {
+                meta: {
+                    event: 'VIEW_HOME_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent']
+                }
+            });
+            res.status(500).send('Internal Server Error');
+        } finally{
+            if (connection)
+                connection.release();
+        }
     },
 
     getAdminHome: async (req, res) => {

@@ -53,3 +53,8 @@
   font-family: arial;
   font-size: 0.82rem;
 }
+
+#error {
+  color: #c93020;
+  text-align: center;
+}

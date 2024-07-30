@@ -277,6 +277,7 @@ const login_controller = {
 
         if (accountId) {
             const oneTimeCode = generateOneTimeCode();
+            console.log(oneTimeCode);
             const sessionDataEntry = await getSessionDataEntry(connection, req.session.id)
 
             if (!sessionDataEntry) {

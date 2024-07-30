@@ -97,6 +97,13 @@
     cursor:pointer;
 }
 
+.contact-container button:disabled {
+    background-color: #dddddd; /* Change to the color you want for disabled state */
+    color: #999999; /* Change to the color you want for disabled state */
+    cursor: not-allowed; /* Optional: Change cursor style */
+    opacity: 0.7; /* Optional: Reduce opacity for a disabled look */
+}
+
 .contact-details-container{
     width: 100%;
 }
