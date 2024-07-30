@@ -1,6 +1,7 @@
 const { getConnectionFromPool, logPoolStats } = require('../db');
 const { getSessionDataEntry } = require('./login_controller');
 const home_controller = require('./home_controller');
+const { bag_controller } = require('./bag_controller');
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
@@ -274,7 +275,7 @@ const general_controller = {
     
                     switch (role) {
                         case 'USER':
-                            return home_controller.getUserHome(req, res);
+                            return bag_controller.getBag(req, res, function(){home_controller.getUserHome(req, res)});
                         case 'ADMIN':
                             return home_controller.getAdminHome(req, res);
                         default:

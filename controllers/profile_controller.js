@@ -95,7 +95,8 @@ const profile_controller = {
             style: ["navbar", "accountdetails", "profile"],
             script: ["profile"],
             partialName: ["profile"],
-            accountDetails: {}
+            accountDetails: {},
+            bag: req.bag
         }
 
         let connection;
@@ -154,7 +155,8 @@ const profile_controller = {
         const changePwPageData = {
             style: ["navbar", "accountdetails", "profile"],
             script: ["changepw"],
-            partialName: ["changepw"]
+            partialName: ["changepw"],
+            bag: req.bag
         }
 
         let connection;
