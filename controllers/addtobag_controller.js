@@ -53,7 +53,8 @@ const addtobag_controller = {
                     url: req.originalUrl,
                     accountId: sessionData.accountId,
                     productId: productId,
-                    error: error,
+                    errorMessage: error.message, 
+                    errorStack: error.stack, 
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent']
                 }

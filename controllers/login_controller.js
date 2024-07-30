@@ -166,9 +166,9 @@ const login_controller = {
 
     function validateEmail(email){
         const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
-        const emailLocalLength = getByteLengthBlob(newAccount.email.substr(0, newAccount.email.indexOf('@')));
-        const emailDomainLength = getByteLengthBlob(newAccount.email.substr(newAccount.email.indexOf('@')));
-        return emailRegex.test(newAccount.email) && emailLocalLength <= 64 && emailDomainLength <= 255;
+        const emailLocalLength = getByteLengthBlob(email.substr(0, email.indexOf('@')));
+        const emailDomainLength = getByteLengthBlob(email.substr(email.indexOf('@')));
+        return emailRegex.test(email) && emailLocalLength <= 64 && emailDomainLength <= 255;
     }
 
     function validatePW (pw) {
@@ -359,7 +359,8 @@ const login_controller = {
               method: req.method,
               url: req.originalUrl,
               email: email,
-              error: error,
+              errorMessage: error.message, 
+              errorStack: error.stack, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
               hostname: req.hostname,
@@ -501,7 +502,8 @@ const login_controller = {
               method: req.method,
               url: req.originalUrl,
               accountId: sessionData.accountId,
-              error: error,
+              errorMessage: error.message, 
+              errorStack: error.stack, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
               hostname: req.hostname,
@@ -592,7 +594,8 @@ const login_controller = {
               method: req.method,
               url: req.originalUrl,
               accountId: sessionData.accountId,
-              error: error,
+              errorMessage: error.message, 
+              errorStack: error.stack, 
               sourceIp: req.ip,
               userAgent: req.headers['user-agent'],
               hostname: req.hostname,

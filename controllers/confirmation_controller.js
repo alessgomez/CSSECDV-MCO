@@ -143,7 +143,8 @@ const confirmation_controller = {
                     url: req.originalUrl,
                     accountId: sessionData.accountId,
                     orderId: orderId,
-                    error: error,
+                    errorMessage: error.message, 
+                    errorStack: error.stack, 
                     sourceIp: req.ip,
                     userAgent: req.headers['user-agent']
                 }
