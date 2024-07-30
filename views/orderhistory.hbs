@@ -6,7 +6,7 @@
         <ul class="list-proper">
             {{#each orders}}
             <li>
-                <a class="order-history-nav" href="/orderhistory/{{@index}}">Order #: {{@index}}</a>
+                <a class="order-history-nav" href="/orderhistory/{{@index}}">Order #: {{incrementedIndex}}</a>
             </li>
             {{/each}}
         </ul>

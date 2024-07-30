@@ -59,7 +59,12 @@ const order_history_controller = {
                         orderHistoryPageData.partialName = "withoutorders";
                     }
 
-                    orderHistoryPageData.orders = results;
+                    orderHistoryPageData.orders = results.map((order, index) => {
+                        return{
+                            ...order,
+                            incrementedIndex: parseInt(index + 1)
+                        }
+                    })
 
                     res.render('orderhistory', orderHistoryPageData);
                 }
@@ -113,9 +118,10 @@ const order_history_controller = {
                     throw error;
                 } else {
 
-                    orderDetailsPageData.orders = results.map(order => {
+                    orderDetailsPageData.orders = results.map((order, index) => {
                         return{
-                            orderId: DOMPurify.sanitize(order.orderId)
+                            ...order,
+                            incrementedIndex: parseInt(index + 1)
                         };
                     });      
                 }
