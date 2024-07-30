@@ -4,6 +4,7 @@ const fs = require('fs');
 const axios = require('axios');
 const debug = process.env.DEBUG;
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 const sharp = require('sharp');
 const multer = require('multer');
@@ -239,7 +240,7 @@ const registration_controller = {
                         const account = await registerAccount(connection, newAccount);
     
                         if (account === null)
-                            throw new Error('Account with the given email already exists.');
+                            throw new Error('Account with the given email or phone number already exists.');
                         else {
                             const bag = await createBag(connection, account[1]);
                             if (bag === null)
