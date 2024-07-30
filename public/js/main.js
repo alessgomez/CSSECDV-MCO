@@ -19,10 +19,10 @@ $(document).ready(function(){
             var q = $("#searchbar-input").val();
 
             if (q == "")
-                window.location.href = "https://localhost:3000/menu";  
+                window.location.href = "/menu";  
 
             else
-                window.location.href = "https://localhost:3000/search?q=" + q;
+                window.location.href = "/search?q=" + q;
         }
     })
 });
