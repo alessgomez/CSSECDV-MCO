@@ -13,10 +13,9 @@ $(document).ready(function(){
         bag.classList.toggle("hide");
     })
 
-    $("#searchbar-input").keyup(function(){
-        var keyupTimer;
-        clearTimeout(keyupTimer);
-        keyupTimer = setTimeout(function(){
+    $("#searchbar-input").keyup(function(event){
+
+        if (event.keyCode === 13){
             var q = $("#searchbar-input").val();
 
             if (q == "")
@@ -24,6 +23,6 @@ $(document).ready(function(){
 
             else
                 window.location.href = "https://localhost:3000/search?q=" + q;
-        }, 1500);
+        }
     })
 });

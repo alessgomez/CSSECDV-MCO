@@ -1,12 +1,19 @@
-const { connect } = require('http2');
-const {getConnectionFromPool} = require('../db.js');
-const { getSessionDataEntry } = require('./login_controller');
+const { getConnectionFromPool, logPoolStats } = require('../db');
+const { fileFilter, getMimeType, sanitizeImage } = require('./registration_controller.js')
 const fs = require('fs');
+const sharp = require('sharp');
+const multer = require('multer');
+const { v4: uuidv4, validate } = require('uuid');
+const storage = multer.memoryStorage();
+const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
-const session = require('express-session');
 const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
+const logger = require('../logger');
+const { getSessionDataEntry } = require('./login_controller.js');
+const geoip = require('geoip-lite');
 
 function getOrderId (connection, accountId, index){
     return new Promise((resolve, reject) => {
@@ -15,7 +22,7 @@ function getOrderId (connection, accountId, index){
                 throw error;
             } else {
                 if (results.length > 0){
-                    let orderId = results[index].orderId;
+                    let orderId = DOMPurify.sanitize(results[index].orderId);
                     resolve(orderId);
                 }
             }
@@ -24,46 +31,61 @@ function getOrderId (connection, accountId, index){
     
 }
 
-
 const order_history_controller = { 
 
     getOrderHistory: async (req, res) => {
         const orderHistoryPageData = {
             style: ["navbar", "index", "orderhistory"],
-            orders: [],
             partialName: [],
             bag: req.bag
         }
-        let connection = await getConnectionFromPool();
-        let sessionData = await getSessionDataEntry(connection, req.session.id);
+        let connection;
+        let sessionData;
 
         try {
+
+            connection = await getConnectionFromPool();
+            sessionData = await getSessionDataEntry(connection, req.session.id);
+
             const sql = "SELECT orderId FROM orders WHERE accountId = ? ORDER BY dateOrdered ASC"
             const values = [sessionData.accountId];
-
             connection.query(sql, values, async (error, results) => {
-
                 if(error) {
                     throw error;
                 } else {
-
                     if (results.length > 0){
                         orderHistoryPageData.partialName = "withorders"  ;
                     }else {
                         orderHistoryPageData.partialName = "withoutorders";
                     }
 
-                    orderHistoryPageData.orders = results.map(order => {
-                        return{
-                            orderId: order.orderId
-                        };
-                    });                    
+                    orderHistoryPageData.orders = results;
 
                     res.render('orderhistory', orderHistoryPageData);
                 }
             });
         } catch(error){
-            console.log(error);
+            if (debug)
+                console.error('Error viewing page: ', error)
+            else
+                console.error('An error occurred')
+
+            logger.error('Error when viewing the page', {
+                meta: {
+                    event: 'VIEW_ORDERS_PAGE_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
+                }
+            });
+
         } finally {
             if (connection)
                 connection.release();
@@ -93,7 +115,7 @@ const order_history_controller = {
 
                     orderDetailsPageData.orders = results.map(order => {
                         return{
-                            orderId: order.orderId
+                            orderId: DOMPurify.sanitize(order.orderId)
                         };
                     });      
                 }
@@ -116,21 +138,21 @@ const order_history_controller = {
                     throw error;
                 } else {
 
-                    orderDetailsPageData.date = results[0].date;
+                    orderDetailsPageData.date = DOMPurify.sanitize(results[0].date);
 
-                    orderDetailsPageData.currOrder.completeAddress = results[0].completeAddress;
+                    orderDetailsPageData.currOrder.completeAddress = DOMPurify.sanitize(results[0].completeAddress);
 
-                    orderDetailsPageData.currOrder.subtotal = results[0].subtotal;
+                    orderDetailsPageData.currOrder.subtotal = parseFloat(results[0].subtotal);
 
-                    orderDetailsPageData.currOrder.deliveryFee = results[0].deliveryFee;
+                    orderDetailsPageData.currOrder.deliveryFee = parseFloat(results[0].deliveryFee);
 
                     orderDetailsPageData.currOrder.total = results[0].total;
 
                     orderDetailsPageData.particulars = results.map(particular => {
                         return{
-                            quantity: particular.quantity,
-                            name: particular.name,
-                            price: particular.price
+                            quantity: parseInt(particular.quantity),
+                            name: DOMPurify.sanitize(particular.name),
+                            price: parseFloat(particular.price)
                         };
                     });    
 
@@ -138,7 +160,26 @@ const order_history_controller = {
                 }
             });
         } catch(error){
-            console.log(error);
+            if (debug)
+                console.error('Error loading order: ', error)
+            else
+                console.error('An error occurred')
+
+            logger.error('Error when viewing the page with specific order', {
+                meta: {
+                    event: 'VIEW_ORDERS_PAGE_ERROR',
+                    method: req.method,
+                    url: req.originalUrl,
+                    accountId: sessionData.accountId,
+                    error: error,
+                    sourceIp: req.ip,
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
+                }
+            });
         } finally {
             if (connection)
                 connection.release();
