@@ -15,10 +15,10 @@ const { getSessionDataEntry } = require('./login_controller.js');
 const geoip = require('geoip-lite');
 
 
-// function searchValid (query) {
-//     const searchRegex = /^[a-zA-Z0-9() \n]*$/;
-//     searchRegex.test(query) && query.length <= 50;
-// } 
+function searchValid (query) {
+    const searchRegex = /^[a-zA-Z0-9() \n]*$/;
+    return searchRegex.test(query) && query.length <= 50;
+} 
 
 const search_controller = {
 
@@ -34,9 +34,13 @@ const search_controller = {
             connection = await getConnectionFromPool();
             sessionData = await getSessionDataEntry(connection, req.session.id)
 
-            //if (searchValid(req.query.q)){
-                const sql = "SELECT productId, name, price, imageFilename FROM products WHERE isArchived = 0 AND name LIKE ? ORDER BY category ASC"
-                values = [req.query.q];
+            if (searchValid(req.query.q)){
+                const sql = `SELECT productId, name, price, imageFilename 
+                             FROM products 
+                             WHERE isArchived = 0 AND name LIKE ?
+                             ORDER BY category ASC`
+                values = [`%${req.query.q}%`];
+
                 connection.query(sql, values, async (error, results) => {
                     if(error) {
                         throw error;
@@ -57,9 +61,9 @@ const search_controller = {
                         res.render('search', searchPageData);
                     }
                 });
-            // } else{
-            //     throw new Error('Invalid search query.');
-            // }
+            } else{
+                throw new Error('Invalid search query.');
+            }
         } catch(error){
             if (debug)
                 console.error('Error searching for product: ', error)
@@ -81,6 +85,8 @@ const search_controller = {
                     geo:geoip.lookup(req.ip)
                 }
             });
+
+            return res.redirect('/menu');
         } finally {
             if (connection)
                 connection.release();
