@@ -12,40 +12,6 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const storage = multer.memoryStorage();
 
-const createDOMPurify = require('dompurify');
-const { JSDOM } = require('jsdom');
-const window = new JSDOM('').window;
-const DOMPurify = createDOMPurify(window);
-const nodemailer = require('nodemailer');
-
-// Function to send email with one-time code
-async function sendOneTimeCode(email, code) {
-    // Create a transporter using SMTP transport
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.office365.com',
-      secure: false,//true
-      port: 587,//465
-      auth: {
-          user: config.user, 
-          pass: config.pass 
-      }
-    });
-  
-    const mailOptions = {
-        from: config.user,
-        to: email,
-        subject: 'One-Time Code for email verification',
-        text: `Your one-time code for email verification is: ${code}`
-    };
-  
-    return transporter.sendMail(mailOptions);
-  }
-  
-// Function to generate a random one-time code
-function generateOneTimeCode() {
-    return uuidv4().substring(0, 6).toUpperCase(); // Generate a 6-character alphanumeric code
-  }
-
 function fileFilter(req, file, cb) {
     // 1. List allowed extensions
     const fileNameRegex = /^[A-Za-z0-9]+([-._ ]*[A-Za-z0-9])*\.(jpg|jpeg|png|JPG|JPEG|PNG)$/
@@ -225,15 +191,6 @@ const registration_controller = {
         res.render("register", { siteKey: config.RECAPTCHA_SITE_KEY });
     },
 
-    getVerifyEmail: function (req, res) {
-        const email = DOMPurify.sanitize(req.params.email);
-
-        const oneTimeCode = generateOneTimeCode();
-        sendOneTimeCode(email, oneTimeCode);
-
-        res.render("emailverification");
-    },
-
     postAddAccount: function (req, res) {
         upload(req, res, async (err) => {
             try {
@@ -314,7 +271,8 @@ const registration_controller = {
                                     }
                                 });
 
-                                return res.redirect('/verifyEmail/' + newAccount.email);
+                                req.flash('success_msg', 'Account successfully registered. You may log in.');
+                                return res.redirect('/login');
                             }
                         }
                     } else
