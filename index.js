@@ -39,8 +39,8 @@ app.use(session({
         secure: true, 
         maxAge: 1000 * 60 * 15, 
         httpOnly: true,
-        sameSite: 'strict',
-        domain: 'localhost',
+        sameSite: 'lax',
+        domain: 'cssecdv-mco.onrender.com',
         path: '/'
     }
 }));
