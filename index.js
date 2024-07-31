@@ -35,6 +35,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     proxy: true,
+    name: 'TheHungrySibsCookieName',
     cookie: {
         secure: true, 
         maxAge: 1000 * 60 * 15, 
