@@ -39,7 +39,7 @@ app.use(session({
         secure: true, 
         maxAge: 1000 * 60 * 15, 
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         domain: 'cssecdv-mco.onrender.com',
         path: '/'
     }
