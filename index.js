@@ -42,7 +42,9 @@ app.use(session({
         secure: true, 
         maxAge: 1000 * 60 * 15, 
         httpOnly: true,
-        sameSite: 'strict' // Cookies only included when navigating within the same site to mitigate CSRF attacks
+        sameSite: 'strict',
+        domain: 'localhost',
+        path: '/'
     }
 }));
 
