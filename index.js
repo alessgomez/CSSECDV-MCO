@@ -39,7 +39,9 @@ app.use(session({
         secure: true, 
         maxAge: 1000 * 60 * 15, 
         httpOnly: true,
-        sameSite: 'none'
+        sameSite: 'strict',
+        domain: 'localhost',
+        path: '/'
     }
 }));
 
