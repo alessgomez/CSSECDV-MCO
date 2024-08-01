@@ -8,12 +8,16 @@
           <div class="card-body">
             <div>
               <h5 class="card-title fw-bold mb-5 ms-2" id="productName">{{this.product.name}}</h5>     
-              <div>
-                <h5 class="mb-3 ms-2 fw-bold me-3" style="float:left; font-size: x-large;" id="price">₱{{this.product.price}}</h5>
-                <button class="btn btn-dark rounded-circle ms-1 me-2" id="addbtn" style="float:right"></button>
-                <h5 class="mb-3 fw-bold mx-2" id="quantity" style="float:right">1</h5>
-                <button class="btn btn-dark rounded-circle ms-4 me-1" id="subtractbtn" style="float:right"></button>
-              </div>    
+
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <h5 class="mb-3 ms-2 fw-bold" style="font-size: x-large;" id="price">₱{{this.product.price}}</h5>
+                  <div style="display: flex; align-items: center;">
+                      <button class="btn btn-dark rounded-circle ms-2 me-1" id="subtractbtn"></button>
+                      <h5 class="mb-3 fw-bold mx-2" id="quantity" style="min-width: 30px; text-align: center;">1</h5>
+                      <button class="btn btn-dark rounded-circle ms-1 me-2" id="addbtn"></button>
+                  </div>
+              </div>
+   
             </div>
             <div class="text-center">
               <a  class="btn btn-danger mt-1 mb-2 fw-bold text-center rounded-pill" id="addtobag" data-id="{{this.product.productId}}">Add to Bag</a>
