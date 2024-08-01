@@ -147,7 +147,7 @@ function getByteLengthBlob(string, encoding = 'utf-8') {
 
 function validateDetails(newAccount) {
     const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/;
-    const nameValid = nameRegex.test(newAccount.first) && nameRegex.test(newAccount.last);
+    const nameValid = nameRegex.test(newAccount.first) && nameRegex.test(newAccount.last) && newAccount.first.length <= 50 && newAccount.last.length <= 50;
 
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailLocalLength = getByteLengthBlob(newAccount.email.substr(0, newAccount.email.indexOf('@')));

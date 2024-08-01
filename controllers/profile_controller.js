@@ -70,7 +70,7 @@ async function checkEmailExists(connection, email) {
 
 function validateDetails(newDetails) {
     const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/;
-    const nameValid = nameRegex.test(newDetails.firstName) && nameRegex.test(newDetails.lastName);
+    const nameValid = nameRegex.test(newDetails.firstName) && nameRegex.test(newDetails.lastName) && newDetails.firstName.length <= 50 && newDetails.lastName.length <= 50;
 
     const emailRegex = /^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/
     const emailValid = emailRegex.test(newDetails.email) && newDetails.email.substr(0, newDetails.email.indexOf('@')).length <= 64 && newDetails.email.substr(newDetails.email.indexOf('@')).length <= 255

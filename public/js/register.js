@@ -157,7 +157,7 @@ $(document).ready(function(){
     firstNameInput.onkeyup = function() {
         var firstName = firstNameInput.value
 
-        firstNameValid = firstName != null && regexName.test(firstName);
+        firstNameValid = firstName != null && regexName.test(firstName) && firstName.length <= 50;
 
         validateFields();
     }
@@ -165,7 +165,7 @@ $(document).ready(function(){
     lastNameInput.onkeyup = function() {
         var lastName = lastNameInput.value
 
-        lastNameValid = lastName != null && regexName.test(lastName);
+        lastNameValid = lastName != null && regexName.test(lastName) && lastName.length <= 50;
 
         validateFields();
     }
