@@ -226,9 +226,6 @@ const bag_controller = {
                 bagId: bagId
             }
 
-            console.log("HELLO after dompurify");
-            console.log(quantity);
-
             const newBagItemValid = await validateAndCompleteDetails(newBagItem, connection);
 
             if (!newBagItemValid) {
