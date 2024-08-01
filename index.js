@@ -17,7 +17,7 @@ const options = {
 	database: process.env.DB_NAME,
     clearExpired: true,
     checkExpirationInterval: 1000 * 60 * 5, 
-    expiration: 1000 * 60 * 15,
+    expiration: 1000 * 60 * 60,
     connectTimeout: 10000,
 };
 const sessionStore = new MySQLStore(options);
@@ -38,7 +38,7 @@ app.use(session({
     name: process.env.SESSION_NAME,
     cookie: {
         secure: true, 
-        maxAge: 1000 * 60 * 15, 
+        maxAge: 1000 * 60 * 60, 
         httpOnly: true,
         sameSite: 'none'
     }
