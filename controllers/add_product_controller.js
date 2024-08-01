@@ -90,7 +90,8 @@ function validateDetails(newProduct) {
     const categoryValid = validateSelectedCategory(newProduct.category);
 
     const price = parseFloat(newProduct.price)
-    const priceValid = !isNaN(price) && price > 0;
+    var decimalPlacesValid = /^\d+(\.\d{0,2})?$/.test(newProduct.price);
+    const priceValid = !isNaN(price) && price > 0 && price < 10000 && decimalPlacesValid;
 
     return nameValid && categoryValid && priceValid;
 }
@@ -169,6 +170,10 @@ const add_product_controller = {
                             url: req.originalUrl,
                             accountId: sessionData.accountId, 
                             productId: result,
+                            productName: newProduct.name,
+                            productCategory: newProduct.category,
+                            productPrice: newProduct.price,
+                            productImageFilename: newProduct.imageFilename,
                             sourceIp: req.ip,
                             userAgent: req.headers['user-agent'],
                             hostname: req.hostname,
