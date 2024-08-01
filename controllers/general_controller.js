@@ -382,7 +382,7 @@ const general_controller = {
                     console.error('An error occurred.')
                 return res.redirect('/login'); 
             }
-            res.clearCookie('thehungrycookie');
+            res.clearCookie(process.env.SESSION_KEY);
             
             logger.info('User successfully logged out', {
                 meta: {
