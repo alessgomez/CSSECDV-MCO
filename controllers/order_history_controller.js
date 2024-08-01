@@ -149,17 +149,17 @@ const order_history_controller = {
 
                     orderDetailsPageData.currOrder.completeAddress = DOMPurify.sanitize(results[0].completeAddress);
 
-                    orderDetailsPageData.currOrder.subtotal = parseFloat(results[0].subtotal);
+                    orderDetailsPageData.currOrder.subtotal = parseFloat(results[0].subtotal).toFixed(2);
 
-                    orderDetailsPageData.currOrder.deliveryFee = parseFloat(results[0].deliveryFee);
+                    orderDetailsPageData.currOrder.deliveryFee = parseFloat(results[0].deliveryFee).toFixed(2);
 
-                    orderDetailsPageData.currOrder.total = results[0].total;
+                    orderDetailsPageData.currOrder.total = results[0].total.toFixed(2);
 
                     orderDetailsPageData.particulars = results.map(particular => {
                         return{
                             quantity: parseInt(particular.quantity),
                             name: DOMPurify.sanitize(particular.name),
-                            price: parseFloat(particular.price)
+                            price: parseFloat(particular.price).toFixed(2)
                         };
                     });    
 

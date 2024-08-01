@@ -47,10 +47,10 @@ $(document).ready(function() {
     function validateFields() {
         let regexName = new RegExp(/^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z]+(?:[ ,'-][A-Za-z]+)*(?:, [A-Za-z]+)*\.?$/);
         var firstName = inputFields[1].value;
-        firstNameValid = firstName != null && regexName.test(firstName);
+        firstNameValid = firstName != null && regexName.test(firstName) && firstName.length <= 50;
 
         var lastName = inputFields[2].value;
-        lastNameValid = lastName != null && regexName.test(lastName);
+        lastNameValid = lastName != null && regexName.test(lastName) && lastName.length <= 50;
 
         var email = inputFields[3].value;
         let regexEmail = new RegExp(/^(([_-][A-Za-z0-9]+)|[A-Za-z0-9]+)([_.-][A-Za-z0-9]+)*@[A-Za-z0-9]+(-[A-Za-z0-9]+)*(\.[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*(\.[A-Za-z]{2,})$/);
