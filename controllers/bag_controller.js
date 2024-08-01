@@ -122,7 +122,7 @@ async function validateAndCompleteDetails(newBagItem, connection) {
     try {
         newBagItem.quantity = parseInt(newBagItem.quantity);
 
-        const isQuantityValid = !isNaN(newBagItem.quantity) && newBagItem.quantity > 0;
+        const isQuantityValid = !isNaN(newBagItem.quantity) && newBagItem.quantity > 0 && newBagItem.quantity <= 100;
         const isProductIdValid = validateUuid(newBagItem.productId);
     
         if (isQuantityValid && isProductIdValid) {
@@ -420,74 +420,78 @@ const bag_controller = {
             if (results.length === 0)
                 throw new Error('Bag item not found');
 
-            newQuantity = parseInt(DOMPurify.sanitize(results[0].quantity)) + 1;
-            newTotalPrice = parseFloat(DOMPurify.sanitize(results[0].price)) * newQuantity;
-            
-            connection.beginTransaction(async(err) => {
-                if (err) throw err;
-
-                try {
-                    const query = 'UPDATE bagItems SET quantity = ?, totalPrice = ? WHERE bagItemId = ?;';
-                    const values = [newQuantity, newTotalPrice, bagItemId];
-
-                    const[results] = await connection.promise().query(query, values);
-
-                    const bagDetails = await updateBag(connection, sessionData.accountId);
-
-                    connection.commit((err) => {
-                        if (err) {
-                            return connection.rollback(() => {
-                                throw err;
-                            })
-                        }
-
-                        logger.info('User successfully added quantity of a bag item', {
-                            meta: {
-                                event: 'ADD_QUANTITY_SUCCESS',
-                                method: req.method,
-                                url: req.originalUrl,
-                                accountId: sessionData.accountId,
-                                bagItemId: bagItemId,
-                                sourceIp: req.ip,
-                                userAgent: req.headers['user-agent']
+            if (parseInt(DOMPurify.sanitize(results[0].quantity)) + 1 <= 100) {
+                newQuantity = parseInt(DOMPurify.sanitize(results[0].quantity)) + 1;
+                newTotalPrice = parseFloat(DOMPurify.sanitize(results[0].price)) * newQuantity;
+                
+                connection.beginTransaction(async(err) => {
+                    if (err) throw err;
+    
+                    try {
+                        const query = 'UPDATE bagItems SET quantity = ?, totalPrice = ? WHERE bagItemId = ?;';
+                        const values = [newQuantity, newTotalPrice, bagItemId];
+    
+                        const[results] = await connection.promise().query(query, values);
+    
+                        const bagDetails = await updateBag(connection, sessionData.accountId);
+    
+                        connection.commit((err) => {
+                            if (err) {
+                                return connection.rollback(() => {
+                                    throw err;
+                                })
                             }
-                        });
-
-                        var updatedBag = {
-                            newQuantity: newQuantity,
-                            newTotalPrice: newTotalPrice,
-                            newSubtotal: bagDetails[0],
-                            deliveryFee: bagDetails[1],
-                            newTotal: bagDetails[2]
-                        }
-
-                        res.json({success: true, updatedBag:updatedBag});
-                    })
-                } catch (error) {
-                    connection.rollback(() => {
-                        if (debug)
-                            console.error('Error adding quantity to bag item: ', error);
-                        else 
-                            console.error('An error occurred.');
-
-                        logger.error('Error when user attempted to add quantity to bag item', {
-                            meta: {
-                                event: 'ADD_QUANTITY_ERROR',
-                                method: req.method,
-                                url: req.originalUrl,
-                                accountId: sessionData.accountId,
-                                bagItemId: bagItemId,
-                                sourceIp: req.ip,
-                                userAgent: req.headers['user-agent']
+    
+                            logger.info('User successfully added quantity of a bag item', {
+                                meta: {
+                                    event: 'ADD_QUANTITY_SUCCESS',
+                                    method: req.method,
+                                    url: req.originalUrl,
+                                    accountId: sessionData.accountId,
+                                    bagItemId: bagItemId,
+                                    sourceIp: req.ip,
+                                    userAgent: req.headers['user-agent']
+                                }
+                            });
+    
+                            var updatedBag = {
+                                newQuantity: newQuantity,
+                                newTotalPrice: newTotalPrice,
+                                newSubtotal: bagDetails[0],
+                                deliveryFee: bagDetails[1],
+                                newTotal: bagDetails[2]
                             }
+    
+                            res.json({success: true, updatedBag:updatedBag});
                         })
-                        res.json({success:false})
-                    })
-                } finally {
-                    if (connection)
-                        connection.release();
-                }
-            })
+                    } catch (error) {
+                        connection.rollback(() => {
+                            if (debug)
+                                console.error('Error adding quantity to bag item: ', error);
+                            else 
+                                console.error('An error occurred.');
+    
+                            logger.error('Error when user attempted to add quantity to bag item', {
+                                meta: {
+                                    event: 'ADD_QUANTITY_ERROR',
+                                    method: req.method,
+                                    url: req.originalUrl,
+                                    accountId: sessionData.accountId,
+                                    bagItemId: bagItemId,
+                                    sourceIp: req.ip,
+                                    userAgent: req.headers['user-agent']
+                                }
+                            })
+                            res.json({success:false})
+                        })
+                    } finally {
+                        if (connection)
+                            connection.release();
+                    }
+                })
+            } else {
+                res.json({success:false});
+            }
         } catch(error) {
             if (connection) {
                 connection.rollback(() => {

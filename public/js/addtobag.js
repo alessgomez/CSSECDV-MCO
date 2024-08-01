@@ -13,19 +13,21 @@ $(document).ready(function(){
   
     $("#addbtn").click(function(){
       count = parseInt($("#quantity").text());
-      count++;
-      $("#quantity").text(count);
-
-      var itemQuantity = $("#quantity").text();
-      itemQuantity = parseFloat(itemQuantity);
-       
-      var itemPrice = $("#price").text();
-      itemPrice = itemPrice.substring(1);
-      itemPrice = parseFloat(itemPrice);
+      if (count < 100) {
+        count++;
+        $("#quantity").text(count);
   
-      var totalPrice = itemQuantity * itemPrice;
-  
-      $("#addtobag").text("Add to Bag - ₱" + totalPrice);
+        var itemQuantity = $("#quantity").text();
+        itemQuantity = parseFloat(itemQuantity);
+         
+        var itemPrice = $("#price").text();
+        itemPrice = itemPrice.substring(1);
+        itemPrice = parseFloat(itemPrice);
+    
+        var totalPrice = itemQuantity * itemPrice;
+    
+        $("#addtobag").text("Add to Bag - ₱" + totalPrice);        
+      }      
     });
   
     $("#subtractbtn").click(function(){
@@ -58,7 +60,7 @@ $(document).ready(function(){
         tPrice = parseFloat(tPrice);
         var productId = $(this).data('id');
 
-        const isQuantityValid = !isNaN(itemQuantity) && itemQuantity > 0;
+        const isQuantityValid = !isNaN(itemQuantity) && itemQuantity > 0 && itemQuantity <= 100;
         const isTotalPriceValid = !isNaN(tPrice) && tPrice > 0;
         const isProductIdValid = validateUuid(productId);
 
