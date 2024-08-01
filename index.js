@@ -29,13 +29,13 @@ app.use(express.static("public"));
 app.enable('trust proxy');
 
 app.use(session({
-    key: 'thehungrycookie',
-    secret: 'thehungrysecret',
+    key: process.env.SESSION_KEY,
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     proxy: true,
-    name: 'TheHungrySibsCookieName',
+    name: process.env.SESSION_NAME,
     cookie: {
         secure: true, 
         maxAge: 1000 * 60 * 15, 
