@@ -226,6 +226,9 @@ const bag_controller = {
                 bagId: bagId
             }
 
+            console.log("HELLO after dompurify");
+            console.log(quantity);
+
             const newBagItemValid = await validateAndCompleteDetails(newBagItem, connection);
 
             if (!newBagItemValid) {
@@ -259,13 +262,15 @@ const bag_controller = {
                                     })
                                 }
                                 logger.info('User successfully added a bag item', {
-                                    event: 'ADD_BAG_ITEM_SUCCESS',
-                                    method: req.method,
-                                    url: req.originalUrl,
-                                    accountId: sessionData.accountId,
-                                    bagItemId: newId,
-                                    sourceIp: req.ip,
-                                    userAgent: req.headers['user-agent']
+                                    meta: {
+                                        event: 'ADD_BAG_ITEM_SUCCESS',
+                                        method: req.method,
+                                        url: req.originalUrl,
+                                        accountId: sessionData.accountId,
+                                        bagItemId: newId,
+                                        sourceIp: req.ip,
+                                        userAgent: req.headers['user-agent']
+                                    }
                                 })
                                 res.json({success:true});
                             })
