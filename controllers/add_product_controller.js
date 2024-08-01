@@ -83,7 +83,7 @@ function validateSelectedCategory(selectedCategory) {
 }
 
 function validateDetails(newProduct) {
-    const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z0-9()]+(?:[ ,'-][A-Za-z0-9()]+)*(?:, [A-Za-z()]+)*\.?$/;
+    const nameRegex = /^(?!.*[,'-]{2})(?!.* [,'-])(?![,'-])(?=.{1,45}$)[A-Za-z0-9()]+(?:[ ,'-][A-Za-z0-9()]+)*(?:, [A-Za-z()]+)*$/;
     const nameValid = newProduct.name != null && nameRegex.test(newProduct.name);
 
     const categoryValid = validateSelectedCategory(newProduct.category);
