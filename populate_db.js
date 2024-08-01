@@ -30,7 +30,7 @@ async function populateDb() {
     var bakedPotato = "Cheesy Bacon Baked Potatoes";
     var truffleFries = "Parmesan Truffle Fries with Dip";
     var twisterFries = "Twister Fries with Dip";
-    var cookies = "Reese's Chocochip Cookies";
+    var cookies = "Chocochip Cookies";
     var crinkles = "Chocolate Crinkles";
     var cake = "Belgian Chocolate Cake";
     var icedTea = "Houseblend Iced Tea";
