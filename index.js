@@ -18,7 +18,7 @@ const options = {
 	database:'the_hungry_sibs',
     clearExpired: true,
     checkExpirationInterval: 1000 * 60 * 5, 
-    expiration: 1000 * 60 * 15
+    expiration: 1000 * 60 * 60
 };
 const sessionStore = new MySQLStore(options);
 
@@ -40,7 +40,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         secure: true, 
-        maxAge: 1000 * 60 * 15, 
+        maxAge: 1000 * 60 * 60, 
         httpOnly: true,
         sameSite: 'strict',
         domain: 'localhost',
