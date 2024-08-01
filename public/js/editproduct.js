@@ -159,7 +159,7 @@ $(document).ready(function(){
         var price = priceInput.value;
         var parsedPrice = parseFloat(price);
         var decimalPlacesValid = /^\d+(\.\d{0,2})?$/.test(price);
-        priceValid = !isNaN(parsedPrice) && parsedPrice > 0 && decimalPlacesValid;
+        priceValid = !isNaN(parsedPrice) && parsedPrice > 0 && parsedPrice < 10000 && decimalPlacesValid;
 
         $.get('/getProduct', { productId: productId }, function(response) {
             if (response.success) {
