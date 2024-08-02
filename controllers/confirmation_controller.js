@@ -147,7 +147,11 @@ const confirmation_controller = {
                     errorMessage: error.message, 
                     errorStack: error.stack, 
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             });
             req.flash('error_msg', 'An error occurred. Please try again later.');
