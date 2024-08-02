@@ -8,6 +8,7 @@ const DOMPurify = createDOMPurify(window);
 const fs = require('fs');
 const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 function validateUuid(str) {
     let regexUuidv4 = new RegExp(/^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/);

@@ -7,6 +7,7 @@ const DOMPurify = createDOMPurify(window);
 const fs = require('fs');
 const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 const menu_controller = {
     getMenu: async (req, res) => {

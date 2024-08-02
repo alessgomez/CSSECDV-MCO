@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 const MAX_LENGTH_SUBJECT = 50; 
 const MAX_LENGTH_MESSAGE = 500; 

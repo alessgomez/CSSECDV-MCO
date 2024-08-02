@@ -7,6 +7,7 @@ const DOMPurify = createDOMPurify(window);
 const fs = require('fs');
 const debug = process.env.DEBUG === 'true';
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 const addtobag_controller = {
     getAddToBag: async (req, res) => {

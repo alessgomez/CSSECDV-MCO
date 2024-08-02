@@ -5,6 +5,7 @@ const { JSDOM } = require('jsdom');
 const createDOMPurify = require('dompurify');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
+const geoip = require('geoip-lite');
 
 const fs = require('fs');
 const debug = process.env.DEBUG === 'true';
