@@ -153,7 +153,7 @@ const order_history_controller = {
 
                     orderDetailsPageData.currOrder.deliveryFee = parseFloat(results[0].deliveryFee).toFixed(2);
 
-                    orderDetailsPageData.currOrder.total = results[0].total.toFixed(2);
+                    orderDetailsPageData.currOrder.total = parseFloat(results[0].total).toFixed(2);
 
                     orderDetailsPageData.particulars = results.map(particular => {
                         return{
