@@ -8,6 +8,7 @@ const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));
 const debug = config.DEBUG;
 const logger = require('../logger');
+const geoip = require('geoip-lite');
 
 const addtobag_controller = {
     getAddToBag: async (req, res) => {

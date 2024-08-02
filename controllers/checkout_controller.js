@@ -7,6 +7,7 @@ const createDOMPurify = require('dompurify');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 const { v4: uuidv4 } = require('uuid');
+const geoip = require('geoip-lite');
 
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('config.json'));

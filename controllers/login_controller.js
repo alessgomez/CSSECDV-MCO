@@ -304,7 +304,8 @@ const login_controller = {
               await updateSessionDataEntry(connection, req.session.id, accountId, oneTimeCode, new Date(), false);
             }
 
-            sendOneTimeCode(req.body.email, oneTimeCode);
+            console.log(oneTimeCode);
+            //sendOneTimeCode(req.body.email, oneTimeCode);
 
             logger.info('User login credentials verified, first phase of login successful ', {
               meta: {
@@ -562,7 +563,7 @@ const login_controller = {
         }
 
         const oneTimeCode = generateOneTimeCode();
-        sendOneTimeCode(email, oneTimeCode);
+        //sendOneTimeCode(email, oneTimeCode);
 
         await updateSessionDataOTC(connection, req.session.id, oneTimeCode, now);
 
