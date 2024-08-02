@@ -507,7 +507,11 @@ const bag_controller = {
                             accountId: sessionData.accountId,
                             bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
                             sourceIp: req.ip,
-                            userAgent: req.headers['user-agent']
+                            userAgent: req.headers['user-agent'],
+                            hostname: req.hostname,
+                            protocol: req.protocol,
+                            port: req.socket.localPort,
+                            geo:geoip.lookup(req.ip)
                         }
                     })
                     res.json({success:false})
@@ -526,7 +530,11 @@ const bag_controller = {
                         accountId: sessionData.accountId,
                         bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
                         sourceIp: req.ip,
-                        userAgent: req.headers['user-agent']
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 })
                 res.json({success:false})
@@ -589,7 +597,11 @@ const bag_controller = {
                                     accountId: sessionData.accountId,
                                     bagItemId: bagItemId,
                                     sourceIp: req.ip,
-                                    userAgent: req.headers['user-agent']
+                                    userAgent: req.headers['user-agent'],
+                                    hostname: req.hostname,
+                                    protocol: req.protocol,
+                                    port: req.socket.localPort,
+                                    geo:geoip.lookup(req.ip)
                                 }
                             });
     
@@ -618,7 +630,11 @@ const bag_controller = {
                                     accountId: sessionData.accountId,
                                     bagItemId: bagItemId,
                                     sourceIp: req.ip,
-                                    userAgent: req.headers['user-agent']
+                                    userAgent: req.headers['user-agent'],
+                                    hostname: req.hostname,
+                                    protocol: req.protocol,
+                                    port: req.socket.localPort,
+                                    geo:geoip.lookup(req.ip)
                                 }
                             })
                             res.json({success:false})
@@ -647,7 +663,11 @@ const bag_controller = {
                             accountId: sessionData.accountId,
                             bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
                             sourceIp: req.ip,
-                            userAgent: req.headers['user-agent']
+                            userAgent: req.headers['user-agent'],
+                            hostname: req.hostname,
+                            protocol: req.protocol,
+                            port: req.socket.localPort,
+                            geo:geoip.lookup(req.ip)
                         }
                     })
                     res.json({success:false})
@@ -666,7 +686,11 @@ const bag_controller = {
                         accountId: sessionData.accountId,
                         bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
                         sourceIp: req.ip,
-                        userAgent: req.headers['user-agent']
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 })
                 res.json({success:false})
@@ -725,7 +749,11 @@ const bag_controller = {
                             accountId: sessionData.accountId,
                             bagItemId: bagItemId,
                             sourceIp: req.ip,
-                            userAgent: req.headers['user-agent']
+                            userAgent: req.headers['user-agent'],
+                            hostname: req.hostname,
+                            protocol: req.protocol,
+                            port: req.socket.localPort,
+                            geo:geoip.lookup(req.ip)
                         }
                     });
 
@@ -750,7 +778,11 @@ const bag_controller = {
                                 accountId: sessionData.accountId,
                                 bagItemId: bagItemId,
                                 sourceIp: req.ip,
-                                userAgent: req.headers['user-agent']
+                                userAgent: req.headers['user-agent'],
+                                hostname: req.hostname,
+                                protocol: req.protocol,
+                                port: req.socket.localPort,
+                                geo:geoip.lookup(req.ip)
                             }
                         })
                         res.json({success:false})
@@ -776,7 +808,11 @@ const bag_controller = {
                         accountId: sessionData.accountId,
                         bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
                         sourceIp: req.ip,
-                        userAgent: req.headers['user-agent']
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 })
                 res.json({success:false})
@@ -797,7 +833,11 @@ const bag_controller = {
                         accountId: sessionData.accountId,
                         bagItemId: typeof bagItemId !== 'undefined' ? bagItemId : null,
                         sourceIp: req.ip,
-                        userAgent: req.headers['user-agent']
+                        userAgent: req.headers['user-agent'],
+                        hostname: req.hostname,
+                        protocol: req.protocol,
+                        port: req.socket.localPort,
+                        geo:geoip.lookup(req.ip)
                     }
                 })
                 res.json({success:false}) 
@@ -844,7 +884,11 @@ const bag_controller = {
                     errorMessage: error.message, 
                     errorStack: error.stack, 
                     sourceIp: req.ip,
-                    userAgent: req.headers['user-agent']
+                    userAgent: req.headers['user-agent'],
+                    hostname: req.hostname,
+                    protocol: req.protocol,
+                    port: req.socket.localPort,
+                    geo:geoip.lookup(req.ip)
                 }
             })
             res.json({ success: false }); 
